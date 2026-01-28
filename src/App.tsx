@@ -13,6 +13,9 @@ import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminProperties from "./pages/admin/AdminProperties";
 import AdminAddProperty from "./pages/admin/AdminAddProperty";
+import AdminEnquiries from "./pages/admin/AdminEnquiries";
+import AdminLocations from "./pages/admin/AdminLocations";
+import AdminSettings from "./pages/admin/AdminSettings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +41,9 @@ const App = () => (
               <Route index element={<AdminDashboard />} />
               <Route path="properties" element={<AdminProperties />} />
               <Route path="properties/add" element={<AdminAddProperty />} />
+              <Route path="enquiries" element={<AdminEnquiries />} />
+              <Route path="locations" element={<AdminLocations />} />
+              <Route path="settings" element={<AdminSettings />} />
             </Route>
             
             {/* Catch-all */}
