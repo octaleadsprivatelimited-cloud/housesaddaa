@@ -17,18 +17,49 @@ export function PropertyCategories() {
   const displayTypes = propertyTypes.slice(0, 6); // Show 6 types in one row
 
   return (
-    <section className="py-16 md:py-24">
+    <section className="py-10 md:py-16 lg:py-24">
       <div className="container-custom">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h2 className="section-heading">Browse by Property Type</h2>
-          <p className="section-subheading">
+        <div className="text-center mb-6 md:mb-12">
+          <h2 className="section-heading text-xl md:text-2xl lg:text-3xl">Browse by Property Type</h2>
+          <p className="section-subheading text-sm md:text-base">
             Find the perfect property that suits your needs
           </p>
         </div>
 
-        {/* Categories - Single Row */}
-        <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
+        {/* Categories - Responsive Grid on Mobile, Single Row on Desktop */}
+        <div className="grid grid-cols-3 gap-2 md:hidden">
+          {displayTypes.map((type, index) => {
+            const bgImage = categoryImages[type.value] || categoryImages.apartment;
+            return (
+              <Link
+                key={type.value}
+                to={`/properties?propertyType=${type.value}`}
+                className="group relative aspect-square rounded-lg overflow-hidden animate-slide-up"
+                style={{ animationDelay: `${index * 50}ms` }}
+              >
+                {/* Background Image */}
+                <div 
+                  className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
+                  style={{ backgroundImage: `url(${bgImage})` }}
+                />
+                
+                {/* Overlay */}
+                <div className="absolute inset-0 bg-gradient-to-t from-foreground/90 via-foreground/50 to-transparent" />
+                
+                {/* Content */}
+                <div className="absolute inset-0 flex flex-col items-center justify-end p-2 text-center">
+                  <h3 className="font-semibold text-primary-foreground text-xs leading-tight">
+                    {type.label}
+                  </h3>
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+
+        {/* Desktop: Horizontal Scroll Row */}
+        <div className="hidden md:flex gap-4 overflow-x-auto pb-4 scrollbar-hide">
           {displayTypes.map((type, index) => {
             const bgImage = categoryImages[type.value] || categoryImages.apartment;
             return (
