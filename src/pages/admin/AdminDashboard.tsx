@@ -1,34 +1,60 @@
 import { useState, useEffect } from 'react';
-import { Building2, MapPin, Eye, MessageSquare, ArrowUpRight, Loader2 } from 'lucide-react';
+import { Building2, MapPin, Eye, MessageSquare, ArrowUpRight, Loader2, RefreshCw } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Property } from '@/types/property';
-import { getAllPropertiesAdmin } from '@/services/propertyService';
+import { getAllPropertiesAdmin, migratePropertiesToActive } from '@/services/propertyService';
 import { getNewEnquiriesCount } from '@/services/enquiryService';
 import { formatPrice } from '@/data/properties';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AdminDashboard() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [enquiriesCount, setEnquiriesCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [migrating, setMigrating] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [propertiesData, enquiries] = await Promise.all([
-          getAllPropertiesAdmin(),
-          getNewEnquiriesCount()
-        ]);
-        setProperties(propertiesData);
-        setEnquiriesCount(enquiries);
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [propertiesData, enquiries] = await Promise.all([
+        getAllPropertiesAdmin(),
+        getNewEnquiriesCount()
+      ]);
+      setProperties(propertiesData);
+      setEnquiriesCount(enquiries);
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleMigration = async () => {
+    setMigrating(true);
+    try {
+      const count = await migratePropertiesToActive();
+      toast({
+        title: 'Migration Complete',
+        description: `Updated ${count} properties to active status.`,
+      });
+      fetchData(); // Refresh data
+    } catch (error) {
+      toast({
+        title: 'Migration Failed',
+        description: 'Could not update properties. Check console for details.',
+        variant: 'destructive',
+      });
+      console.error('Migration error:', error);
+    } finally {
+      setMigrating(false);
+    }
+  };
 
   // Calculate stats from real data
   const totalViews = properties.reduce((sum, p) => sum + (p.views || 0), 0);
@@ -93,10 +119,27 @@ export default function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="font-display text-2xl font-bold text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground">Welcome back! Here's your property overview.</p>
+      {/* Page Header with Migration Button */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-2xl font-bold text-foreground">Dashboard</h1>
+          <p className="text-muted-foreground">Welcome back! Here's your property overview.</p>
+        </div>
+        {properties.length > 0 && (
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleMigration}
+            disabled={migrating}
+          >
+            {migrating ? (
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            ) : (
+              <RefreshCw className="h-4 w-4 mr-2" />
+            )}
+            Activate All Properties
+          </Button>
+        )}
       </div>
 
       {/* Stats Grid */}
