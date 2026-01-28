@@ -100,11 +100,13 @@ export default function AdminLocations() {
         title: 'Success',
         description: `${count} locations have been added from static data`,
       });
+      setIsFirestoreData(true);
       fetchLocations();
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Error seeding locations:', error);
       toast({
         title: 'Error',
-        description: 'Failed to seed locations',
+        description: error?.message || 'Failed to seed locations. Please ensure you are logged in as admin.',
         variant: 'destructive',
       });
     } finally {
