@@ -11,6 +11,7 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { LocationOption } from "@/types/property";
+import { locations as staticLocations } from "@/data/properties";
 
 const LOCATIONS_COLLECTION = "locations";
 
@@ -31,6 +32,22 @@ export const getLocations = async (): Promise<LocationOption[]> => {
     console.error('Error fetching locations:', error);
     return [];
   }
+};
+
+// Seed static locations to Firestore
+export const seedLocations = async (): Promise<number> => {
+  let count = 0;
+  for (const location of staticLocations) {
+    await addDoc(collection(db, LOCATIONS_COLLECTION), {
+      country: location.country,
+      state: location.state,
+      city: location.city,
+      areas: location.areas,
+      createdAt: Timestamp.now()
+    });
+    count++;
+  }
+  return count;
 };
 
 // Add new location
