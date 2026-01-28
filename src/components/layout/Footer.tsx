@@ -7,7 +7,6 @@ const footerLinks = {
     { name: 'Contact Us', href: '/contact' },
     { name: 'Careers', href: '/careers' },
     { name: 'Blog', href: '/blog' },
-    { name: 'Admin', href: '/admin' },
   ],
   properties: [
     { name: 'Buy Property', href: '/properties?type=sale' },
