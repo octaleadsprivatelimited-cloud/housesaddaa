@@ -21,12 +21,11 @@ export function Header() {
         <div className="container-custom flex justify-between items-center">
           {/* Logo */}
           <Link to="/" className="flex items-center">
-            <div className="bg-card px-3 py-1.5 rounded border-2 border-primary">
-              <span className="font-display text-xl font-bold">
-                <span className="text-primary">Houses</span>
-                <span className="text-foreground">Adda</span>
-              </span>
-            </div>
+            <img 
+              src="/logo.png" 
+              alt="Houses Adda Logo" 
+              className="h-10 w-auto"
+            />
           </Link>
 
           {/* Phone Number */}

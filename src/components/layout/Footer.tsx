@@ -44,9 +44,11 @@ export function Footer() {
           {/* Brand */}
           <div className="lg:col-span-2">
             <Link to="/" className="flex items-center gap-2 mb-4">
-              <div className="w-10 h-10 rounded-lg bg-accent flex items-center justify-center">
-                <span className="text-accent-foreground font-bold text-xl">H</span>
-              </div>
+              <img 
+                src="/logo.png" 
+                alt="Houses Adda Logo" 
+                className="h-10 w-auto"
+              />
               <div className="flex flex-col">
                 <span className="font-display text-xl font-bold leading-tight">Houses Adda</span>
                 <span className="text-xs text-primary-foreground/60 leading-tight">Find Your Dream Home</span>
@@ -66,7 +68,7 @@ export function Footer() {
               </a>
               <div className="flex items-start gap-2 text-primary-foreground/70">
                 <MapPin className="h-4 w-4 mt-0.5" />
-                <span>Hyderabad, Telangana, India</span>
+                <span>8-1-284-/ou/25, OU Colony, Shaikpet, Manikonda, Hyderabad, Telangana 500104</span>
               </div>
             </div>
           </div>
@@ -117,7 +119,15 @@ export function Footer() {
       <div className="border-t border-primary-foreground/10">
         <div className="container-custom py-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-primary-foreground/60 text-sm">
-            © {new Date().getFullYear()} Houses Adda. All rights reserved.
+            © {new Date().getFullYear()} Houses Adda. All rights reserved. Developed by{' '}
+            <a 
+              href="https://www.octaleads.com" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="hover:text-accent transition-colors underline"
+            >
+              Octaleads Private Limited
+            </a>
           </p>
           <div className="flex items-center gap-4">
             {socialLinks.map((social) => (
