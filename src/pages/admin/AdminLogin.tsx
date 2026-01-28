@@ -4,6 +4,7 @@ import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { signInAdmin } from '@/services/authService';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -17,23 +18,22 @@ export default function AdminLogin() {
     e.preventDefault();
     setIsLoading(true);
     
-    // Demo login - In production, this would use Firebase Auth
-    if (email === 'admin@housesadda.in' && password === 'admin123') {
-      localStorage.setItem('adminAuth', 'true');
+    try {
+      await signInAdmin(email, password);
       toast({
         title: 'Welcome back!',
         description: 'You have successfully logged in.',
       });
       navigate('/admin');
-    } else {
+    } catch (error: any) {
       toast({
         title: 'Login Failed',
-        description: 'Invalid email or password. Try admin@housesadda.in / admin123',
+        description: error.message || 'Invalid email or password.',
         variant: 'destructive',
       });
+    } finally {
+      setIsLoading(false);
     }
-    
-    setIsLoading(false);
   };
 
   return (
@@ -112,9 +112,8 @@ export default function AdminLogin() {
           </form>
 
           <div className="mt-6 p-4 bg-secondary/50 rounded-lg text-sm text-muted-foreground">
-            <strong>Demo Credentials:</strong><br />
-            Email: admin@housesadda.in<br />
-            Password: admin123
+            <strong>Note:</strong> Login with your registered admin credentials.
+            <br />Contact super admin to get access.
           </div>
         </div>
 
