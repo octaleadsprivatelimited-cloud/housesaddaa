@@ -87,14 +87,14 @@ export default function PropertiesPage() {
       <div>
         <h4 className="font-semibold text-foreground mb-3">City</h4>
         <Select 
-          value={filters.location?.city || ''} 
-          onValueChange={(value) => setFilters({ ...filters, location: value ? { city: value } : undefined })}
+          value={filters.location?.city || 'all'} 
+          onValueChange={(value) => setFilters({ ...filters, location: value !== 'all' ? { city: value } : undefined })}
         >
           <SelectTrigger className="bg-background">
             <SelectValue placeholder="All Cities" />
           </SelectTrigger>
           <SelectContent className="bg-card border-border">
-            <SelectItem value="">All Cities</SelectItem>
+            <SelectItem value="all">All Cities</SelectItem>
             {cities.map((city) => (
               <SelectItem key={city} value={city}>{city}</SelectItem>
             ))}
