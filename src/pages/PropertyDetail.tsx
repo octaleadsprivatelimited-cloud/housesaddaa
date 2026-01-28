@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { formatPrice } from '@/data/properties';
+import { formatPrice, amenities as amenitiesData } from '@/data/properties';
 import { PropertyCard } from '@/components/property/PropertyCard';
 import { cn } from '@/lib/utils';
 import { Property } from '@/types/property';
@@ -241,14 +241,19 @@ export default function PropertyDetailPage() {
             <div className="bg-card rounded-2xl border border-border p-6">
               <h2 className="font-display text-xl font-bold mb-4">Amenities</h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                {property.amenities.map((amenity) => {
-                  const Icon = amenityIcons[amenity] || Shield;
+                {property.amenities.map((amenityIdOrName) => {
+                  // Check if it's an ID (numeric string) or a name/slug
+                  const amenityData = amenitiesData.find(a => a.id === amenityIdOrName);
+                  const displayName = amenityData ? amenityData.name : amenityIdOrName.replace(/-/g, ' ');
+                  const iconKey = amenityData ? amenityData.name.toLowerCase().replace(/\s+/g, '-') : amenityIdOrName;
+                  const Icon = amenityIcons[iconKey] || amenityIcons[amenityIdOrName] || Shield;
+                  
                   return (
-                    <div key={amenity} className="flex items-center gap-3 p-3 bg-secondary/50 rounded-lg">
+                    <div key={amenityIdOrName} className="flex items-center gap-3 p-3 bg-secondary/50 rounded-lg">
                       <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
                         <Icon className="h-5 w-5 text-primary" />
                       </div>
-                      <span className="font-medium capitalize text-sm">{amenity.replace('-', ' ')}</span>
+                      <span className="font-medium capitalize text-sm">{displayName}</span>
                     </div>
                   );
                 })}
