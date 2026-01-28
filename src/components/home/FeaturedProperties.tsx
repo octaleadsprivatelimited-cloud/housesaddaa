@@ -1,11 +1,10 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Loader2 } from 'lucide-react';
+import { ArrowRight, Loader2, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PropertyCard } from '@/components/property/PropertyCard';
 import { Property } from '@/types/property';
 import { getFeaturedProperties } from '@/services/propertyService';
-import { sampleProperties } from '@/data/properties';
 
 export function FeaturedProperties() {
   const [properties, setProperties] = useState<Property[]>([]);
@@ -15,16 +14,10 @@ export function FeaturedProperties() {
     const fetchFeatured = async () => {
       try {
         const featured = await getFeaturedProperties(6);
-        // If no properties in Firestore, use sample data as fallback
-        if (featured.length === 0) {
-          setProperties(sampleProperties.filter(p => p.isFeatured).slice(0, 6));
-        } else {
-          setProperties(featured);
-        }
+        setProperties(featured);
       } catch (error) {
         console.error('Error fetching featured properties:', error);
-        // Fallback to sample data on error
-        setProperties(sampleProperties.filter(p => p.isFeatured).slice(0, 6));
+        setProperties([]);
       } finally {
         setLoading(false);
       }
@@ -56,6 +49,18 @@ export function FeaturedProperties() {
         {loading ? (
           <div className="flex items-center justify-center py-16">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : properties.length === 0 ? (
+          /* Empty State */
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <Building2 className="h-16 w-16 text-muted-foreground mb-4" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">No Featured Properties Yet</h3>
+            <p className="text-muted-foreground mb-6 max-w-md">
+              Properties will appear here once they are added through the admin panel and marked as featured.
+            </p>
+            <Button variant="outline" asChild>
+              <Link to="/properties">Browse All Properties</Link>
+            </Button>
           </div>
         ) : (
           /* Properties Grid */
