@@ -17,15 +17,16 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50">
       {/* Top bar - Red background */}
-      <div className="bg-primary py-3">
+      <div className="bg-primary py-1.5">
         <div className="container-custom flex justify-between items-center">
           {/* Logo */}
-          <Link to="/" className="flex items-center">
+          <Link to="/" className="flex items-center gap-2">
             <img 
               src="/logo.png" 
               alt="Houses Adda Logo" 
-              className="h-10 w-auto"
+              className="h-8 w-auto"
             />
+            <span className="font-display text-lg font-bold text-primary-foreground">Houses Adda</span>
           </Link>
 
           {/* Phone Number */}
@@ -33,8 +34,8 @@ export function Header() {
             href="tel:+916301575658" 
             className="flex items-center gap-2 text-primary-foreground hover:opacity-80 transition-opacity"
           >
-            <Phone className="h-4 w-4" />
-            <span className="font-medium">+91 63015 75658</span>
+            <Phone className="h-3.5 w-3.5" />
+            <span className="font-medium text-sm">+91 63015 75658</span>
           </a>
         </div>
       </div>
@@ -42,7 +43,7 @@ export function Header() {
       {/* Navigation bar - White background */}
       <nav className="bg-card border-b border-border">
         <div className="container-custom">
-          <div className="flex items-center justify-between h-12">
+          <div className="flex items-center justify-between h-10">
             {/* Desktop Navigation */}
             <div className="hidden md:flex items-center gap-8">
               {navigation.map((item) => (

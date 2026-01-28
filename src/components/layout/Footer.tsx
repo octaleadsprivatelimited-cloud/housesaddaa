@@ -1,5 +1,7 @@
 import { Link } from 'react-router-dom';
-import { Facebook, Twitter, Instagram, Linkedin, MapPin, Phone, Mail } from 'lucide-react';
+import { useState } from 'react';
+import { Facebook, Twitter, Instagram, Linkedin, MapPin, Phone, Mail, ChevronDown, ChevronUp } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const footerLinks = {
   company: [
@@ -7,6 +9,7 @@ const footerLinks = {
     { name: 'Contact Us', href: '/contact' },
     { name: 'Careers', href: '/careers' },
     { name: 'Blog', href: '/blog' },
+    { name: 'Sitemap', href: '/sitemap.xml' },
   ],
   properties: [
     { name: 'Buy Property', href: '/properties?type=sale' },
@@ -36,6 +39,46 @@ const socialLinks = [
 ];
 
 export function Footer() {
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({});
+
+  const toggleSection = (section: string) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
+
+  const FooterSection = ({ title, links, sectionKey }: { title: string; links: typeof footerLinks.company; sectionKey: string }) => {
+    const isOpen = openSections[sectionKey] ?? false;
+    
+    return (
+      <div>
+        <button
+          onClick={() => toggleSection(sectionKey)}
+          className="md:pointer-events-none flex items-center justify-between w-full md:justify-start font-semibold mb-4 md:mb-4"
+        >
+          <span>{title}</span>
+          <span className="md:hidden">
+            {isOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+          </span>
+        </button>
+        <ul className={cn(
+          "space-y-2 transition-all duration-300 ease-in-out",
+          "md:block",
+          isOpen ? "block" : "hidden"
+        )}>
+          {links.map((link) => (
+            <li key={link.name}>
+              <Link to={link.href} className="text-primary-foreground/70 hover:text-accent transition-colors">
+                {link.name}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </div>
+    );
+  };
+
   return (
     <footer className="bg-foreground text-primary-foreground">
       {/* Main Footer */}
@@ -44,11 +87,6 @@ export function Footer() {
           {/* Brand */}
           <div className="lg:col-span-2">
             <Link to="/" className="flex items-center gap-2 mb-4">
-              <img 
-                src="/logo.png" 
-                alt="Houses Adda Logo" 
-                className="h-10 w-auto"
-              />
               <div className="flex flex-col">
                 <span className="font-display text-xl font-bold leading-tight">Houses Adda</span>
                 <span className="text-xs text-primary-foreground/60 leading-tight">Find Your Dream Home</span>
@@ -74,44 +112,12 @@ export function Footer() {
           </div>
 
           {/* Links */}
-          <div>
-            <h3 className="font-semibold mb-4">Company</h3>
-            <ul className="space-y-2">
-              {footerLinks.company.map((link) => (
-                <li key={link.name}>
-                  <Link to={link.href} className="text-primary-foreground/70 hover:text-accent transition-colors">
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-semibold mb-4">Properties</h3>
-            <ul className="space-y-2">
-              {footerLinks.properties.map((link) => (
-                <li key={link.name}>
-                  <Link to={link.href} className="text-primary-foreground/70 hover:text-accent transition-colors">
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-semibold mb-4">Top Cities</h3>
-            <ul className="space-y-2">
-              {footerLinks.cities.map((link) => (
-                <li key={link.name}>
-                  <Link to={link.href} className="text-primary-foreground/70 hover:text-accent transition-colors">
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
+          <FooterSection title="Company" links={footerLinks.company} sectionKey="company" />
+          <FooterSection title="Properties" links={footerLinks.properties} sectionKey="properties" />
+          <FooterSection title="Top Cities" links={footerLinks.cities} sectionKey="cities" />
+          
+          {/* Support Section */}
+          <FooterSection title="Support" links={footerLinks.support} sectionKey="support" />
         </div>
       </div>
 

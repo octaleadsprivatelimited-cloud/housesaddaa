@@ -8,6 +8,14 @@ import MainLayout from "./components/layout/MainLayout";
 import Index from "./pages/Index";
 import Properties from "./pages/Properties";
 import PropertyDetail from "./pages/PropertyDetail";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
+import Careers from "./pages/Careers";
+import Blog from "./pages/Blog";
+import Help from "./pages/Help";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Sitemap from "./pages/Sitemap";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -34,6 +42,14 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/properties" element={<Properties />} />
               <Route path="/property/:slug" element={<PropertyDetail />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/careers" element={<Careers />} />
+              <Route path="/blog" element={<Blog />} />
+              <Route path="/help" element={<Help />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/privacy" element={<Privacy />} />
+              <Route path="/sitemap" element={<Sitemap />} />
             </Route>
             
             {/* Admin Routes */}
