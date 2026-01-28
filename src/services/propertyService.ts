@@ -39,71 +39,92 @@ export const getProperties = async (
   pageSize: number = 12,
   lastDoc?: DocumentSnapshot
 ): Promise<{ properties: Property[]; lastDoc: DocumentSnapshot | null }> => {
-  const constraints: QueryConstraint[] = [];
-  
-  // Apply filters
-  if (filters?.listingType) {
-    constraints.push(where("listingType", "==", filters.listingType));
-  }
-  
-  if (filters?.propertyTypes && filters.propertyTypes.length > 0) {
-    constraints.push(where("propertyType", "in", filters.propertyTypes));
-  }
-  
-  if (filters?.location?.city) {
-    constraints.push(where("location.city", "==", filters.location.city));
-  }
-  
-  if (filters?.bedrooms && filters.bedrooms.length > 0) {
-    constraints.push(where("bedrooms", "in", filters.bedrooms));
-  }
-  
-  if (filters?.furnishing && filters.furnishing.length > 0) {
-    constraints.push(where("furnishing", "in", filters.furnishing));
-  }
-  
-  // Always filter active properties for public
-  constraints.push(where("isActive", "==", true));
-  
-  // Sorting
-  switch (filters?.sortBy) {
-    case 'price-low':
-      constraints.push(orderBy("price", "asc"));
-      break;
-    case 'price-high':
-      constraints.push(orderBy("price", "desc"));
-      break;
-    case 'popular':
-      constraints.push(orderBy("views", "desc"));
-      break;
-    case 'newest':
-    default:
-      constraints.push(orderBy("postedAt", "desc"));
-  }
-  
-  // Pagination
-  constraints.push(limit(pageSize));
-  if (lastDoc) {
-    constraints.push(startAfter(lastDoc));
-  }
-  
   try {
+    // First try: Simple query without isActive filter to avoid index issues
+    // Then filter in memory for isActive
+    const constraints: QueryConstraint[] = [];
+    
+    // Apply filters that are indexed
+    if (filters?.listingType) {
+      constraints.push(where("listingType", "==", filters.listingType));
+    }
+    
+    if (filters?.propertyTypes && filters.propertyTypes.length > 0) {
+      constraints.push(where("propertyType", "in", filters.propertyTypes));
+    }
+    
+    if (filters?.location?.city) {
+      constraints.push(where("location.city", "==", filters.location.city));
+    }
+    
+    if (filters?.bedrooms && filters.bedrooms.length > 0) {
+      constraints.push(where("bedrooms", "in", filters.bedrooms));
+    }
+    
+    // Sorting - use simple orderBy to avoid composite index requirements
+    constraints.push(orderBy("postedAt", "desc"));
+    
+    // Get more than needed to filter in memory
+    constraints.push(limit(pageSize * 3));
+    
+    if (lastDoc) {
+      constraints.push(startAfter(lastDoc));
+    }
+    
     const q = query(collection(db, PROPERTIES_COLLECTION), ...constraints);
     const snapshot = await getDocs(q);
     
-    console.log('Firestore query returned:', snapshot.docs.length, 'properties');
+    console.log('Firestore query returned:', snapshot.docs.length, 'documents');
     
-    const properties = snapshot.docs.map(docToProperty);
+    // Filter active properties in memory (more lenient - treat missing isActive as true for backwards compatibility)
+    let properties = snapshot.docs
+      .map(docToProperty)
+      .filter(p => p.isActive !== false); // Show if isActive is true OR undefined
+    
+    // Apply client-side sorting
+    switch (filters?.sortBy) {
+      case 'price-low':
+        properties.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-high':
+        properties.sort((a, b) => b.price - a.price);
+        break;
+      case 'popular':
+        properties.sort((a, b) => (b.views || 0) - (a.views || 0));
+        break;
+      // 'newest' is default from orderBy
+    }
+    
+    // Limit to requested page size
+    properties = properties.slice(0, pageSize);
+    
     const newLastDoc = snapshot.docs[snapshot.docs.length - 1] || null;
     
     return { properties, lastDoc: newLastDoc };
   } catch (error: any) {
     console.error('Firestore query error:', error.message);
-    // If index error, the error message contains a link to create the index
+    
+    // Fallback: Try simplest possible query if complex query fails
     if (error.message?.includes('index')) {
-      console.error('INDEX REQUIRED - Check Firebase Console or click the link in the error above');
+      console.log('Falling back to simple query...');
+      try {
+        const simpleQuery = query(
+          collection(db, PROPERTIES_COLLECTION),
+          orderBy("postedAt", "desc"),
+          limit(pageSize)
+        );
+        const snapshot = await getDocs(simpleQuery);
+        const properties = snapshot.docs
+          .map(docToProperty)
+          .filter(p => p.isActive !== false);
+        
+        return { properties, lastDoc: snapshot.docs[snapshot.docs.length - 1] || null };
+      } catch (fallbackError) {
+        console.error('Fallback query also failed:', fallbackError);
+      }
     }
-    throw error;
+    
+    return { properties: [], lastDoc: null };
   }
 };
 
@@ -131,15 +152,26 @@ export const getPropertyById = async (id: string): Promise<Property | null> => {
 
 // Get featured properties
 export const getFeaturedProperties = async (count: number = 6): Promise<Property[]> => {
-  const q = query(
-    collection(db, PROPERTIES_COLLECTION),
-    where("isActive", "==", true),
-    where("isFeatured", "==", true),
-    orderBy("postedAt", "desc"),
-    limit(count)
-  );
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(docToProperty);
+  try {
+    // Simple query to avoid index requirements, then filter in memory
+    const q = query(
+      collection(db, PROPERTIES_COLLECTION),
+      orderBy("postedAt", "desc"),
+      limit(count * 3) // Get more to filter
+    );
+    const snapshot = await getDocs(q);
+    
+    // Filter for active and featured in memory
+    const properties = snapshot.docs
+      .map(docToProperty)
+      .filter(p => p.isActive !== false && p.isFeatured === true)
+      .slice(0, count);
+    
+    return properties;
+  } catch (error) {
+    console.error('Error fetching featured properties:', error);
+    return [];
+  }
 };
 
 // Admin: Get all properties (including inactive)
