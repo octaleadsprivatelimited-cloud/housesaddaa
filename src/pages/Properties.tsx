@@ -1,20 +1,23 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { Filter, Grid3X3, List, SlidersHorizontal, X, ChevronDown } from 'lucide-react';
+import { Filter, Grid3X3, List, SlidersHorizontal, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PropertyCard } from '@/components/property/PropertyCard';
-import { sampleProperties, locations, propertyTypes, bhkOptions, furnishingOptions, propertyStatusOptions } from '@/data/properties';
-import { PropertyFilter } from '@/types/property';
+import { locations, propertyTypes, bhkOptions } from '@/data/properties';
+import { Property, PropertyFilter } from '@/types/property';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
+import { getProperties } from '@/services/propertyService';
 
 export default function PropertiesPage() {
   const [searchParams] = useSearchParams();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [sortBy, setSortBy] = useState<'newest' | 'price-low' | 'price-high' | 'popular'>('newest');
   
   // Parse URL params
   const initialListingType = searchParams.get('type') as 'sale' | 'rent' | null;
@@ -27,18 +30,22 @@ export default function PropertiesPage() {
     propertyTypes: initialPropertyType ? [initialPropertyType as any] : undefined,
   });
 
-  // Filter properties
-  const filteredProperties = useMemo(() => {
-    return sampleProperties.filter((property) => {
-      if (filters.listingType && property.listingType !== filters.listingType) return false;
-      if (filters.location?.city && property.location.city !== filters.location.city) return false;
-      if (filters.propertyTypes?.length && !filters.propertyTypes.includes(property.propertyType)) return false;
-      if (filters.bedrooms?.length && !filters.bedrooms.includes(property.bedrooms)) return false;
-      if (filters.priceRange?.min && property.price < filters.priceRange.min) return false;
-      if (filters.priceRange?.max && property.price > filters.priceRange.max) return false;
-      return true;
-    });
-  }, [filters]);
+  // Fetch properties from Firestore
+  useEffect(() => {
+    const fetchProperties = async () => {
+      setLoading(true);
+      try {
+        const result = await getProperties({ ...filters, sortBy });
+        setProperties(result.properties);
+      } catch (error) {
+        console.error('Error fetching properties:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProperties();
+  }, [filters, sortBy]);
 
   const cities = locations.map((loc) => loc.city);
   
@@ -166,7 +173,7 @@ export default function PropertiesPage() {
             {filters.location?.city && ` in ${filters.location.city}`}
           </h1>
           <p className="text-muted-foreground mt-1">
-            {filteredProperties.length} properties found
+            {loading ? 'Loading...' : `${properties.length} properties found`}
           </p>
         </div>
       </div>
@@ -240,7 +247,10 @@ export default function PropertiesPage() {
 
               <div className="flex items-center gap-2">
                 {/* Sort */}
-                <Select defaultValue="newest">
+                <Select 
+                  value={sortBy} 
+                  onValueChange={(v) => setSortBy(v as typeof sortBy)}
+                >
                   <SelectTrigger className="w-40 bg-background">
                     <SelectValue />
                   </SelectTrigger>
@@ -270,14 +280,18 @@ export default function PropertiesPage() {
               </div>
             </div>
 
-            {/* Properties Grid */}
-            {filteredProperties.length > 0 ? (
+            {/* Loading State */}
+            {loading ? (
+              <div className="flex items-center justify-center py-16">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              </div>
+            ) : properties.length > 0 ? (
               <div className={
                 viewMode === 'grid' 
                   ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6'
                   : 'space-y-6'
               }>
-                {filteredProperties.map((property, index) => (
+                {properties.map((property, index) => (
                   <div
                     key={property.id}
                     className="animate-slide-up"
