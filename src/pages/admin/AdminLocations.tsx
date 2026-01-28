@@ -143,11 +143,13 @@ export default function AdminLocations() {
 
       setNewLocation({ country: 'India', state: '', city: '', areas: '' });
       setIsAddLocationOpen(false);
+      setIsFirestoreData(true); // Now we have Firestore data
       fetchLocations();
-    } catch (error) {
+    } catch (error: any) {
+      console.error('Error adding location:', error);
       toast({
         title: 'Error',
-        description: 'Failed to add location',
+        description: error?.message || 'Failed to add location. Please check if you are logged in.',
         variant: 'destructive',
       });
     } finally {
@@ -315,12 +317,10 @@ export default function AdminLocations() {
               Save to Database
             </Button>
           )}
-          {isFirestoreData && (
-            <Button onClick={() => setIsAddLocationOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Location
-            </Button>
-          )}
+          <Button onClick={() => setIsAddLocationOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Location
+          </Button>
         </div>
       </div>
 
