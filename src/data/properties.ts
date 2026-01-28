@@ -238,35 +238,14 @@ export const propertyTypes: { value: PropertyType; label: string; icon: string }
   { value: 'builder-floor', label: 'Builder Floor', icon: '🏗️' },
 ];
 
-// Locations Data
+// Default Hyderabad Location (primary service area)
 export const locations: LocationOption[] = [
   {
     id: '1',
     country: 'India',
     state: 'Telangana',
     city: 'Hyderabad',
-    areas: ['Jubilee Hills', 'Banjara Hills', 'Gachibowli', 'HITEC City', 'Madhapur', 'Kondapur', 'Kukatpally', 'Miyapur'],
-  },
-  {
-    id: '2',
-    country: 'India',
-    state: 'Karnataka',
-    city: 'Bangalore',
-    areas: ['Whitefield', 'Koramangala', 'Indiranagar', 'HSR Layout', 'Electronic City', 'Marathahalli', 'JP Nagar', 'Jayanagar'],
-  },
-  {
-    id: '3',
-    country: 'India',
-    state: 'Maharashtra',
-    city: 'Mumbai',
-    areas: ['Andheri', 'Bandra', 'Powai', 'Worli', 'Lower Parel', 'Goregaon', 'Malad', 'Thane'],
-  },
-  {
-    id: '4',
-    country: 'India',
-    state: 'Delhi NCR',
-    city: 'Gurgaon',
-    areas: ['Golf Course Road', 'Sector 49', 'DLF Phase 5', 'Sohna Road', 'MG Road', 'Sector 56', 'Sector 82'],
+    areas: ['Jubilee Hills', 'Banjara Hills', 'Gachibowli', 'HITEC City', 'Madhapur', 'Kondapur', 'Kukatpally', 'Miyapur', 'Secunderabad', 'LB Nagar', 'Uppal', 'Manikonda', 'Nallagandla', 'Kokapet', 'Financial District'],
   },
 ];
 

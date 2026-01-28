@@ -1,18 +1,20 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Filter, Grid3X3, List, SlidersHorizontal, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PropertyCard } from '@/components/property/PropertyCard';
-import { locations, propertyTypes, bhkOptions } from '@/data/properties';
+import { propertyTypes, bhkOptions } from '@/data/properties';
 import { Property, PropertyFilter } from '@/types/property';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { getProperties } from '@/services/propertyService';
+import { useLocations } from '@/hooks/useLocations';
 
 export default function PropertiesPage() {
   const [searchParams] = useSearchParams();
+  const { allAreas, loading: locationsLoading } = useLocations();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [properties, setProperties] = useState<Property[]>([]);
@@ -21,12 +23,12 @@ export default function PropertiesPage() {
   
   // Parse URL params
   const initialListingType = searchParams.get('type') as 'sale' | 'rent' | null;
-  const initialCity = searchParams.get('city');
+  const initialArea = searchParams.get('area');
   const initialPropertyType = searchParams.get('propertyType');
   
   const [filters, setFilters] = useState<PropertyFilter>({
     listingType: initialListingType || undefined,
-    location: initialCity ? { city: initialCity } : undefined,
+    location: initialArea ? { area: initialArea } : undefined,
     propertyTypes: initialPropertyType ? [initialPropertyType as any] : undefined,
   });
 
@@ -46,12 +48,10 @@ export default function PropertiesPage() {
 
     fetchProperties();
   }, [filters, sortBy]);
-
-  const cities = locations.map((loc) => loc.city);
   
   const activeFilterCount = [
     filters.listingType,
-    filters.location?.city,
+    filters.location?.area,
     filters.propertyTypes?.length,
     filters.bedrooms?.length,
   ].filter(Boolean).length;
@@ -83,21 +83,25 @@ export default function PropertiesPage() {
         </div>
       </div>
 
-      {/* City */}
+      {/* Area */}
       <div>
-        <h4 className="font-semibold text-foreground mb-3">City</h4>
+        <h4 className="font-semibold text-foreground mb-3">Area</h4>
         <Select 
-          value={filters.location?.city || 'all'} 
-          onValueChange={(value) => setFilters({ ...filters, location: value !== 'all' ? { city: value } : undefined })}
+          value={filters.location?.area || 'all'} 
+          onValueChange={(value) => setFilters({ ...filters, location: value !== 'all' ? { area: value } : undefined })}
         >
           <SelectTrigger className="bg-background">
-            <SelectValue placeholder="All Cities" />
+            <SelectValue placeholder="All Areas" />
           </SelectTrigger>
-          <SelectContent className="bg-card border-border">
-            <SelectItem value="all">All Cities</SelectItem>
-            {cities.map((city) => (
-              <SelectItem key={city} value={city}>{city}</SelectItem>
-            ))}
+          <SelectContent className="bg-card border-border max-h-60">
+            <SelectItem value="all">All Areas</SelectItem>
+            {locationsLoading ? (
+              <SelectItem value="loading" disabled>Loading...</SelectItem>
+            ) : (
+              allAreas.map((area) => (
+                <SelectItem key={area} value={area}>{area}</SelectItem>
+              ))
+            )}
           </SelectContent>
         </Select>
       </div>
@@ -170,7 +174,7 @@ export default function PropertiesPage() {
             {filters.listingType === 'rent' ? 'Properties for Rent' : 
              filters.listingType === 'sale' ? 'Properties for Sale' : 
              'All Properties'}
-            {filters.location?.city && ` in ${filters.location.city}`}
+            {filters.location?.area && ` in ${filters.location.area}`}
           </h1>
           <p className="text-muted-foreground mt-1">
             {loading ? 'Loading...' : `${properties.length} properties found`}
@@ -233,9 +237,9 @@ export default function PropertiesPage() {
                       />
                     </Badge>
                   )}
-                  {filters.location?.city && (
+                  {filters.location?.area && (
                     <Badge variant="secondary" className="gap-1">
-                      {filters.location.city}
+                      {filters.location.area}
                       <X 
                         className="h-3 w-3 cursor-pointer" 
                         onClick={() => setFilters({ ...filters, location: undefined })} 
