@@ -57,15 +57,6 @@ export function Header() {
               ))}
             </div>
 
-            {/* Admin Link - Desktop */}
-            <div className="hidden md:block">
-              <Link 
-                to="/admin/login" 
-                className="text-muted-foreground hover:text-primary text-sm transition-colors"
-              >
-                Admin
-              </Link>
-            </div>
 
             {/* Mobile menu button */}
             <button
@@ -97,15 +88,6 @@ export function Header() {
               {item.name}
             </Link>
           ))}
-          <div className="pt-2 border-t border-border">
-            <Link 
-              to="/admin/login" 
-              className="block py-2 text-muted-foreground hover:text-primary text-sm"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Admin
-            </Link>
-          </div>
         </div>
       </div>
     </header>

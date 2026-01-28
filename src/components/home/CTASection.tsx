@@ -24,11 +24,6 @@ export function CTASection() {
                   <ArrowRight className="h-5 w-5 ml-2" />
                 </Link>
               </Button>
-              <Button variant="outline" size="xl" asChild>
-                <Link to="/contact">
-                  Post Your Property
-                </Link>
-              </Button>
             </div>
 
             {/* Trust Indicators */}
