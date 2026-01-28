@@ -36,57 +36,44 @@ function CategorySection({ propertyType, label }: CategorySectionProps) {
   }
 
   return (
-    <section className="py-12 md:py-16">
+    <section className="py-8 md:py-12 lg:py-16">
       <div className="container-custom">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex items-center justify-between mb-4 md:mb-8">
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+            <h2 className="text-lg md:text-2xl lg:text-3xl font-bold text-foreground">
               {label}
             </h2>
-            <p className="text-muted-foreground mt-1">
+            <p className="text-xs md:text-base text-muted-foreground mt-0.5 md:mt-1">
               Explore our {label.toLowerCase()} listings
             </p>
           </div>
           <Link
             to={`/properties?propertyType=${propertyType}`}
-            className="hidden sm:flex items-center gap-2 text-primary hover:text-primary/80 font-medium transition-colors"
+            className="flex items-center gap-1 md:gap-2 text-primary hover:text-primary/80 text-sm md:text-base font-medium transition-colors"
           >
-            View All
+            <span className="hidden sm:inline">View All</span>
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
 
         {/* Properties Grid */}
         {loading ? (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <div className="flex items-center justify-center py-8 md:py-12">
+            <Loader2 className="h-6 w-6 md:h-8 md:w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {properties.map((property, index) => (
-                <div
-                  key={property.id}
-                  className="animate-slide-up"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
-                  <PropertyCard property={property} />
-                </div>
-              ))}
-            </div>
-
-            {/* Mobile View All Link */}
-            <div className="mt-6 text-center sm:hidden">
-              <Link
-                to={`/properties?propertyType=${propertyType}`}
-                className="inline-flex items-center gap-2 text-primary hover:text-primary/80 font-medium"
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 lg:gap-6">
+            {properties.map((property, index) => (
+              <div
+                key={property.id}
+                className="animate-slide-up"
+                style={{ animationDelay: `${index * 100}ms` }}
               >
-                View All {label}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </>
+                <PropertyCard property={property} variant="compact" />
+              </div>
+            ))}
+          </div>
         )}
       </div>
     </section>
