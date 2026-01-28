@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { Search, MapPin, Home, IndianRupee } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { locations, propertyTypes } from '@/data/properties';
+import { propertyTypes } from '@/data/properties';
+import { useLocations } from '@/hooks/useLocations';
 import heroBg from '@/assets/hero-bg.jpg';
 
 const listingTabs = [
@@ -24,21 +25,20 @@ const budgetOptions = [
 
 export function HeroSection() {
   const navigate = useNavigate();
+  const { allAreas, loading: locationsLoading } = useLocations();
   const [listingType, setListingType] = useState<string>('sale');
-  const [city, setCity] = useState('');
+  const [area, setArea] = useState('');
   const [propertyType, setPropertyType] = useState('');
   const [budget, setBudget] = useState('');
 
   const handleSearch = () => {
     const params = new URLSearchParams();
     if (listingType) params.set('type', listingType);
-    if (city) params.set('city', city);
-    if (propertyType) params.set('propertyType', propertyType);
+    if (area && area !== 'all') params.set('area', area);
+    if (propertyType && propertyType !== 'all') params.set('propertyType', propertyType);
     if (budget && budget !== 'any') params.set('budget', budget);
     navigate(`/properties?${params.toString()}`);
   };
-
-  const cities = locations.map((loc) => loc.city);
 
   return (
     <section className="relative min-h-[500px] md:min-h-[600px] flex items-center justify-center">
@@ -76,24 +76,28 @@ export function HeroSection() {
         {/* Search Form */}
         <div className="bg-card/95 backdrop-blur-sm rounded-lg shadow-xl p-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-            {/* Location Select */}
-            <Select value={city} onValueChange={setCity}>
+            {/* Area Select */}
+            <Select value={area} onValueChange={setArea}>
               <SelectTrigger className="h-14 bg-background border-border">
                 <div className="flex flex-col items-start w-full">
                   <span className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1">
                     <MapPin className="h-3 w-3" />
-                    Location
+                    Area
                   </span>
                   <SelectValue placeholder="All Areas" className="text-sm font-medium" />
                 </div>
               </SelectTrigger>
-              <SelectContent className="bg-card border-border">
+              <SelectContent className="bg-card border-border max-h-60">
                 <SelectItem value="all">All Areas</SelectItem>
-                {cities.map((cityName) => (
-                  <SelectItem key={cityName} value={cityName}>
-                    {cityName}
-                  </SelectItem>
-                ))}
+                {locationsLoading ? (
+                  <SelectItem value="loading" disabled>Loading...</SelectItem>
+                ) : (
+                  allAreas.map((areaName) => (
+                    <SelectItem key={areaName} value={areaName}>
+                      {areaName}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
 

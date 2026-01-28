@@ -13,6 +13,15 @@ import { db } from "@/lib/firebase";
 import { LocationOption } from "@/types/property";
 import { locations as staticLocations } from "@/data/properties";
 
+// Default Hyderabad location
+const defaultHyderabadLocation = {
+  id: 'default-hyderabad',
+  country: 'India',
+  state: 'Telangana',
+  city: 'Hyderabad',
+  areas: ['Jubilee Hills', 'Banjara Hills', 'Gachibowli', 'HITEC City', 'Madhapur', 'Kondapur', 'Kukatpally', 'Miyapur', 'Secunderabad', 'LB Nagar', 'Uppal', 'Manikonda', 'Nallagandla', 'Kokapet', 'Financial District'],
+};
+
 const LOCATIONS_COLLECTION = "locations";
 
 // Get all locations
@@ -34,25 +43,27 @@ export const getLocations = async (): Promise<LocationOption[]> => {
   }
 };
 
-// Get static locations (fallback)
+// Get static locations (fallback - Hyderabad only)
 export const getStaticLocations = (): LocationOption[] => {
-  return staticLocations;
+  return staticLocations.length > 0 ? staticLocations : [defaultHyderabadLocation];
 };
 
-// Seed static locations to Firestore
+// Get default Hyderabad location
+export const getDefaultLocation = (): LocationOption => {
+  return defaultHyderabadLocation;
+};
+
+// Seed default Hyderabad location to Firestore
 export const seedLocations = async (): Promise<number> => {
-  let count = 0;
-  for (const location of staticLocations) {
-    await addDoc(collection(db, LOCATIONS_COLLECTION), {
-      country: location.country,
-      state: location.state,
-      city: location.city,
-      areas: location.areas,
-      createdAt: Timestamp.now()
-    });
-    count++;
-  }
-  return count;
+  // Seed only Hyderabad by default
+  await addDoc(collection(db, LOCATIONS_COLLECTION), {
+    country: defaultHyderabadLocation.country,
+    state: defaultHyderabadLocation.state,
+    city: defaultHyderabadLocation.city,
+    areas: defaultHyderabadLocation.areas,
+    createdAt: Timestamp.now()
+  });
+  return 1;
 };
 
 // Add new location

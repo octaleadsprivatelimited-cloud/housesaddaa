@@ -75,7 +75,12 @@ export const getProperties = async (
         }
       }
       
-      // City filter
+      // Area filter
+      if (filters?.location?.area && p.location.area !== filters.location.area) {
+        return false;
+      }
+      
+      // City filter (fallback)
       if (filters?.location?.city && p.location.city !== filters.location.city) {
         return false;
       }
