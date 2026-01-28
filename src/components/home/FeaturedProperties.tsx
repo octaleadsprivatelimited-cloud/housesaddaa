@@ -1,11 +1,37 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { PropertyCard } from '@/components/property/PropertyCard';
+import { Property } from '@/types/property';
+import { getFeaturedProperties } from '@/services/propertyService';
 import { sampleProperties } from '@/data/properties';
 
 export function FeaturedProperties() {
-  const featuredProperties = sampleProperties.filter((p) => p.isFeatured).slice(0, 6);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFeatured = async () => {
+      try {
+        const featured = await getFeaturedProperties(6);
+        // If no properties in Firestore, use sample data as fallback
+        if (featured.length === 0) {
+          setProperties(sampleProperties.filter(p => p.isFeatured).slice(0, 6));
+        } else {
+          setProperties(featured);
+        }
+      } catch (error) {
+        console.error('Error fetching featured properties:', error);
+        // Fallback to sample data on error
+        setProperties(sampleProperties.filter(p => p.isFeatured).slice(0, 6));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeatured();
+  }, []);
 
   return (
     <section className="py-16 md:py-24 bg-secondary/30">
@@ -26,18 +52,25 @@ export function FeaturedProperties() {
           </Button>
         </div>
 
-        {/* Properties Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {featuredProperties.map((property, index) => (
-            <div
-              key={property.id}
-              className="animate-slide-up"
-              style={{ animationDelay: `${index * 100}ms` }}
-            >
-              <PropertyCard property={property} />
-            </div>
-          ))}
-        </div>
+        {/* Loading State */}
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          /* Properties Grid */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {properties.map((property, index) => (
+              <div
+                key={property.id}
+                className="animate-slide-up"
+                style={{ animationDelay: `${index * 100}ms` }}
+              >
+                <PropertyCard property={property} />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
