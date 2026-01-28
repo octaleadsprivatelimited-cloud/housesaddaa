@@ -18,20 +18,25 @@ const LOCATIONS_COLLECTION = "locations";
 // Get all locations
 export const getLocations = async (): Promise<LocationOption[]> => {
   try {
-    const q = query(
-      collection(db, LOCATIONS_COLLECTION),
-      orderBy("city", "asc")
-    );
-    const snapshot = await getDocs(q);
+    // Simple query without orderBy to avoid index requirements
+    const snapshot = await getDocs(collection(db, LOCATIONS_COLLECTION));
     
-    return snapshot.docs.map(doc => ({
+    const locations = snapshot.docs.map(doc => ({
       id: doc.id,
       ...doc.data()
     })) as LocationOption[];
+    
+    // Sort in memory
+    return locations.sort((a, b) => a.city.localeCompare(b.city));
   } catch (error) {
     console.error('Error fetching locations:', error);
     return [];
   }
+};
+
+// Get static locations (fallback)
+export const getStaticLocations = (): LocationOption[] => {
+  return staticLocations;
 };
 
 // Seed static locations to Firestore
