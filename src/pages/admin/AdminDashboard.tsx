@@ -1,0 +1,176 @@
+import { Building2, Users, MapPin, TrendingUp, Eye, MessageSquare, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { sampleProperties } from '@/data/properties';
+import { Link } from 'react-router-dom';
+
+const stats = [
+  { 
+    name: 'Total Properties', 
+    value: sampleProperties.length.toString(), 
+    change: '+12%', 
+    trend: 'up',
+    icon: Building2,
+    color: 'bg-primary/10 text-primary'
+  },
+  { 
+    name: 'Total Views', 
+    value: '15.2K', 
+    change: '+8%', 
+    trend: 'up',
+    icon: Eye,
+    color: 'bg-accent/10 text-accent'
+  },
+  { 
+    name: 'Enquiries', 
+    value: '284', 
+    change: '+24%', 
+    trend: 'up',
+    icon: MessageSquare,
+    color: 'bg-success/10 text-success'
+  },
+  { 
+    name: 'Active Cities', 
+    value: '4', 
+    change: '0%', 
+    trend: 'neutral',
+    icon: MapPin,
+    color: 'bg-warning/10 text-warning'
+  },
+];
+
+export default function AdminDashboard() {
+  const recentProperties = sampleProperties.slice(0, 5);
+  
+  const propertyTypeStats = [
+    { type: 'Apartment', count: 3 },
+    { type: 'Villa', count: 1 },
+    { type: 'Plot', count: 1 },
+    { type: 'Commercial', count: 1 },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div>
+        <h1 className="font-display text-2xl font-bold text-foreground">Dashboard</h1>
+        <p className="text-muted-foreground">Welcome back! Here's your property overview.</p>
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {stats.map((stat) => (
+          <div key={stat.name} className="bg-card rounded-xl border border-border p-5">
+            <div className="flex items-center justify-between mb-3">
+              <div className={`w-10 h-10 rounded-lg ${stat.color} flex items-center justify-center`}>
+                <stat.icon className="h-5 w-5" />
+              </div>
+              <div className={`flex items-center gap-1 text-sm ${
+                stat.trend === 'up' ? 'text-success' : stat.trend === 'down' ? 'text-destructive' : 'text-muted-foreground'
+              }`}>
+                {stat.change}
+                {stat.trend === 'up' && <ArrowUpRight className="h-4 w-4" />}
+                {stat.trend === 'down' && <ArrowDownRight className="h-4 w-4" />}
+              </div>
+            </div>
+            <div className="text-2xl font-bold text-foreground">{stat.value}</div>
+            <div className="text-sm text-muted-foreground">{stat.name}</div>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-6">
+        {/* Recent Properties */}
+        <div className="lg:col-span-2 bg-card rounded-xl border border-border">
+          <div className="flex items-center justify-between p-5 border-b border-border">
+            <h2 className="font-semibold text-lg">Recent Properties</h2>
+            <Link to="/admin/properties" className="text-sm text-primary hover:underline">
+              View All
+            </Link>
+          </div>
+          <div className="divide-y divide-border">
+            {recentProperties.map((property) => (
+              <div key={property.id} className="flex items-center gap-4 p-4 hover:bg-secondary/30 transition-colors">
+                <img 
+                  src={property.images[0]} 
+                  alt={property.title}
+                  className="w-16 h-12 rounded-lg object-cover"
+                />
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-medium text-foreground truncate">{property.title}</h3>
+                  <p className="text-sm text-muted-foreground">
+                    {property.location.area}, {property.location.city}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <div className="font-semibold text-primary">
+                    ₹{(property.price / 100000).toFixed(0)}L
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {property.views} views
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Property Types */}
+        <div className="bg-card rounded-xl border border-border">
+          <div className="p-5 border-b border-border">
+            <h2 className="font-semibold text-lg">Properties by Type</h2>
+          </div>
+          <div className="p-5 space-y-4">
+            {propertyTypeStats.map((stat) => (
+              <div key={stat.type}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-foreground">{stat.type}</span>
+                  <span className="text-sm font-medium">{stat.count}</span>
+                </div>
+                <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-primary rounded-full transition-all"
+                    style={{ width: `${(stat.count / sampleProperties.length) * 100}%` }}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <div className="bg-card rounded-xl border border-border p-5">
+        <h2 className="font-semibold text-lg mb-4">Quick Actions</h2>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          <Link 
+            to="/admin/properties/add"
+            className="p-4 bg-primary/10 rounded-xl hover:bg-primary/20 transition-colors text-center"
+          >
+            <Building2 className="h-8 w-8 text-primary mx-auto mb-2" />
+            <span className="text-sm font-medium">Add Property</span>
+          </Link>
+          <Link 
+            to="/admin/enquiries"
+            className="p-4 bg-accent/10 rounded-xl hover:bg-accent/20 transition-colors text-center"
+          >
+            <MessageSquare className="h-8 w-8 text-accent mx-auto mb-2" />
+            <span className="text-sm font-medium">View Enquiries</span>
+          </Link>
+          <Link 
+            to="/admin/locations"
+            className="p-4 bg-success/10 rounded-xl hover:bg-success/20 transition-colors text-center"
+          >
+            <MapPin className="h-8 w-8 text-success mx-auto mb-2" />
+            <span className="text-sm font-medium">Manage Locations</span>
+          </Link>
+          <Link 
+            to="/"
+            className="p-4 bg-warning/10 rounded-xl hover:bg-warning/20 transition-colors text-center"
+          >
+            <Eye className="h-8 w-8 text-warning mx-auto mb-2" />
+            <span className="text-sm font-medium">View Website</span>
+          </Link>
+        </div>
+      </div>
+    </div>
+  );
+}
