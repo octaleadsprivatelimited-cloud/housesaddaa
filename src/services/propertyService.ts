@@ -152,6 +152,26 @@ export const getAllPropertiesAdmin = async (): Promise<Property[]> => {
   return snapshot.docs.map(docToProperty);
 };
 
+// Admin: Fix all properties to have isActive field (one-time migration)
+export const migratePropertiesToActive = async (): Promise<number> => {
+  const snapshot = await getDocs(collection(db, PROPERTIES_COLLECTION));
+  let updated = 0;
+  
+  for (const docSnapshot of snapshot.docs) {
+    const data = docSnapshot.data();
+    // Only update if isActive is not already set to true
+    if (data.isActive !== true) {
+      await updateDoc(doc(db, PROPERTIES_COLLECTION, docSnapshot.id), {
+        isActive: true,
+        updatedAt: Timestamp.now()
+      });
+      updated++;
+    }
+  }
+  
+  return updated;
+};
+
 // Admin: Add new property
 export const addProperty = async (property: Omit<Property, 'id' | 'postedAt' | 'updatedAt' | 'views' | 'enquiries'>): Promise<string> => {
   const now = Timestamp.now();
