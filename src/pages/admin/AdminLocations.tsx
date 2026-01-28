@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { MapPin, Plus, Trash2, X, Loader2 } from 'lucide-react';
+import { MapPin, Plus, Trash2, X, Loader2, Edit, Database } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,20 +27,25 @@ import { LocationOption } from '@/types/property';
 import {
   getLocations,
   addLocation,
+  updateLocation,
   deleteLocation,
   addAreaToLocation,
   removeAreaFromLocation,
+  seedLocations,
 } from '@/services/locationService';
 
 export default function AdminLocations() {
   const [locations, setLocations] = useState<LocationOption[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddLocationOpen, setIsAddLocationOpen] = useState(false);
+  const [isEditLocationOpen, setIsEditLocationOpen] = useState(false);
   const [isAddAreaOpen, setIsAddAreaOpen] = useState(false);
   const [deleteLocationId, setDeleteLocationId] = useState<string | null>(null);
   const [deleteAreaData, setDeleteAreaData] = useState<{ locationId: string; area: string } | null>(null);
   const [selectedLocationId, setSelectedLocationId] = useState<string | null>(null);
+  const [editingLocation, setEditingLocation] = useState<LocationOption | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [seeding, setSeeding] = useState(false);
   const { toast } = useToast();
 
   // Form states
@@ -49,6 +54,11 @@ export default function AdminLocations() {
     state: '',
     city: '',
     areas: '',
+  });
+  const [editLocation, setEditLocation] = useState({
+    country: '',
+    state: '',
+    city: '',
   });
   const [newArea, setNewArea] = useState('');
 
@@ -70,6 +80,26 @@ export default function AdminLocations() {
       });
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSeedLocations = async () => {
+    setSeeding(true);
+    try {
+      const count = await seedLocations();
+      toast({
+        title: 'Success',
+        description: `${count} locations have been added from static data`,
+      });
+      fetchLocations();
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to seed locations',
+        variant: 'destructive',
+      });
+    } finally {
+      setSeeding(false);
     }
   };
 
@@ -114,6 +144,54 @@ export default function AdminLocations() {
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const handleEditLocation = async () => {
+    if (!editingLocation) return;
+    if (!editLocation.state.trim() || !editLocation.city.trim()) {
+      toast({
+        title: 'Validation Error',
+        description: 'State and City are required',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setSubmitting(true);
+    try {
+      await updateLocation(editingLocation.id, {
+        country: editLocation.country.trim(),
+        state: editLocation.state.trim(),
+        city: editLocation.city.trim(),
+      });
+
+      toast({
+        title: 'Success',
+        description: 'Location updated successfully',
+      });
+
+      setIsEditLocationOpen(false);
+      setEditingLocation(null);
+      fetchLocations();
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update location',
+        variant: 'destructive',
+      });
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const openEditDialog = (location: LocationOption) => {
+    setEditingLocation(location);
+    setEditLocation({
+      country: location.country,
+      state: location.state,
+      city: location.city,
+    });
+    setIsEditLocationOpen(true);
   };
 
   const handleDeleteLocation = async () => {
@@ -221,18 +299,26 @@ export default function AdminLocations() {
           <h1 className="text-2xl font-bold text-foreground">Locations</h1>
           <p className="text-muted-foreground">Manage available locations for properties</p>
         </div>
-        <Button onClick={() => setIsAddLocationOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Location
-        </Button>
+        <div className="flex gap-2">
+          {locations.length === 0 && (
+            <Button variant="outline" onClick={handleSeedLocations} disabled={seeding}>
+              {seeding ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Database className="h-4 w-4 mr-2" />}
+              Load Default Locations
+            </Button>
+          )}
+          <Button onClick={() => setIsAddLocationOpen(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Location
+          </Button>
+        </div>
       </div>
 
       {locations.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <MapPin className="h-12 w-12 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground text-center">
-              No locations added yet. Click "Add Location" to get started.
+            <p className="text-muted-foreground text-center mb-4">
+              No locations added yet. Click "Load Default Locations" to import existing locations or "Add Location" to create new ones.
             </p>
           </CardContent>
         </Card>
@@ -246,14 +332,24 @@ export default function AdminLocations() {
                     <MapPin className="h-5 w-5 text-primary" />
                     {location.city}, {location.state}
                   </CardTitle>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                    onClick={() => setDeleteLocationId(location.id)}
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-muted-foreground hover:text-primary"
+                      onClick={() => openEditDialog(location)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => setDeleteLocationId(location.id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -343,6 +439,56 @@ export default function AdminLocations() {
             <Button onClick={handleAddLocation} disabled={submitting}>
               {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               Add Location
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Location Dialog */}
+      <Dialog open={isEditLocationOpen} onOpenChange={setIsEditLocationOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Location</DialogTitle>
+            <DialogDescription>
+              Update the location details.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="edit-country">Country</Label>
+              <Input
+                id="edit-country"
+                value={editLocation.country}
+                onChange={(e) => setEditLocation({ ...editLocation, country: e.target.value })}
+                placeholder="e.g., India"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-state">State *</Label>
+              <Input
+                id="edit-state"
+                value={editLocation.state}
+                onChange={(e) => setEditLocation({ ...editLocation, state: e.target.value })}
+                placeholder="e.g., Telangana"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-city">City *</Label>
+              <Input
+                id="edit-city"
+                value={editLocation.city}
+                onChange={(e) => setEditLocation({ ...editLocation, city: e.target.value })}
+                placeholder="e.g., Hyderabad"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditLocationOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleEditLocation} disabled={submitting}>
+              {submitting && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              Save Changes
             </Button>
           </DialogFooter>
         </DialogContent>
