@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Filter, MoreVertical, Edit, Trash2, Eye, EyeOff } from 'lucide-react';
+import { Plus, Search, Filter, MoreVertical, Edit, Trash2, Eye, EyeOff, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
@@ -10,15 +10,89 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { sampleProperties, formatPrice } from '@/data/properties';
+import { formatPrice } from '@/data/properties';
+import { Property } from '@/types/property';
+import { getAllPropertiesAdmin, togglePropertyStatus, deleteProperty } from '@/services/propertyService';
+import { useToast } from '@/hooks/use-toast';
 
 export default function AdminProperties() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
   
-  const filteredProperties = sampleProperties.filter((p) => 
+  // Fetch properties from Firestore
+  useEffect(() => {
+    fetchProperties();
+  }, []);
+
+  const fetchProperties = async () => {
+    try {
+      setLoading(true);
+      const data = await getAllPropertiesAdmin();
+      setProperties(data);
+    } catch (error) {
+      console.error('Error fetching properties:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to load properties',
+        variant: 'destructive',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleStatus = async (id: string, currentStatus: boolean) => {
+    try {
+      await togglePropertyStatus(id, !currentStatus);
+      setProperties(prev => 
+        prev.map(p => p.id === id ? { ...p, isActive: !currentStatus } : p)
+      );
+      toast({
+        title: currentStatus ? 'Property Deactivated' : 'Property Activated',
+        description: `The property has been ${currentStatus ? 'deactivated' : 'activated'}.`,
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to update property status',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this property?')) return;
+    
+    try {
+      await deleteProperty(id);
+      setProperties(prev => prev.filter(p => p.id !== id));
+      toast({
+        title: 'Property Deleted',
+        description: 'The property has been permanently deleted.',
+      });
+    } catch (error) {
+      toast({
+        title: 'Error',
+        description: 'Failed to delete property',
+        variant: 'destructive',
+      });
+    }
+  };
+  
+  const filteredProperties = properties.filter((p) => 
     p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.location.city.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -26,7 +100,7 @@ export default function AdminProperties() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-2xl font-bold text-foreground">Properties</h1>
-          <p className="text-muted-foreground">Manage all property listings</p>
+          <p className="text-muted-foreground">Manage all property listings ({properties.length} total)</p>
         </div>
         <Button variant="accent" asChild>
           <Link to="/admin/properties/add">
@@ -73,9 +147,12 @@ export default function AdminProperties() {
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <img 
-                        src={property.images[0]} 
+                        src={property.images[0] || '/placeholder.svg'} 
                         alt={property.title}
                         className="w-16 h-12 rounded-lg object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = '/placeholder.svg';
+                        }}
                       />
                       <div>
                         <h3 className="font-medium text-foreground line-clamp-1">{property.title}</h3>
@@ -93,7 +170,7 @@ export default function AdminProperties() {
                   </td>
                   <td className="p-4 hidden lg:table-cell">
                     <Badge variant="secondary" className="capitalize">
-                      {property.propertyType.replace('-', ' ')}
+                      {property.propertyType?.replace('-', ' ') || 'N/A'}
                     </Badge>
                   </td>
                   <td className="p-4">
@@ -120,11 +197,13 @@ export default function AdminProperties() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end" className="bg-card border-border">
-                        <DropdownMenuItem>
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit
+                        <DropdownMenuItem asChild>
+                          <Link to={`/admin/properties/edit/${property.id}`}>
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit
+                          </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => handleToggleStatus(property.id, property.isActive)}>
                           {property.isActive ? (
                             <>
                               <EyeOff className="h-4 w-4 mr-2" />
@@ -137,7 +216,10 @@ export default function AdminProperties() {
                             </>
                           )}
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">
+                        <DropdownMenuItem 
+                          className="text-destructive"
+                          onClick={() => handleDelete(property.id)}
+                        >
                           <Trash2 className="h-4 w-4 mr-2" />
                           Delete
                         </DropdownMenuItem>
@@ -153,6 +235,9 @@ export default function AdminProperties() {
         {filteredProperties.length === 0 && (
           <div className="p-12 text-center">
             <p className="text-muted-foreground">No properties found</p>
+            <Button asChild className="mt-4">
+              <Link to="/admin/properties/add">Add Your First Property</Link>
+            </Button>
           </div>
         )}
       </div>

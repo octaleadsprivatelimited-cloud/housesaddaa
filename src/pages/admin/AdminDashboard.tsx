@@ -1,51 +1,95 @@
-import { Building2, Users, MapPin, TrendingUp, Eye, MessageSquare, ArrowUpRight, ArrowDownRight } from 'lucide-react';
-import { sampleProperties } from '@/data/properties';
+import { useState, useEffect } from 'react';
+import { Building2, MapPin, Eye, MessageSquare, ArrowUpRight, Loader2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
-
-const stats = [
-  { 
-    name: 'Total Properties', 
-    value: sampleProperties.length.toString(), 
-    change: '+12%', 
-    trend: 'up',
-    icon: Building2,
-    color: 'bg-primary/10 text-primary'
-  },
-  { 
-    name: 'Total Views', 
-    value: '15.2K', 
-    change: '+8%', 
-    trend: 'up',
-    icon: Eye,
-    color: 'bg-accent/10 text-accent'
-  },
-  { 
-    name: 'Enquiries', 
-    value: '284', 
-    change: '+24%', 
-    trend: 'up',
-    icon: MessageSquare,
-    color: 'bg-success/10 text-success'
-  },
-  { 
-    name: 'Active Cities', 
-    value: '4', 
-    change: '0%', 
-    trend: 'neutral',
-    icon: MapPin,
-    color: 'bg-warning/10 text-warning'
-  },
-];
+import { Property } from '@/types/property';
+import { getAllPropertiesAdmin } from '@/services/propertyService';
+import { getNewEnquiriesCount } from '@/services/enquiryService';
+import { formatPrice } from '@/data/properties';
 
 export default function AdminDashboard() {
-  const recentProperties = sampleProperties.slice(0, 5);
+  const [properties, setProperties] = useState<Property[]>([]);
+  const [enquiriesCount, setEnquiriesCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [propertiesData, enquiries] = await Promise.all([
+          getAllPropertiesAdmin(),
+          getNewEnquiriesCount()
+        ]);
+        setProperties(propertiesData);
+        setEnquiriesCount(enquiries);
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  // Calculate stats from real data
+  const totalViews = properties.reduce((sum, p) => sum + (p.views || 0), 0);
+  const uniqueCities = new Set(properties.map(p => p.location.city)).size;
   
-  const propertyTypeStats = [
-    { type: 'Apartment', count: 3 },
-    { type: 'Villa', count: 1 },
-    { type: 'Plot', count: 1 },
-    { type: 'Commercial', count: 1 },
+  const stats = [
+    { 
+      name: 'Total Properties', 
+      value: properties.length.toString(), 
+      change: '+12%', 
+      trend: 'up',
+      icon: Building2,
+      color: 'bg-primary/10 text-primary'
+    },
+    { 
+      name: 'Total Views', 
+      value: totalViews > 1000 ? `${(totalViews / 1000).toFixed(1)}K` : totalViews.toString(), 
+      change: '+8%', 
+      trend: 'up',
+      icon: Eye,
+      color: 'bg-accent/10 text-accent'
+    },
+    { 
+      name: 'New Enquiries', 
+      value: enquiriesCount.toString(), 
+      change: '+24%', 
+      trend: 'up',
+      icon: MessageSquare,
+      color: 'bg-success/10 text-success'
+    },
+    { 
+      name: 'Active Cities', 
+      value: uniqueCities.toString(), 
+      change: '0%', 
+      trend: 'neutral',
+      icon: MapPin,
+      color: 'bg-warning/10 text-warning'
+    },
   ];
+
+  // Calculate property type stats
+  const propertyTypeCounts = properties.reduce((acc, p) => {
+    const type = p.propertyType || 'other';
+    acc[type] = (acc[type] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+
+  const propertyTypeStats = Object.entries(propertyTypeCounts)
+    .map(([type, count]) => ({ type: type.charAt(0).toUpperCase() + type.slice(1).replace('-', ' '), count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 5);
+
+  const recentProperties = properties.slice(0, 5);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -68,7 +112,6 @@ export default function AdminDashboard() {
               }`}>
                 {stat.change}
                 {stat.trend === 'up' && <ArrowUpRight className="h-4 w-4" />}
-                {stat.trend === 'down' && <ArrowDownRight className="h-4 w-4" />}
               </div>
             </div>
             <div className="text-2xl font-bold text-foreground">{stat.value}</div>
@@ -87,29 +130,41 @@ export default function AdminDashboard() {
             </Link>
           </div>
           <div className="divide-y divide-border">
-            {recentProperties.map((property) => (
-              <div key={property.id} className="flex items-center gap-4 p-4 hover:bg-secondary/30 transition-colors">
-                <img 
-                  src={property.images[0]} 
-                  alt={property.title}
-                  className="w-16 h-12 rounded-lg object-cover"
-                />
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-medium text-foreground truncate">{property.title}</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {property.location.area}, {property.location.city}
-                  </p>
-                </div>
-                <div className="text-right">
-                  <div className="font-semibold text-primary">
-                    ₹{(property.price / 100000).toFixed(0)}L
+            {recentProperties.length > 0 ? (
+              recentProperties.map((property) => (
+                <div key={property.id} className="flex items-center gap-4 p-4 hover:bg-secondary/30 transition-colors">
+                  <img 
+                    src={property.images[0] || '/placeholder.svg'} 
+                    alt={property.title}
+                    className="w-16 h-12 rounded-lg object-cover"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/placeholder.svg';
+                    }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-medium text-foreground truncate">{property.title}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {property.location.area}, {property.location.city}
+                    </p>
                   </div>
-                  <div className="text-xs text-muted-foreground">
-                    {property.views} views
+                  <div className="text-right">
+                    <div className="font-semibold text-primary">
+                      {formatPrice(property.price, property.listingType)}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      {property.views || 0} views
+                    </div>
                   </div>
                 </div>
+              ))
+            ) : (
+              <div className="p-8 text-center text-muted-foreground">
+                No properties yet.{' '}
+                <Link to="/admin/properties/add" className="text-primary hover:underline">
+                  Add your first property
+                </Link>
               </div>
-            ))}
+            )}
           </div>
         </div>
 
@@ -119,20 +174,24 @@ export default function AdminDashboard() {
             <h2 className="font-semibold text-lg">Properties by Type</h2>
           </div>
           <div className="p-5 space-y-4">
-            {propertyTypeStats.map((stat) => (
-              <div key={stat.type}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-foreground">{stat.type}</span>
-                  <span className="text-sm font-medium">{stat.count}</span>
+            {propertyTypeStats.length > 0 ? (
+              propertyTypeStats.map((stat) => (
+                <div key={stat.type}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm text-foreground">{stat.type}</span>
+                    <span className="text-sm font-medium">{stat.count}</span>
+                  </div>
+                  <div className="h-2 bg-secondary rounded-full overflow-hidden">
+                    <div 
+                      className="h-full bg-primary rounded-full transition-all"
+                      style={{ width: `${(stat.count / properties.length) * 100}%` }}
+                    />
+                  </div>
                 </div>
-                <div className="h-2 bg-secondary rounded-full overflow-hidden">
-                  <div 
-                    className="h-full bg-primary rounded-full transition-all"
-                    style={{ width: `${(stat.count / sampleProperties.length) * 100}%` }}
-                  />
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-sm text-muted-foreground">No properties to display</p>
+            )}
           </div>
         </div>
       </div>
