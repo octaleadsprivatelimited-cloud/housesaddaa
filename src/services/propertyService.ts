@@ -87,13 +87,24 @@ export const getProperties = async (
     constraints.push(startAfter(lastDoc));
   }
   
-  const q = query(collection(db, PROPERTIES_COLLECTION), ...constraints);
-  const snapshot = await getDocs(q);
-  
-  const properties = snapshot.docs.map(docToProperty);
-  const newLastDoc = snapshot.docs[snapshot.docs.length - 1] || null;
-  
-  return { properties, lastDoc: newLastDoc };
+  try {
+    const q = query(collection(db, PROPERTIES_COLLECTION), ...constraints);
+    const snapshot = await getDocs(q);
+    
+    console.log('Firestore query returned:', snapshot.docs.length, 'properties');
+    
+    const properties = snapshot.docs.map(docToProperty);
+    const newLastDoc = snapshot.docs[snapshot.docs.length - 1] || null;
+    
+    return { properties, lastDoc: newLastDoc };
+  } catch (error: any) {
+    console.error('Firestore query error:', error.message);
+    // If index error, the error message contains a link to create the index
+    if (error.message?.includes('index')) {
+      console.error('INDEX REQUIRED - Check Firebase Console or click the link in the error above');
+    }
+    throw error;
+  }
 };
 
 // Get single property by slug
