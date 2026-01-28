@@ -40,32 +40,11 @@ export const getProperties = async (
   lastDoc?: DocumentSnapshot
 ): Promise<{ properties: Property[]; lastDoc: DocumentSnapshot | null }> => {
   try {
-    // First try: Simple query without isActive filter to avoid index issues
-    // Then filter in memory for isActive
-    const constraints: QueryConstraint[] = [];
-    
-    // Apply filters that are indexed
-    if (filters?.listingType) {
-      constraints.push(where("listingType", "==", filters.listingType));
-    }
-    
-    if (filters?.propertyTypes && filters.propertyTypes.length > 0) {
-      constraints.push(where("propertyType", "in", filters.propertyTypes));
-    }
-    
-    if (filters?.location?.city) {
-      constraints.push(where("location.city", "==", filters.location.city));
-    }
-    
-    if (filters?.bedrooms && filters.bedrooms.length > 0) {
-      constraints.push(where("bedrooms", "in", filters.bedrooms));
-    }
-    
-    // Sorting - use simple orderBy to avoid composite index requirements
-    constraints.push(orderBy("postedAt", "desc"));
-    
-    // Get more than needed to filter in memory
-    constraints.push(limit(pageSize * 3));
+    // Fetch all properties and filter in memory to avoid Firestore index requirements
+    const constraints: QueryConstraint[] = [
+      orderBy("postedAt", "desc"),
+      limit(100) // Get enough to filter
+    ];
     
     if (lastDoc) {
       constraints.push(startAfter(lastDoc));
@@ -76,12 +55,49 @@ export const getProperties = async (
     
     console.log('Firestore query returned:', snapshot.docs.length, 'documents');
     
-    // Filter active properties in memory (more lenient - treat missing isActive as true for backwards compatibility)
-    let properties = snapshot.docs
-      .map(docToProperty)
-      .filter(p => p.isActive !== false); // Show if isActive is true OR undefined
+    // Convert to Property objects
+    let properties = snapshot.docs.map(docToProperty);
     
-    // Apply client-side sorting
+    // Apply all filters in memory for reliability
+    properties = properties.filter(p => {
+      // Must be active (or undefined for backwards compatibility)
+      if (p.isActive === false) return false;
+      
+      // Listing type filter
+      if (filters?.listingType && p.listingType !== filters.listingType) {
+        return false;
+      }
+      
+      // Property type filter
+      if (filters?.propertyTypes && filters.propertyTypes.length > 0) {
+        if (!filters.propertyTypes.includes(p.propertyType)) {
+          return false;
+        }
+      }
+      
+      // City filter
+      if (filters?.location?.city && p.location.city !== filters.location.city) {
+        return false;
+      }
+      
+      // Bedrooms filter
+      if (filters?.bedrooms && filters.bedrooms.length > 0) {
+        if (!filters.bedrooms.includes(p.bedrooms)) {
+          return false;
+        }
+      }
+      
+      // Furnishing filter
+      if (filters?.furnishing && filters.furnishing.length > 0) {
+        if (!filters.furnishing.includes(p.furnishing)) {
+          return false;
+        }
+      }
+      
+      return true;
+    });
+    
+    // Apply sorting
     switch (filters?.sortBy) {
       case 'price-low':
         properties.sort((a, b) => a.price - b.price);
@@ -103,27 +119,6 @@ export const getProperties = async (
     return { properties, lastDoc: newLastDoc };
   } catch (error: any) {
     console.error('Firestore query error:', error.message);
-    
-    // Fallback: Try simplest possible query if complex query fails
-    if (error.message?.includes('index')) {
-      console.log('Falling back to simple query...');
-      try {
-        const simpleQuery = query(
-          collection(db, PROPERTIES_COLLECTION),
-          orderBy("postedAt", "desc"),
-          limit(pageSize)
-        );
-        const snapshot = await getDocs(simpleQuery);
-        const properties = snapshot.docs
-          .map(docToProperty)
-          .filter(p => p.isActive !== false);
-        
-        return { properties, lastDoc: snapshot.docs[snapshot.docs.length - 1] || null };
-      } catch (fallbackError) {
-        console.error('Fallback query also failed:', fallbackError);
-      }
-    }
-    
     return { properties: [], lastDoc: null };
   }
 };
