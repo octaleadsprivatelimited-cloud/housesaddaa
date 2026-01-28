@@ -1,13 +1,13 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Building2, Plus, Users, MapPin, 
   Settings, LogOut, Menu, X, Bell, Search
 } from 'lucide-react';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
+import { signOutAdmin } from '@/services/authService';
 
 const sidebarLinks = [
   { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
@@ -22,19 +22,30 @@ export default function AdminLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user, adminUser, loading, isAdmin } = useAuth();
   
   useEffect(() => {
-    // Check auth
-    const isAuth = localStorage.getItem('adminAuth');
-    if (!isAuth) {
+    if (!loading && (!user || !isAdmin)) {
       navigate('/admin/login');
     }
-  }, [navigate]);
+  }, [user, isAdmin, loading, navigate]);
 
-  const handleLogout = () => {
-    localStorage.removeItem('adminAuth');
+  const handleLogout = async () => {
+    await signOutAdmin();
     navigate('/admin/login');
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-secondary/30">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-secondary/30">
@@ -136,11 +147,13 @@ export default function AdminLayout() {
               </button>
               <div className="flex items-center gap-3 pl-4 border-l border-border">
                 <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-primary font-semibold">A</span>
+                  <span className="text-primary font-semibold">
+                    {adminUser?.name?.charAt(0) || adminUser?.email?.charAt(0).toUpperCase() || 'A'}
+                  </span>
                 </div>
                 <div>
-                  <div className="text-sm font-medium">Admin User</div>
-                  <div className="text-xs text-muted-foreground">admin@housesadda.in</div>
+                  <div className="text-sm font-medium">{adminUser?.name || 'Admin User'}</div>
+                  <div className="text-xs text-muted-foreground">{adminUser?.email}</div>
                 </div>
               </div>
             </div>
