@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Plus, X, Loader2, Link as LinkIcon } from 'lucide-react';
+import { ArrowLeft, Upload, X, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { propertyTypes, locations, amenities, furnishingOptions, propertyStatusOptions, bhkOptions } from '@/data/properties';
 import { addProperty } from '@/services/propertyService';
 import { PropertyType } from '@/types/property';
+import { imageToBase64, validateImage } from '@/services/imageService';
 
 // Generate slug from title
 const generateSlug = (title: string, city: string): string => {
@@ -24,8 +25,9 @@ export default function AdminAddProperty() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [imageUrls, setImageUrls] = useState<string[]>([]);
-  const [newImageUrl, setNewImageUrl] = useState('');
+  const [isProcessingImages, setIsProcessingImages] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [images, setImages] = useState<string[]>([]); // Base64 strings
   
   const [formData, setFormData] = useState({
     title: '',
@@ -53,45 +55,60 @@ export default function AdminAddProperty() {
   const selectedCity = locations.find((l) => l.city === formData.city);
   const areas = selectedCity?.areas || [];
 
-  const addImageUrl = () => {
-    if (!newImageUrl.trim()) return;
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
     
-    // Basic URL validation
+    if (files.length + images.length > 5) {
+      toast({
+        title: 'Too many images',
+        description: 'Maximum 5 images allowed (Firestore storage limit)',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsProcessingImages(true);
+
     try {
-      new URL(newImageUrl);
-    } catch {
+      for (const file of files) {
+        const validation = validateImage(file);
+        if (!validation.valid) {
+          toast({
+            title: 'Invalid Image',
+            description: validation.error,
+            variant: 'destructive',
+          });
+          continue;
+        }
+
+        const base64 = await imageToBase64(file);
+        setImages(prev => [...prev, base64]);
+      }
+    } catch (error) {
       toast({
-        title: 'Invalid URL',
-        description: 'Please enter a valid image URL',
+        title: 'Error',
+        description: 'Failed to process images',
         variant: 'destructive',
       });
-      return;
+    } finally {
+      setIsProcessingImages(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
-
-    if (imageUrls.length >= 10) {
-      toast({
-        title: 'Maximum images reached',
-        description: 'You can add up to 10 images',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setImageUrls(prev => [...prev, newImageUrl.trim()]);
-    setNewImageUrl('');
   };
 
   const removeImage = (index: number) => {
-    setImageUrls(prev => prev.filter((_, i) => i !== index));
+    setImages(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (imageUrls.length === 0) {
+    if (images.length === 0) {
       toast({
         title: 'Images Required',
-        description: 'Please add at least one property image URL',
+        description: 'Please upload at least one property image',
         variant: 'destructive',
       });
       return;
@@ -121,7 +138,7 @@ export default function AdminAddProperty() {
         furnishing: formData.furnishing as 'furnished' | 'semi-furnished' | 'unfurnished',
         propertyStatus: formData.propertyStatus as 'ready' | 'under-construction',
         amenities: formData.selectedAmenities,
-        images: imageUrls,
+        images: images,
         description: formData.description,
         ownerName: formData.ownerName,
         ownerPhone: formData.ownerPhone,
@@ -184,37 +201,26 @@ export default function AdminAddProperty() {
         <div className="bg-card rounded-xl border border-border p-6">
           <h2 className="font-semibold text-lg mb-4">Property Images</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            Add up to 10 image URLs. First image will be the cover photo.
+            Upload up to 5 images (compressed for Firestore). First image will be the cover photo.
           </p>
           
-          {/* URL Input */}
-          <div className="flex gap-2 mb-4">
-            <div className="flex-1 relative">
-              <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Paste image URL (e.g., https://example.com/image.jpg)"
-                value={newImageUrl}
-                onChange={(e) => setNewImageUrl(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addImageUrl())}
-                className="pl-10"
-              />
-            </div>
-            <Button type="button" onClick={addImageUrl} variant="outline">
-              <Plus className="h-4 w-4 mr-1" /> Add
-            </Button>
-          </div>
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleImageSelect}
+            accept="image/jpeg,image/png,image/webp,image/gif"
+            multiple
+            className="hidden"
+          />
           
           {/* Image Previews */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {imageUrls.map((url, index) => (
+            {images.map((base64, index) => (
               <div key={index} className="relative aspect-video rounded-lg overflow-hidden border border-border bg-muted">
                 <img 
-                  src={url} 
+                  src={base64} 
                   alt={`Property ${index + 1}`} 
                   className="w-full h-full object-cover"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/placeholder.svg';
-                  }}
                 />
                 <button
                   type="button"
@@ -230,13 +236,23 @@ export default function AdminAddProperty() {
                 )}
               </div>
             ))}
+            
+            {images.length < 5 && (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isProcessingImages}
+                className="aspect-video rounded-lg border-2 border-dashed border-border hover:border-primary flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-primary transition-colors disabled:opacity-50"
+              >
+                {isProcessingImages ? (
+                  <Loader2 className="h-8 w-8 animate-spin" />
+                ) : (
+                  <Upload className="h-8 w-8" />
+                )}
+                <span className="text-sm">{isProcessingImages ? 'Processing...' : 'Add Images'}</span>
+              </button>
+            )}
           </div>
-          
-          {imageUrls.length === 0 && (
-            <p className="text-center text-muted-foreground py-8 border-2 border-dashed border-border rounded-lg">
-              No images added yet. Paste an image URL above to add.
-            </p>
-          )}
         </div>
 
         {/* Basic Info */}
