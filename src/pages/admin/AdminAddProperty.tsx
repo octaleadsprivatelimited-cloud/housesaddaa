@@ -1,6 +1,6 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Upload, X, Loader2 } from 'lucide-react';
+import { ArrowLeft, Plus, X, Loader2, Link as LinkIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -9,7 +9,6 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
 import { propertyTypes, locations, amenities, furnishingOptions, propertyStatusOptions, bhkOptions } from '@/data/properties';
 import { addProperty } from '@/services/propertyService';
-import { uploadPropertyImages } from '@/services/storageService';
 import { PropertyType } from '@/types/property';
 
 // Generate slug from title
@@ -25,9 +24,8 @@ export default function AdminAddProperty() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [selectedImages, setSelectedImages] = useState<File[]>([]);
-  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [newImageUrl, setNewImageUrl] = useState('');
   
   const [formData, setFormData] = useState({
     title: '',
@@ -55,41 +53,45 @@ export default function AdminAddProperty() {
   const selectedCity = locations.find((l) => l.city === formData.city);
   const areas = selectedCity?.areas || [];
 
-  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    if (files.length + selectedImages.length > 10) {
+  const addImageUrl = () => {
+    if (!newImageUrl.trim()) return;
+    
+    // Basic URL validation
+    try {
+      new URL(newImageUrl);
+    } catch {
       toast({
-        title: 'Too many images',
-        description: 'You can upload up to 10 images',
+        title: 'Invalid URL',
+        description: 'Please enter a valid image URL',
         variant: 'destructive',
       });
       return;
     }
 
-    setSelectedImages(prev => [...prev, ...files]);
-    
-    // Create previews
-    files.forEach(file => {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreviews(prev => [...prev, reader.result as string]);
-      };
-      reader.readAsDataURL(file);
-    });
+    if (imageUrls.length >= 10) {
+      toast({
+        title: 'Maximum images reached',
+        description: 'You can add up to 10 images',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setImageUrls(prev => [...prev, newImageUrl.trim()]);
+    setNewImageUrl('');
   };
 
   const removeImage = (index: number) => {
-    setSelectedImages(prev => prev.filter((_, i) => i !== index));
-    setImagePreviews(prev => prev.filter((_, i) => i !== index));
+    setImageUrls(prev => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (selectedImages.length === 0) {
+    if (imageUrls.length === 0) {
       toast({
         title: 'Images Required',
-        description: 'Please upload at least one property image',
+        description: 'Please add at least one property image URL',
         variant: 'destructive',
       });
       return;
@@ -98,12 +100,6 @@ export default function AdminAddProperty() {
     setIsSubmitting(true);
 
     try {
-      // Generate unique ID for the property
-      const tempId = `prop_${Date.now()}`;
-      
-      // Upload images to Firebase Storage
-      const imageUrls = await uploadPropertyImages(tempId, selectedImages);
-      
       // Prepare property data
       const propertyData = {
         title: formData.title,
@@ -188,22 +184,38 @@ export default function AdminAddProperty() {
         <div className="bg-card rounded-xl border border-border p-6">
           <h2 className="font-semibold text-lg mb-4">Property Images</h2>
           <p className="text-sm text-muted-foreground mb-4">
-            Upload up to 10 images. First image will be the cover photo.
+            Add up to 10 image URLs. First image will be the cover photo.
           </p>
           
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleImageSelect}
-            accept="image/*"
-            multiple
-            className="hidden"
-          />
+          {/* URL Input */}
+          <div className="flex gap-2 mb-4">
+            <div className="flex-1 relative">
+              <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Paste image URL (e.g., https://example.com/image.jpg)"
+                value={newImageUrl}
+                onChange={(e) => setNewImageUrl(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addImageUrl())}
+                className="pl-10"
+              />
+            </div>
+            <Button type="button" onClick={addImageUrl} variant="outline">
+              <Plus className="h-4 w-4 mr-1" /> Add
+            </Button>
+          </div>
           
+          {/* Image Previews */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {imagePreviews.map((preview, index) => (
-              <div key={index} className="relative aspect-video rounded-lg overflow-hidden border border-border">
-                <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
+            {imageUrls.map((url, index) => (
+              <div key={index} className="relative aspect-video rounded-lg overflow-hidden border border-border bg-muted">
+                <img 
+                  src={url} 
+                  alt={`Property ${index + 1}`} 
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = '/placeholder.svg';
+                  }}
+                />
                 <button
                   type="button"
                   onClick={() => removeImage(index)}
@@ -218,18 +230,13 @@ export default function AdminAddProperty() {
                 )}
               </div>
             ))}
-            
-            {selectedImages.length < 10 && (
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="aspect-video rounded-lg border-2 border-dashed border-border hover:border-primary flex flex-col items-center justify-center gap-2 text-muted-foreground hover:text-primary transition-colors"
-              >
-                <Upload className="h-8 w-8" />
-                <span className="text-sm">Add Images</span>
-              </button>
-            )}
           </div>
+          
+          {imageUrls.length === 0 && (
+            <p className="text-center text-muted-foreground py-8 border-2 border-dashed border-border rounded-lg">
+              No images added yet. Paste an image URL above to add.
+            </p>
+          )}
         </div>
 
         {/* Basic Info */}
