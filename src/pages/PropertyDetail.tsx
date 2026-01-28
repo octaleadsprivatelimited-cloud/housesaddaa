@@ -1,17 +1,19 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
   MapPin, Bed, Bath, Square, Heart, Share2, Phone, Mail, 
   BadgeCheck, Calendar, Eye, MessageSquare, ArrowLeft,
-  Car, Dumbbell, Waves, Shield, Zap, Building2
+  Car, Dumbbell, Waves, Shield, Zap, Building2, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { sampleProperties, formatPrice } from '@/data/properties';
+import { formatPrice } from '@/data/properties';
 import { PropertyCard } from '@/components/property/PropertyCard';
 import { cn } from '@/lib/utils';
+import { Property } from '@/types/property';
+import { getPropertyBySlug, getPropertiesByType } from '@/services/propertyService';
 
 const amenityIcons: Record<string, React.ElementType> = {
   parking: Car,
@@ -25,8 +27,43 @@ const amenityIcons: Record<string, React.ElementType> = {
 export default function PropertyDetailPage() {
   const { slug } = useParams();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
-  
-  const property = sampleProperties.find((p) => p.slug === slug);
+  const [property, setProperty] = useState<Property | null>(null);
+  const [similarProperties, setSimilarProperties] = useState<Property[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProperty = async () => {
+      if (!slug) return;
+      
+      setLoading(true);
+      try {
+        const data = await getPropertyBySlug(slug);
+        setProperty(data);
+        
+        // Fetch similar properties if we found the main property
+        if (data) {
+          const similar = await getPropertiesByType(data.propertyType, 3);
+          // Filter out the current property
+          setSimilarProperties(similar.filter(p => p.id !== data.id));
+        }
+      } catch (error) {
+        console.error('Error fetching property:', error);
+        setProperty(null);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProperty();
+  }, [slug]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
   
   if (!property) {
     return (
@@ -40,10 +77,6 @@ export default function PropertyDetailPage() {
       </div>
     );
   }
-
-  const similarProperties = sampleProperties
-    .filter((p) => p.id !== property.id && p.location.city === property.location.city)
-    .slice(0, 3);
 
   return (
     <div className="min-h-screen bg-background">
