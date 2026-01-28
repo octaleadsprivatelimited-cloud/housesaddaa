@@ -26,6 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { LocationOption } from '@/types/property';
 import {
   getLocations,
+  getStaticLocations,
   addLocation,
   updateLocation,
   deleteLocation,
@@ -37,6 +38,7 @@ import {
 export default function AdminLocations() {
   const [locations, setLocations] = useState<LocationOption[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isFirestoreData, setIsFirestoreData] = useState(false);
   const [isAddLocationOpen, setIsAddLocationOpen] = useState(false);
   const [isEditLocationOpen, setIsEditLocationOpen] = useState(false);
   const [isAddAreaOpen, setIsAddAreaOpen] = useState(false);
@@ -70,14 +72,21 @@ export default function AdminLocations() {
   const fetchLocations = async () => {
     setLoading(true);
     try {
-      const data = await getLocations();
-      setLocations(data);
+      const firestoreData = await getLocations();
+      if (firestoreData.length > 0) {
+        setLocations(firestoreData);
+        setIsFirestoreData(true);
+      } else {
+        // Show static locations when Firestore is empty
+        const staticData = getStaticLocations();
+        setLocations(staticData);
+        setIsFirestoreData(false);
+      }
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch locations',
-        variant: 'destructive',
-      });
+      // Fallback to static locations on error
+      const staticData = getStaticLocations();
+      setLocations(staticData);
+      setIsFirestoreData(false);
     } finally {
       setLoading(false);
     }
@@ -300,26 +309,43 @@ export default function AdminLocations() {
           <p className="text-muted-foreground">Manage available locations for properties</p>
         </div>
         <div className="flex gap-2">
-          {locations.length === 0 && (
+          {!isFirestoreData && locations.length > 0 && (
             <Button variant="outline" onClick={handleSeedLocations} disabled={seeding}>
               {seeding ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Database className="h-4 w-4 mr-2" />}
-              Load Default Locations
+              Save to Database
             </Button>
           )}
-          <Button onClick={() => setIsAddLocationOpen(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add Location
-          </Button>
+          {isFirestoreData && (
+            <Button onClick={() => setIsAddLocationOpen(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add Location
+            </Button>
+          )}
         </div>
       </div>
+
+      {!isFirestoreData && locations.length > 0 && (
+        <Card className="border-amber-500 bg-amber-50 dark:bg-amber-950/20">
+          <CardContent className="flex items-center gap-3 py-4">
+            <Database className="h-5 w-5 text-amber-600" />
+            <p className="text-sm text-amber-800 dark:text-amber-200">
+              These are default locations from static data. Click "Save to Database" to enable editing, adding, and deleting locations.
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {locations.length === 0 ? (
         <Card className="border-dashed">
           <CardContent className="flex flex-col items-center justify-center py-12">
             <MapPin className="h-12 w-12 text-muted-foreground mb-4" />
             <p className="text-muted-foreground text-center mb-4">
-              No locations added yet. Click "Load Default Locations" to import existing locations or "Add Location" to create new ones.
+              No locations found.
             </p>
+            <Button onClick={handleSeedLocations} disabled={seeding}>
+              {seeding ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Database className="h-4 w-4 mr-2" />}
+              Load Default Locations
+            </Button>
           </CardContent>
         </Card>
       ) : (
@@ -332,24 +358,26 @@ export default function AdminLocations() {
                     <MapPin className="h-5 w-5 text-primary" />
                     {location.city}, {location.state}
                   </CardTitle>
-                  <div className="flex gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-muted-foreground hover:text-primary"
-                      onClick={() => openEditDialog(location)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
-                      onClick={() => setDeleteLocationId(location.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  {isFirestoreData && (
+                    <div className="flex gap-1">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-muted-foreground hover:text-primary"
+                        onClick={() => openEditDialog(location)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => setDeleteLocationId(location.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </CardHeader>
               <CardContent>
@@ -361,24 +389,28 @@ export default function AdminLocations() {
                       className="inline-flex items-center gap-1 px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-xs group"
                     >
                       {area}
-                      <button
-                        onClick={() => setDeleteAreaData({ locationId: location.id, area })}
-                        className="opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive"
-                      >
-                        <X className="h-3 w-3" />
-                      </button>
+                      {isFirestoreData && (
+                        <button
+                          onClick={() => setDeleteAreaData({ locationId: location.id, area })}
+                          className="opacity-0 group-hover:opacity-100 transition-opacity hover:text-destructive"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      )}
                     </span>
                   ))}
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="w-full"
-                  onClick={() => openAddAreaDialog(location.id)}
-                >
-                  <Plus className="h-3 w-3 mr-1" />
-                  Add Area
-                </Button>
+                {isFirestoreData && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full"
+                    onClick={() => openAddAreaDialog(location.id)}
+                  >
+                    <Plus className="h-3 w-3 mr-1" />
+                    Add Area
+                  </Button>
+                )}
               </CardContent>
             </Card>
           ))}
