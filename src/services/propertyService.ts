@@ -169,6 +169,28 @@ export const getFeaturedProperties = async (count: number = 6): Promise<Property
   }
 };
 
+// Get properties by type
+export const getPropertiesByType = async (propertyType: string, count: number = 4): Promise<Property[]> => {
+  try {
+    const q = query(
+      collection(db, PROPERTIES_COLLECTION),
+      orderBy("postedAt", "desc"),
+      limit(count * 3)
+    );
+    const snapshot = await getDocs(q);
+    
+    const properties = snapshot.docs
+      .map(docToProperty)
+      .filter(p => p.isActive !== false && p.propertyType === propertyType)
+      .slice(0, count);
+    
+    return properties;
+  } catch (error) {
+    console.error(`Error fetching ${propertyType} properties:`, error);
+    return [];
+  }
+};
+
 // Admin: Get all properties (including inactive)
 export const getAllPropertiesAdmin = async (): Promise<Property[]> => {
   const q = query(
