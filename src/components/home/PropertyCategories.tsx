@@ -23,7 +23,7 @@ export function PropertyCategories() {
           {/* Background Image */}
           <div 
             className="absolute inset-0 bg-cover bg-center rounded-2xl"
-            style={{ backgroundImage: 'url(/property-type-bg.jpeg)' }}
+            style={{ backgroundImage: 'url(/property-type-bg.jpg)' }}
           />
           {/* Black fade overlay for readability */}
           <div className="absolute inset-0 bg-black/70 rounded-2xl"></div>

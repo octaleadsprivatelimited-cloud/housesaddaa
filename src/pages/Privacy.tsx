@@ -1,5 +1,13 @@
+import SEO from '@/components/SEO';
+
 export default function Privacy() {
   return (
+    <>
+      <SEO 
+        title="Privacy Policy"
+        description="Read Houses Adda's Privacy Policy. Learn how we collect, use, and protect your personal information on our real estate platform."
+        url="/privacy"
+      />
     <div className="min-h-screen bg-background">
       <div className="container-custom py-16">
         <div className="max-w-4xl mx-auto">
@@ -66,5 +74,6 @@ export default function Privacy() {
         </div>
       </div>
     </div>
+    </>
   );
 }

@@ -1,9 +1,16 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Building2, Users, Target, Award } from 'lucide-react';
+import SEO from '@/components/SEO';
 
 export default function About() {
   return (
+    <>
+      <SEO 
+        title="About Us"
+        description="Learn about Houses Adda - India's trusted real estate platform. We connect property seekers with their dream homes across major cities with verified listings and expert support."
+        url="/about"
+      />
     <div className="min-h-screen bg-background">
       <div className="container-custom py-16">
         <div className="max-w-4xl mx-auto">
@@ -83,5 +90,6 @@ export default function About() {
         </div>
       </div>
     </div>
+    </>
   );
 }

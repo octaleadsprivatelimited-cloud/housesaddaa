@@ -1,9 +1,16 @@
 import { HelpCircle, MessageCircle, FileText, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import SEO from '@/components/SEO';
 
 export default function Help() {
   return (
+    <>
+      <SEO 
+        title="Help Center"
+        description="Find answers to common questions about using Houses Adda. Get support, view FAQs, guides, and contact our support team for assistance."
+        url="/help"
+      />
     <div className="min-h-screen bg-background">
       <div className="container-custom py-16">
         <div className="max-w-4xl mx-auto">
@@ -88,5 +95,6 @@ export default function Help() {
         </div>
       </div>
     </div>
+    </>
   );
 }

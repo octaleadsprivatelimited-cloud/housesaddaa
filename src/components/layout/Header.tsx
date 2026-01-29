@@ -16,32 +16,8 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50">
-      {/* Top bar - Red background */}
-      <div className="bg-primary py-1.5 hidden md:block">
-        <div className="container-custom flex justify-between items-center">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2 bg-white border border-white/20 rounded-lg px-3 py-1.5 shadow-sm">
-            <img 
-              src="/logo.png" 
-              alt="Houses Adda Logo" 
-              className="h-8 w-auto"
-            />
-            <span className="font-display text-lg font-bold text-primary">Houses Adda</span>
-          </Link>
-
-          {/* Phone Number */}
-          <a 
-            href="tel:+916301575658" 
-            className="flex items-center gap-2 text-primary-foreground hover:opacity-80 transition-opacity"
-          >
-            <Phone className="h-3.5 w-3.5" />
-            <span className="font-medium text-sm">+91 63015 75658</span>
-          </a>
-        </div>
-      </div>
-
-      {/* Navigation bar - Red background */}
-      <nav className="relative bg-primary border-b border-primary/20">
+      {/* Single header - Red background */}
+      <div className="bg-primary border-b border-primary/20">
         <div className="container-custom">
           {/* Mobile: Single line with logo, phone, and menu */}
           <div className="md:hidden flex items-center justify-between py-2">
@@ -74,8 +50,19 @@ export function Header() {
             </button>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center justify-between h-10">
+          {/* Desktop: Single line with logo, menu, and phone */}
+          <div className="hidden md:flex items-center justify-between py-2">
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2 bg-white border border-white/20 rounded-lg px-3 py-1.5 shadow-sm">
+              <img 
+                src="/logo.png" 
+                alt="Houses Adda Logo" 
+                className="h-8 w-auto"
+              />
+              <span className="font-display text-lg font-bold text-primary">Houses Adda</span>
+            </Link>
+
+            {/* Desktop Navigation */}
             <div className="flex items-center gap-8">
               {navigation.map((item) => (
                 <Link
@@ -87,9 +74,18 @@ export function Header() {
                 </Link>
               ))}
             </div>
+
+            {/* Phone Number */}
+            <a 
+              href="tel:+916301575658" 
+              className="flex items-center gap-2 text-primary-foreground hover:opacity-80 transition-opacity"
+            >
+              <Phone className="h-3.5 w-3.5" />
+              <span className="font-medium text-sm">+91 63015 75658</span>
+            </a>
           </div>
         </div>
-      </nav>
+      </div>
 
       {/* Mobile menu */}
       <div

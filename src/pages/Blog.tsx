@@ -1,9 +1,16 @@
 import { Calendar, User } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import SEO from '@/components/SEO';
 
 export default function Blog() {
   return (
+    <>
+      <SEO 
+        title="Blog"
+        description="Latest insights, tips, and news about real estate in India. Stay updated with market trends, buying guides, and expert advice from Houses Adda."
+        url="/blog"
+      />
     <div className="min-h-screen bg-background">
       <div className="container-custom py-16">
         <div className="max-w-4xl mx-auto">
@@ -39,5 +46,6 @@ export default function Blog() {
         </div>
       </div>
     </div>
+    </>
   );
 }

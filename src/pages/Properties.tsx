@@ -11,9 +11,48 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Badge } from '@/components/ui/badge';
 import { getProperties } from '@/services/propertyService';
 import { useLocations } from '@/hooks/useLocations';
+import SEO from '@/components/SEO';
 
 export default function PropertiesPage() {
   const [searchParams] = useSearchParams();
+  
+  // Generate dynamic SEO based on filters
+  const type = searchParams.get('type') || '';
+  const propertyType = searchParams.get('propertyType') || '';
+  const city = searchParams.get('city') || '';
+  const area = searchParams.get('area') || '';
+  
+  const getSEOTitle = () => {
+    if (type && propertyType && city) {
+      return `${propertyType.charAt(0).toUpperCase() + propertyType.slice(1)} for ${type} in ${city} | Houses Adda`;
+    }
+    if (type) {
+      return `Properties for ${type} | Houses Adda`;
+    }
+    if (propertyType) {
+      return `${propertyType.charAt(0).toUpperCase() + propertyType.slice(1)} Properties | Houses Adda`;
+    }
+    if (city) {
+      return `Properties in ${city} | Houses Adda`;
+    }
+    return 'Browse Properties | Houses Adda';
+  };
+  
+  const getSEODescription = () => {
+    if (type && propertyType && city) {
+      return `Find ${propertyType} properties for ${type} in ${city}. Browse verified listings with detailed information, photos, and contact details.`;
+    }
+    if (type) {
+      return `Browse properties for ${type} across India. Find apartments, villas, plots, and commercial spaces with verified listings.`;
+    }
+    if (propertyType) {
+      return `Explore ${propertyType} properties across major cities in India. Verified listings with detailed information and photos.`;
+    }
+    if (city) {
+      return `Find properties in ${city}. Browse apartments, villas, plots, and commercial spaces with verified listings.`;
+    }
+    return 'Browse thousands of verified properties across India. Find apartments, villas, plots, and commercial spaces in major cities.';
+  };
   const { allAreas, loading: locationsLoading } = useLocations();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
@@ -160,7 +199,15 @@ export default function PropertiesPage() {
     </div>
   );
 
+  const currentUrl = `/properties${searchParams.toString() ? `?${searchParams.toString()}` : ''}`;
+  
   return (
+    <>
+      <SEO 
+        title={getSEOTitle()}
+        description={getSEODescription()}
+        url={currentUrl}
+      />
     <div className="min-h-screen bg-secondary/30">
       {/* Page Header */}
       <div className="bg-card border-b border-border py-6">
@@ -324,5 +371,6 @@ export default function PropertiesPage() {
         </div>
       </div>
     </div>
+    </>
   );
 }

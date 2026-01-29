@@ -1,13 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9 http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
   <!-- Main Pages -->
   <url>
     <loc>https://housesadda.in/</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
     <loc>https://housesadda.in/properties</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
@@ -15,21 +17,25 @@
   <!-- Company Pages -->
   <url>
     <loc>https://housesadda.in/about</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://housesadda.in/contact</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://housesadda.in/careers</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://housesadda.in/blog</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -37,21 +43,25 @@
   <!-- Support Pages -->
   <url>
     <loc>https://housesadda.in/help</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
     <loc>https://housesadda.in/terms</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://housesadda.in/privacy</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
     <loc>https://housesadda.in/sitemap</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
   </url>
@@ -59,61 +69,73 @@
   <!-- Property Filter Pages -->
   <url>
     <loc>https://housesadda.in/properties?type=sale</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://housesadda.in/properties?type=rent</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
     <loc>https://housesadda.in/properties?status=under-construction</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://housesadda.in/properties?propertyType=apartment</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://housesadda.in/properties?propertyType=villa</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://housesadda.in/properties?propertyType=independent-house</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://housesadda.in/properties?propertyType=plot</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://housesadda.in/properties?propertyType=commercial</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://housesadda.in/properties?propertyType=penthouse</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://housesadda.in/properties?propertyType=studio</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://housesadda.in/properties?propertyType=farmhouse</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://housesadda.in/properties?propertyType=builder-floor</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
@@ -121,21 +143,25 @@
   <!-- City Pages -->
   <url>
     <loc>https://housesadda.in/properties?city=Hyderabad</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://housesadda.in/properties?city=Bangalore</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://housesadda.in/properties?city=Mumbai</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>https://housesadda.in/properties?city=Gurgaon</loc>
+    <lastmod>2026-01-29</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>

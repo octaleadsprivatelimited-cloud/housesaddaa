@@ -1,9 +1,16 @@
 import { Briefcase, MapPin, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import SEO from '@/components/SEO';
 
 export default function Careers() {
   return (
+    <>
+      <SEO 
+        title="Careers"
+        description="Join Houses Adda team and help shape the future of real estate in India. Explore career opportunities in real estate sales, property management, and more."
+        url="/careers"
+      />
     <div className="min-h-screen bg-background">
       <div className="container-custom py-16">
         <div className="max-w-4xl mx-auto">
@@ -93,5 +100,6 @@ export default function Careers() {
         </div>
       </div>
     </div>
+    </>
   );
 }

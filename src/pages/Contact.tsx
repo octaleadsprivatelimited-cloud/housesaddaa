@@ -3,9 +3,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import SEO from '@/components/SEO';
 
 export default function Contact() {
   return (
+    <>
+      <SEO 
+        title="Contact Us"
+        description="Get in touch with Houses Adda. Contact our team for property inquiries, support, or any questions. We're here to help you find your dream property."
+        url="/contact"
+      />
     <div className="min-h-screen bg-background">
       <div className="container-custom py-16">
         <div className="max-w-4xl mx-auto">
@@ -80,5 +87,6 @@ export default function Contact() {
         </div>
       </div>
     </div>
+    </>
   );
 }

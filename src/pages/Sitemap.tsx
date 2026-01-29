@@ -1,7 +1,14 @@
 import { Link } from 'react-router-dom';
+import SEO from '@/components/SEO';
 
 export default function Sitemap() {
   return (
+    <>
+      <SEO 
+        title="Sitemap"
+        description="Browse all pages and sections of Houses Adda website. Find properties, company information, support pages, and more."
+        url="/sitemap"
+      />
     <div className="min-h-screen bg-background">
       <div className="container-custom py-16">
         <div className="max-w-4xl mx-auto">
@@ -80,5 +87,6 @@ export default function Sitemap() {
         </div>
       </div>
     </div>
+    </>
   );
 }

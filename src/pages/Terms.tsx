@@ -1,5 +1,13 @@
+import SEO from '@/components/SEO';
+
 export default function Terms() {
   return (
+    <>
+      <SEO 
+        title="Terms of Service"
+        description="Read Houses Adda's Terms of Service. Understand the terms and conditions for using our real estate platform and services."
+        url="/terms"
+      />
     <div className="min-h-screen bg-background">
       <div className="container-custom py-16">
         <div className="max-w-4xl mx-auto">
@@ -59,5 +67,6 @@ export default function Terms() {
         </div>
       </div>
     </div>
+    </>
   );
 }

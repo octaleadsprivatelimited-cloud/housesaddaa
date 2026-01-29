@@ -12,6 +12,7 @@ import { PropertyCard } from '@/components/property/PropertyCard';
 import { cn } from '@/lib/utils';
 import { Property } from '@/types/property';
 import { getPropertyBySlug, getPropertiesByType } from '@/services/propertyService';
+import SEO from '@/components/SEO';
 
 const amenityIcons: Record<string, React.ElementType> = {
   parking: Car,
@@ -76,7 +77,58 @@ export default function PropertyDetailPage() {
     );
   }
 
+  // SEO data
+  const seoTitle = property.metaTitle || `${property.title} - ${property.location.city} | Houses Adda`;
+  const seoDescription = property.metaDescription || 
+    `${property.title} in ${property.location.area}, ${property.location.city}. ${property.listingType === 'sale' ? 'Buy' : 'Rent'} this ${getPropertyTypeLabel(property.propertyType)} for ${formatPrice(property.price, property.listingType)}. ${property.description.substring(0, 100)}...`;
+  const seoImage = property.images[0] || '/logo.png';
+  const seoUrl = `/property/${property.slug}`;
+
+  // Structured Data for Property
+  const propertyStructuredData = {
+    '@context': 'https://schema.org',
+    '@type': 'RealEstateListing',
+    name: property.title,
+    description: property.description,
+    image: property.images,
+    address: {
+      '@type': 'PostalAddress',
+      streetAddress: property.location.area,
+      addressLocality: property.location.city,
+      addressRegion: property.location.state,
+      addressCountry: property.location.country
+    },
+    price: property.price,
+    priceCurrency: 'INR',
+    availability: property.propertyStatus === 'ready' ? 'https://schema.org/InStock' : 'https://schema.org/PreOrder',
+    category: getPropertyTypeLabel(property.propertyType),
+    numberOfRooms: property.bedrooms,
+    numberOfBathroomsTotal: property.bathrooms,
+    floorSize: {
+      '@type': 'QuantitativeValue',
+      value: property.area,
+      unitCode: property.areaUnit === 'sqft' ? 'SFT' : 'MTK'
+    },
+    url: `https://housesadda.in${seoUrl}`,
+    offers: {
+      '@type': 'Offer',
+      price: property.price,
+      priceCurrency: 'INR',
+      availability: property.propertyStatus === 'ready' ? 'https://schema.org/InStock' : 'https://schema.org/PreOrder',
+      url: `https://housesadda.in${seoUrl}`
+    }
+  };
+
   return (
+    <>
+      <SEO 
+        title={seoTitle}
+        description={seoDescription}
+        image={seoImage}
+        url={seoUrl}
+        type="article"
+      />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(propertyStructuredData) }} />
     <div className="min-h-screen bg-background">
       {/* Breadcrumb */}
       <div className="bg-card border-b border-border py-4">
@@ -322,5 +374,6 @@ export default function PropertyDetailPage() {
         )}
       </div>
     </div>
+    </>
   );
 }
