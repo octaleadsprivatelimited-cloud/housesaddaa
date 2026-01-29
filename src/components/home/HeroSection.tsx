@@ -143,15 +143,17 @@ export function HeroSection() {
             </Select>
 
             {/* Search Button */}
-            <Button 
-              variant="default" 
-              size="lg" 
-              className="h-14 bg-primary hover:bg-primary/90 text-primary-foreground"
-              onClick={handleSearch}
-            >
-              <Search className="h-5 w-5 mr-2" />
-              Search
-            </Button>
+            <div className="flex justify-center md:justify-start">
+              <Button 
+                variant="default" 
+                size="lg" 
+                className="h-10 md:h-14 w-auto max-w-[200px] md:max-w-none bg-primary hover:bg-primary/90 text-primary-foreground text-sm md:text-base px-4 md:px-8"
+                onClick={handleSearch}
+              >
+                <Search className="h-4 w-4 md:h-5 md:w-5 mr-2" />
+                Search
+              </Button>
+            </div>
           </div>
         </div>
       </div>
