@@ -131,7 +131,7 @@ export function Footer() {
               rel="noopener noreferrer"
               className="hover:text-accent transition-colors underline"
             >
-              Octaleads Private Limited
+              Octaleads Pvt Ltd.
             </a>
           </p>
           <div className="flex items-center gap-4">

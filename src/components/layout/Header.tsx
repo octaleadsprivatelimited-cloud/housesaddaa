@@ -41,7 +41,7 @@ export function Header() {
       </div>
 
       {/* Navigation bar - White background */}
-      <nav className="bg-card border-b border-border">
+      <nav className="relative bg-card border-b border-border">
         <div className="container-custom">
           <div className="flex items-center justify-between h-10">
             {/* Desktop Navigation */}
@@ -73,8 +73,8 @@ export function Header() {
       {/* Mobile menu */}
       <div
         className={cn(
-          'md:hidden overflow-hidden transition-all duration-300 ease-in-out bg-card',
-          mobileMenuOpen ? 'max-h-96 border-b border-border' : 'max-h-0'
+          'md:hidden absolute top-full left-0 right-0 bg-card border-b border-border overflow-hidden transition-all duration-300 ease-in-out z-50',
+          mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
         )}
       >
         <div className="container-custom py-4 space-y-2">
