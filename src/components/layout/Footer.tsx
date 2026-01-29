@@ -85,7 +85,7 @@ export function Footer() {
       
       {/* Main Footer */}
       <div className="relative z-10 container-custom py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
           {/* Brand */}
           <div>
             <Link to="/" className="flex items-center gap-2 mb-4">
@@ -116,7 +116,6 @@ export function Footer() {
           {/* Links */}
           <FooterSection title="Company" links={footerLinks.company} sectionKey="company" />
           <FooterSection title="Properties" links={footerLinks.properties} sectionKey="properties" />
-          <FooterSection title="Top Cities" links={footerLinks.cities} sectionKey="cities" />
         </div>
       </div>
 
