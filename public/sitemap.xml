@@ -2,105 +2,140 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <!-- Main Pages -->
   <url>
-    <loc>https://Housesadda.in/</loc>
+    <loc>https://housesadda.in/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://Housesadda.in/properties</loc>
+    <loc>https://housesadda.in/properties</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   
   <!-- Company Pages -->
   <url>
-    <loc>https://Housesadda.in/about</loc>
+    <loc>https://housesadda.in/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://Housesadda.in/contact</loc>
+    <loc>https://housesadda.in/contact</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://Housesadda.in/careers</loc>
+    <loc>https://housesadda.in/careers</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://Housesadda.in/blog</loc>
+    <loc>https://housesadda.in/blog</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   
   <!-- Support Pages -->
   <url>
-    <loc>https://Housesadda.in/help</loc>
+    <loc>https://housesadda.in/help</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   <url>
-    <loc>https://Housesadda.in/terms</loc>
+    <loc>https://housesadda.in/terms</loc>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://Housesadda.in/privacy</loc>
+    <loc>https://housesadda.in/privacy</loc>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://Housesadda.in/sitemap</loc>
+    <loc>https://housesadda.in/sitemap</loc>
     <changefreq>monthly</changefreq>
     <priority>0.4</priority>
   </url>
   
   <!-- Property Filter Pages -->
   <url>
-    <loc>https://Housesadda.in/properties?type=sale</loc>
+    <loc>https://housesadda.in/properties?type=sale</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://Housesadda.in/properties?type=rent</loc>
+    <loc>https://housesadda.in/properties?type=rent</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://Housesadda.in/properties?status=under-construction</loc>
+    <loc>https://housesadda.in/properties?status=under-construction</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://Housesadda.in/properties?propertyType=commercial</loc>
+    <loc>https://housesadda.in/properties?propertyType=apartment</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://Housesadda.in/properties?propertyType=plot</loc>
+    <loc>https://housesadda.in/properties?propertyType=villa</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://housesadda.in/properties?propertyType=independent-house</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://housesadda.in/properties?propertyType=plot</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://housesadda.in/properties?propertyType=commercial</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://housesadda.in/properties?propertyType=penthouse</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://housesadda.in/properties?propertyType=studio</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://housesadda.in/properties?propertyType=farmhouse</loc>
+    <changefreq>daily</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://housesadda.in/properties?propertyType=builder-floor</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   
   <!-- City Pages -->
   <url>
-    <loc>https://Housesadda.in/properties?city=Hyderabad</loc>
+    <loc>https://housesadda.in/properties?city=Hyderabad</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://Housesadda.in/properties?city=Bangalore</loc>
+    <loc>https://housesadda.in/properties?city=Bangalore</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://Housesadda.in/properties?city=Mumbai</loc>
+    <loc>https://housesadda.in/properties?city=Mumbai</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://Housesadda.in/properties?city=Gurgaon</loc>
+    <loc>https://housesadda.in/properties?city=Gurgaon</loc>
     <changefreq>daily</changefreq>
     <priority>0.8</priority>
   </url>
