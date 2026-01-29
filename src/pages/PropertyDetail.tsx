@@ -1,15 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { 
-  MapPin, Bed, Bath, Square, Heart, Share2, Phone, Mail, 
+  MapPin, Bed, Bath, Square, Heart, Share2, Phone, 
   BadgeCheck, Calendar, Eye, MessageSquare, ArrowLeft,
-  Car, Dumbbell, Waves, Shield, Zap, Building2, Loader2
+  Car, Dumbbell, Waves, Shield, Zap, Building2, Loader2, MessageCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { formatPrice, amenities as amenitiesData } from '@/data/properties';
+import { formatPrice, amenities as amenitiesData, getPropertyTypeLabel } from '@/data/properties';
 import { PropertyCard } from '@/components/property/PropertyCard';
 import { cn } from '@/lib/utils';
 import { Property } from '@/types/property';
@@ -191,7 +189,7 @@ export default function PropertyDetailPage() {
                 </div>
                 <div className="text-center">
                   <Building2 className="h-6 w-6 mx-auto text-primary mb-1" />
-                  <div className="font-semibold capitalize">{property.propertyType.replace('-', ' ')}</div>
+                  <div className="font-semibold">{getPropertyTypeLabel(property.propertyType)}</div>
                   <div className="text-sm text-muted-foreground">Type</div>
                 </div>
               </div>
@@ -266,40 +264,46 @@ export default function PropertyDetailPage() {
             {/* Contact Card */}
             <div className="bg-card rounded-2xl border border-border p-6 sticky top-24">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center">
-                  <span className="text-primary text-2xl font-bold">
-                    {property.ownerName.charAt(0)}
-                  </span>
+                <div className="w-16 h-16 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center">
+                  <img 
+                    src="/logo.png" 
+                    alt="Sreekanth" 
+                    className="w-full h-full object-cover"
+                  />
                 </div>
                 <div>
-                  <h3 className="font-semibold text-lg">{property.ownerName}</h3>
+                  <h3 className="font-semibold text-lg">Sreekanth</h3>
                   <p className="text-sm text-muted-foreground capitalize">{property.ownerType}</p>
                 </div>
               </div>
 
-              <div className="space-y-3 mb-6">
-                <Button variant="default" className="w-full" size="lg">
-                  <Phone className="h-4 w-4 mr-2" />
-                  {property.ownerPhone}
+              <div className="space-y-3">
+                <Button 
+                  variant="default" 
+                  className="w-full" 
+                  size="lg"
+                  asChild
+                >
+                  <a href="tel:+916301575658">
+                    <Phone className="h-4 w-4 mr-2" />
+                    +91 63015 75658
+                  </a>
                 </Button>
-                <Button variant="outline" className="w-full" size="lg">
-                  <Mail className="h-4 w-4 mr-2" />
-                  Send Email
+                <Button 
+                  variant="outline" 
+                  className="w-full" 
+                  size="lg"
+                  asChild
+                >
+                  <a 
+                    href={`https://wa.me/916301575658?text=${encodeURIComponent(`Hi, I'm interested in this property:\n\n${property.title}\n${property.location.area}, ${property.location.city}\nPrice: ${formatPrice(property.price, property.listingType)}\n\nPlease share more details.`)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <MessageCircle className="h-4 w-4 mr-2" />
+                    WhatsApp
+                  </a>
                 </Button>
-              </div>
-
-              {/* Enquiry Form */}
-              <div className="border-t border-border pt-6">
-                <h4 className="font-semibold mb-4">Send Enquiry</h4>
-                <form className="space-y-4">
-                  <Input placeholder="Your Name" />
-                  <Input type="email" placeholder="Email" />
-                  <Input type="tel" placeholder="Phone Number" />
-                  <Textarea placeholder="I'm interested in this property..." rows={3} />
-                  <Button variant="accent" className="w-full" size="lg">
-                    Submit Enquiry
-                  </Button>
-                </form>
               </div>
             </div>
           </div>

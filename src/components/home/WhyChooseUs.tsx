@@ -25,10 +25,23 @@ const features = [
 
 export function WhyChooseUs() {
   return (
-    <section className="py-10 md:py-16 lg:py-24">
+    <section className="py-6 md:py-8 lg:py-10">
       <div className="container-custom">
+        <div className="relative rounded-2xl p-6 md:p-8 lg:p-10 shadow-lg border-2 border-white/50 overflow-hidden">
+          {/* Background Image */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center rounded-2xl"
+            style={{ backgroundImage: 'url(/why-choose-us-bg.jpg)' }}
+          />
+          {/* Overlay for readability */}
+          <div className="absolute inset-0 bg-[#FEF3C7]/40 rounded-2xl"></div>
+          
+          {/* Decorative elements */}
+          <div className="absolute top-0 left-0 w-40 h-40 bg-white/20 rounded-br-full blur-3xl z-10"></div>
+          <div className="absolute bottom-0 right-0 w-36 h-36 bg-white/20 rounded-tl-full blur-3xl z-10"></div>
+          
         {/* Header */}
-        <div className="text-center mb-6 md:mb-12">
+        <div className="relative z-10 text-center mb-6 md:mb-12">
           <h2 className="section-heading text-xl md:text-2xl lg:text-3xl">Why Choose Houses Adda</h2>
           <p className="section-subheading text-sm md:text-base">
             We make finding your dream home simple and hassle-free
@@ -36,7 +49,7 @@ export function WhyChooseUs() {
         </div>
 
         {/* Features Grid - 2x2 on mobile */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8">
+        <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8">
           {features.map((feature, index) => (
             <div
               key={feature.title}
@@ -54,6 +67,7 @@ export function WhyChooseUs() {
               </p>
             </div>
           ))}
+        </div>
         </div>
       </div>
     </section>

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { MapPin, Bed, Bath, Square, Heart, BadgeCheck, ArrowRight } from 'lucide-react';
 import { Property } from '@/types/property';
-import { formatPrice } from '@/data/properties';
+import { formatPrice, getPropertyTypeLabel } from '@/data/properties';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -67,8 +67,8 @@ export function PropertyCard({ property, variant = 'default' }: PropertyCardProp
 
         {/* Property Type Badge */}
         <div className="absolute bottom-2 left-2">
-          <Badge variant="secondary" className="bg-card/90 backdrop-blur-sm text-[10px] md:text-xs capitalize px-1.5 py-0.5">
-            {property.propertyType.replace('-', ' ')}
+          <Badge variant="secondary" className="bg-card/90 backdrop-blur-sm text-[10px] md:text-xs px-1.5 py-0.5">
+            {getPropertyTypeLabel(property.propertyType)}
           </Badge>
         </div>
       </div>

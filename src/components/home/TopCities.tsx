@@ -11,12 +11,13 @@ const cityImages: Record<string, string> = {
 
 export function TopCities() {
   return (
-    <section className="py-16 md:py-24 bg-foreground text-primary-foreground">
+    <section className="py-6 md:py-8 lg:py-10">
       <div className="container-custom">
+        <div className="rounded-2xl p-6 md:p-8 lg:p-10 shadow-sm text-foreground" style={{ backgroundColor: '#FDF2F8' }}>
         {/* Header */}
-        <div className="text-center mb-12">
-          <h2 className="section-heading text-primary-foreground">Explore Top Cities</h2>
-          <p className="section-subheading text-primary-foreground/70">
+        <div className="text-center mb-4 md:mb-6">
+          <h2 className="section-heading text-foreground">Explore Top Cities</h2>
+          <p className="section-subheading text-muted-foreground">
             Discover properties in India's most sought-after locations
           </p>
         </div>
@@ -35,20 +36,21 @@ export function TopCities() {
                 alt={location.city}
                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-foreground/90 via-foreground/30 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
               
               <div className="absolute bottom-0 left-0 right-0 p-6">
-                <h3 className="font-display text-2xl font-bold mb-1">{location.city}</h3>
-                <p className="text-primary-foreground/70 text-sm mb-3">
+                <h3 className="font-display text-2xl font-bold mb-1 text-white">{location.city}</h3>
+                <p className="text-white/70 text-sm mb-3">
                   {location.state}, {location.country}
                 </p>
                 <div className="flex items-center gap-2 text-accent font-medium text-sm group-hover:gap-3 transition-all">
-                  <span>Explore Properties</span>
-                  <ArrowRight className="h-4 w-4" />
+                  <span className="text-white">Explore Properties</span>
+                  <ArrowRight className="h-4 w-4 text-white" />
                 </div>
               </div>
             </Link>
           ))}
+        </div>
         </div>
       </div>
     </section>

@@ -238,6 +238,12 @@ export const propertyTypes: { value: PropertyType; label: string; icon: string }
   { value: 'builder-floor', label: 'Builder Floor', icon: '🏗️' },
 ];
 
+// Helper function to get property type label
+export const getPropertyTypeLabel = (propertyType: PropertyType): string => {
+  const type = propertyTypes.find(t => t.value === propertyType);
+  return type ? type.label : propertyType.replace('-', ' ');
+};
+
 // Default Hyderabad Location (primary service area)
 export const locations: LocationOption[] = [
   {

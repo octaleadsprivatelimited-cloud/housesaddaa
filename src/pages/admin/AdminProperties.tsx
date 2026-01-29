@@ -10,7 +10,7 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { formatPrice } from '@/data/properties';
+import { formatPrice, getPropertyTypeLabel } from '@/data/properties';
 import { Property } from '@/types/property';
 import { getAllPropertiesAdmin, togglePropertyStatus, deleteProperty } from '@/services/propertyService';
 import { useToast } from '@/hooks/use-toast';
@@ -170,7 +170,7 @@ export default function AdminProperties() {
                   </td>
                   <td className="p-4 hidden lg:table-cell">
                     <Badge variant="secondary" className="capitalize">
-                      {property.propertyType?.replace('-', ' ') || 'N/A'}
+                      {property.propertyType ? getPropertyTypeLabel(property.propertyType) : 'N/A'}
                     </Badge>
                   </td>
                   <td className="p-4">

@@ -4,16 +4,29 @@ import { Button } from '@/components/ui/button';
 
 export function CTASection() {
   return (
-    <section className="py-10 md:py-16 lg:py-24 bg-secondary/50">
+    <section className="py-6 md:py-8 lg:py-10">
       <div className="container-custom">
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
+        <div className="relative rounded-2xl p-6 md:p-8 lg:p-10 shadow-lg border-2 border-white/50 overflow-hidden">
+          {/* Background Image */}
+          <div 
+            className="absolute inset-0 bg-cover bg-center rounded-2xl"
+            style={{ backgroundImage: 'url(/cta-section-bg.jpg)' }}
+          />
+          {/* Overlay for readability */}
+          <div className="absolute inset-0 bg-black/60 rounded-2xl"></div>
+          
+          {/* Decorative elements */}
+          <div className="absolute top-0 left-0 w-40 h-40 bg-white/20 rounded-br-full blur-3xl z-10"></div>
+          <div className="absolute bottom-0 right-0 w-36 h-36 bg-white/20 rounded-tl-full blur-3xl z-10"></div>
+          
+        <div className="relative z-10 grid lg:grid-cols-2 gap-8 lg:gap-12 items-center">
           {/* Content */}
           <div>
-            <h2 className="text-xl md:text-2xl lg:text-4xl font-bold text-foreground mb-2 md:mb-4">
+            <h2 className="text-xl md:text-2xl lg:text-4xl font-bold text-white mb-2 md:mb-4">
               Ready to Find Your
-              <span className="text-gradient block">Dream Property?</span>
+              <span className="text-white block">Dream Property?</span>
             </h2>
-            <p className="text-muted-foreground text-sm md:text-lg mb-4 md:mb-8 max-w-lg">
+            <p className="text-white/90 text-sm md:text-lg mb-4 md:mb-8 max-w-lg">
               Join thousands of happy homeowners who found their perfect property through Houses Adda.
             </p>
 
@@ -29,30 +42,30 @@ export function CTASection() {
             {/* Trust Indicators */}
             <div className="flex flex-wrap gap-4 md:gap-6">
               <div className="flex items-center gap-1.5 md:gap-2">
-                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Building2 className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/20 flex items-center justify-center">
+                  <Building2 className="h-4 w-4 md:h-5 md:w-5 text-white" />
                 </div>
                 <div>
-                  <div className="font-bold text-sm md:text-base text-foreground">50,000+</div>
-                  <div className="text-[10px] md:text-xs text-muted-foreground">Properties</div>
+                  <div className="font-bold text-sm md:text-base text-white">50,000+</div>
+                  <div className="text-[10px] md:text-xs text-white/80">Properties</div>
                 </div>
               </div>
               <div className="flex items-center gap-1.5 md:gap-2">
-                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <Users className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/20 flex items-center justify-center">
+                  <Users className="h-4 w-4 md:h-5 md:w-5 text-white" />
                 </div>
                 <div>
-                  <div className="font-bold text-sm md:text-base text-foreground">10,000+</div>
-                  <div className="text-[10px] md:text-xs text-muted-foreground">Happy Users</div>
+                  <div className="font-bold text-sm md:text-base text-white">10,000+</div>
+                  <div className="text-[10px] md:text-xs text-white/80">Happy Users</div>
                 </div>
               </div>
               <div className="flex items-center gap-1.5 md:gap-2">
-                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                  <MapPin className="h-4 w-4 md:h-5 md:w-5 text-primary" />
+                <div className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-white/20 flex items-center justify-center">
+                  <MapPin className="h-4 w-4 md:h-5 md:w-5 text-white" />
                 </div>
                 <div>
-                  <div className="font-bold text-sm md:text-base text-foreground">100+</div>
-                  <div className="text-[10px] md:text-xs text-muted-foreground">Cities</div>
+                  <div className="font-bold text-sm md:text-base text-white">100+</div>
+                  <div className="text-[10px] md:text-xs text-white/80">Cities</div>
                 </div>
               </div>
             </div>
@@ -98,6 +111,7 @@ export function CTASection() {
               </div>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </section>

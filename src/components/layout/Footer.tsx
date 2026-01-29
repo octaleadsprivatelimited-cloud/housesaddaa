@@ -23,12 +23,6 @@ const footerLinks = {
     { name: 'Mumbai', href: '/properties?city=Mumbai' },
     { name: 'Gurgaon', href: '/properties?city=Gurgaon' },
   ],
-  support: [
-    { name: 'Help Center', href: '/help' },
-    { name: 'Terms of Service', href: '/terms' },
-    { name: 'Privacy Policy', href: '/privacy' },
-    { name: 'Sitemap', href: '/sitemap' },
-  ],
 };
 
 const socialLinks = [
@@ -80,12 +74,20 @@ export function Footer() {
   };
 
   return (
-    <footer className="bg-foreground text-primary-foreground">
+    <footer className="relative bg-foreground text-primary-foreground overflow-hidden">
+      {/* Background Image */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center"
+        style={{ backgroundImage: 'url(/footer-bg.jpg)' }}
+      />
+      {/* Dark overlay for readability */}
+      <div className="absolute inset-0 bg-black/80"></div>
+      
       {/* Main Footer */}
-      <div className="container-custom py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12">
+      <div className="relative z-10 container-custom py-12 md:py-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand */}
-          <div className="lg:col-span-2">
+          <div>
             <Link to="/" className="flex items-center gap-2 mb-4">
               <div className="flex flex-col">
                 <span className="font-display text-xl font-bold leading-tight">Houses Adda</span>
@@ -100,9 +102,9 @@ export function Footer() {
                 <Mail className="h-4 w-4" />
                 info@housesadda.in
               </a>
-              <a href="tel:+919876543210" className="flex items-center gap-2 text-primary-foreground/70 hover:text-accent transition-colors">
+              <a href="tel:+916301575658" className="flex items-center gap-2 text-primary-foreground/70 hover:text-accent transition-colors">
                 <Phone className="h-4 w-4" />
-                +91 98765 43210
+                +91 63015 75658
               </a>
               <div className="flex items-start gap-2 text-primary-foreground/70">
                 <MapPin className="h-4 w-4 mt-0.5" />
@@ -115,14 +117,11 @@ export function Footer() {
           <FooterSection title="Company" links={footerLinks.company} sectionKey="company" />
           <FooterSection title="Properties" links={footerLinks.properties} sectionKey="properties" />
           <FooterSection title="Top Cities" links={footerLinks.cities} sectionKey="cities" />
-          
-          {/* Support Section */}
-          <FooterSection title="Support" links={footerLinks.support} sectionKey="support" />
         </div>
       </div>
 
       {/* Bottom Bar */}
-      <div className="border-t border-primary-foreground/10">
+      <div className="relative z-10 border-t border-primary-foreground/10">
         <div className="container-custom py-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-primary-foreground/60 text-sm">
             © {new Date().getFullYear()} Houses Adda. All rights reserved. Developed by{' '}
