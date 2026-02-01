@@ -87,8 +87,8 @@ export function Header() {
       <div className="container-custom py-3">
         <div className="flex items-center justify-between gap-4">
           <Link to="/" className="flex items-center gap-3 shrink-0">
-            <div className="w-12 h-12 rounded-full bg-[#E10600] flex items-center justify-center text-white font-bold text-lg overflow-hidden shadow-md">
-              <span>HA</span>
+            <div className="w-12 h-12 rounded-full overflow-hidden shadow-md flex items-center justify-center bg-white border border-[#E5E5E5]">
+              <img src="/logo.png" alt="Houses Adda" className="w-full h-full object-contain p-1" />
             </div>
             <div>
               <h1 className="font-display font-bold text-xl text-[#1A1A1A]">Houses Adda</h1>
