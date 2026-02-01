@@ -177,11 +177,11 @@ export default function AdminDashboard() {
               recentProperties.map((property) => (
                 <div key={property.id} className="flex items-center gap-4 p-4 hover:bg-secondary/30 transition-colors">
                   <img 
-                    src={property.images[0] || '/placeholder.svg'} 
+                    src={property.images[0] || '/home-image.jpg'} 
                     alt={property.title}
                     className="w-16 h-12 rounded-lg object-cover"
                     onError={(e) => {
-                      (e.target as HTMLImageElement).src = '/placeholder.svg';
+                      (e.target as HTMLImageElement).src = '/home-image.jpg';
                     }}
                   />
                   <div className="flex-1 min-w-0">

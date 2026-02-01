@@ -316,15 +316,15 @@ export default function PropertyDetailPage() {
             {/* Contact Card */}
             <div className="bg-card rounded-2xl border border-border p-6 sticky top-24">
               <div className="flex items-center gap-4 mb-6">
-                <div className="w-16 h-16 rounded-full overflow-hidden bg-primary/10 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-lg overflow-hidden bg-white border border-[#E5E5E5] flex items-center justify-center p-2 shrink-0">
                   <img 
                     src="/logo.png" 
-                    alt="Sreekanth" 
-                    className="w-full h-full object-cover"
+                    alt="Houses Adda" 
+                    className="w-full h-full object-contain"
                   />
                 </div>
-                <div>
-                  <h3 className="font-semibold text-lg">Sreekanth</h3>
+                <div className="min-w-0">
+                  <h3 className="font-semibold text-lg">{property.ownerName}</h3>
                   <p className="text-sm text-muted-foreground capitalize">{property.ownerType}</p>
                 </div>
               </div>
@@ -336,26 +336,20 @@ export default function PropertyDetailPage() {
                   size="lg"
                   asChild
                 >
-                  <a href="tel:+916301575658">
+                  <a href={`tel:${property.ownerPhone.replace(/\s/g, '')}`}>
                     <Phone className="h-4 w-4 mr-2" />
-                    +91 63015 75658
+                    {property.ownerPhone}
                   </a>
                 </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full" 
-                  size="lg"
-                  asChild
+                <a 
+                  href={`https://wa.me/${property.ownerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi, I'm interested in this property:\n\n${property.title}\n${property.location.area}, ${property.location.city}\nPrice: ${formatPrice(property.price, property.listingType)}\n\nPlease share more details.`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-[#25D366] hover:bg-[#1DA851] text-white font-semibold transition-colors"
                 >
-                  <a 
-                    href={`https://wa.me/916301575658?text=${encodeURIComponent(`Hi, I'm interested in this property:\n\n${property.title}\n${property.location.area}, ${property.location.city}\nPrice: ${formatPrice(property.price, property.listingType)}\n\nPlease share more details.`)}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <MessageCircle className="h-4 w-4 mr-2" />
-                    WhatsApp
-                  </a>
-                </Button>
+                  <MessageCircle className="h-5 w-5" />
+                  WhatsApp
+                </a>
               </div>
             </div>
           </div>

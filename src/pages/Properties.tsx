@@ -208,7 +208,7 @@ export default function PropertiesPage() {
         description={getSEODescription()}
         url={currentUrl}
       />
-    <div className="min-h-screen bg-secondary/30">
+    <div className="min-h-screen bg-[#F5F5F5]">
       {/* Page Header */}
       <div className="bg-card border-b border-border py-6">
         <div className="container-custom">
@@ -339,14 +339,14 @@ export default function PropertiesPage() {
             ) : properties.length > 0 ? (
               <div className={
                 viewMode === 'grid' 
-                  ? 'grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6'
-                  : 'space-y-6'
+                  ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 xl:gap-8'
+                  : 'space-y-4'
               }>
                 {properties.map((property, index) => (
                   <div
                     key={property.id}
-                    className="animate-slide-up h-full min-h-[400px]"
-                    style={{ animationDelay: `${index * 50}ms` }}
+                    className={viewMode === 'grid' ? 'flex' : ''}
+                    style={{ animationDelay: `${index * 30}ms` }}
                   >
                     <PropertyCard 
                       property={property} 

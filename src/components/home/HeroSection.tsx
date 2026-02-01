@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, MapPin, Home, IndianRupee, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { propertyTypes } from '@/data/properties';
 import { useLocations } from '@/hooks/useLocations';
@@ -55,7 +55,7 @@ export function HeroSection() {
   const slide = heroSlides[currentSlide];
 
   return (
-    <section className="relative min-h-[560px] md:min-h-[640px] flex items-end md:items-center">
+    <section className="relative min-h-[420px] md:min-h-[480px] flex flex-col">
       {/* Background Image */}
       <div className="absolute inset-0">
         <img
@@ -66,28 +66,29 @@ export function HeroSection() {
         <div className="absolute inset-0 bg-black/40" />
       </div>
 
-      {/* Hero Slider Arrows */}
+      {/* Hero Slider Arrows - at edges */}
       <button
         onClick={prevSlide}
-        className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-20 w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/90 hover:bg-white text-foreground flex items-center justify-center shadow-lg transition-colors"
+        className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-transparent hover:bg-white/20 text-white flex items-center justify-center transition-colors"
         aria-label="Previous slide"
       >
-        <ChevronLeft className="h-4 w-4 md:h-5 md:w-5" />
+        <ChevronLeft className="h-5 w-5" />
       </button>
       <button
         onClick={nextSlide}
-        className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-20 w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/90 hover:bg-white text-foreground flex items-center justify-center shadow-lg transition-colors"
+        className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-transparent hover:bg-white/20 text-white flex items-center justify-center transition-colors"
         aria-label="Next slide"
       >
-        <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
+        <ChevronRight className="h-5 w-5" />
       </button>
 
-      {/* Content + Search Card */}
-      <div className="relative z-10 w-full container-custom pb-8 md:pb-12">
-        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
-          {/* Left: Hero Text */}
-          <div className="max-w-2xl">
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-3">
+      {/* Content */}
+      <div className="relative z-10 w-full container-custom flex-1 flex flex-col pt-16 md:pt-24 pb-8 md:pb-12">
+        {/* Hero Text + Search Bar - grouped together, pushed down */}
+        <div className="flex flex-col gap-4 md:gap-5">
+          {/* Title - left aligned */}
+          <div>
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-2">
               {slide.title}
             </h1>
             <p className="text-lg md:text-xl text-white/90">
@@ -95,16 +96,16 @@ export function HeroSection() {
             </p>
           </div>
 
-          {/* Right: Floating Search Card */}
-          <div className="bg-white rounded-2xl shadow-xl p-4 md:p-6 w-full max-w-2xl">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+          {/* Search Card - directly below title, smaller */}
+          <div className="bg-white/95 rounded-xl shadow-lg p-3 md:p-4 w-full max-w-2xl">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
               <Select value={location || 'all'} onValueChange={setLocation}>
-                <SelectTrigger className="h-12 rounded-xl border-gray-200">
-                  <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <SelectValue placeholder="Location" />
+                <SelectTrigger className="h-10 rounded-lg border-[#E5E5E5] bg-[#F5F5F5] text-sm">
+                  <MapPin className="h-3.5 w-3.5 text-[#6B6B6B] shrink-0" />
+                  <SelectValue placeholder="Enter location..." />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Location</SelectItem>
+                  <SelectItem value="all">Enter location...</SelectItem>
                   {locationsLoading ? (
                     <SelectItem value="loading" disabled>Loading...</SelectItem>
                   ) : (
@@ -118,7 +119,8 @@ export function HeroSection() {
               </Select>
 
               <Select value={propertyType || 'all'} onValueChange={setPropertyType}>
-                <SelectTrigger className="h-12 rounded-xl border-gray-200">
+                <SelectTrigger className="h-10 rounded-lg border-[#E5E5E5] bg-[#F5F5F5] text-sm">
+                  <Home className="h-3.5 w-3.5 text-[#6B6B6B] shrink-0 mr-1.5" />
                   <SelectValue placeholder="Any" />
                 </SelectTrigger>
                 <SelectContent>
@@ -132,8 +134,9 @@ export function HeroSection() {
               </Select>
 
               <Select value={budget || 'any'} onValueChange={setBudget}>
-                <SelectTrigger className="h-12 rounded-xl border-gray-200">
-                  <SelectValue placeholder="₹ Any Budget" />
+                <SelectTrigger className="h-10 rounded-lg border-[#E5E5E5] bg-[#F5F5F5] text-sm">
+                  <IndianRupee className="h-3.5 w-3.5 text-[#6B6B6B] shrink-0" />
+                  <SelectValue placeholder="Any Budget" />
                 </SelectTrigger>
                 <SelectContent>
                   {budgetOptions.map((option) => (
@@ -146,24 +149,26 @@ export function HeroSection() {
 
               <button
                 onClick={handleSearch}
-                className="h-12 px-6 rounded-xl bg-brand-primary hover:bg-brand-dark text-white font-semibold flex items-center justify-center gap-2 transition-colors"
+                className="h-10 px-4 rounded-lg bg-[#E10600] hover:bg-[#B11226] text-white text-sm font-semibold flex items-center justify-center gap-1.5 transition-colors"
               >
-                <Search className="h-5 w-5" />
+                <Search className="h-4 w-4" />
                 Search
               </button>
             </div>
           </div>
         </div>
 
-        {/* Slider Dots */}
-        <div className="flex justify-center gap-2 mt-6 md:mt-8">
+        {/* Spacer to push dots to bottom */}
+        <div className="flex-1 min-h-4" />
+
+        <div className="flex justify-center gap-2 mt-6">
           {heroSlides.map((_, i) => (
             <button
               key={i}
               onClick={() => setCurrentSlide(i)}
               className={`
                 w-2.5 h-2.5 rounded-full transition-colors
-                ${i === currentSlide ? 'bg-brand-primary w-8' : 'bg-white/60 hover:bg-white/80'}
+                ${i === currentSlide ? 'bg-[#E10600] w-8' : 'bg-white/60 hover:bg-white/80'}
               `}
               aria-label={`Go to slide ${i + 1}`}
             />

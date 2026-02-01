@@ -1,33 +1,63 @@
 import { Link } from 'react-router-dom';
-import { Palette, Ruler, FileCheck, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import {
+  Palette,
+  Ruler,
+  FileCheck,
+  Sparkles,
+  ArrowRight,
+  Phone,
+  MessageCircle,
+  Sofa,
+  Lamp,
+  Layers,
+  LayoutGrid,
+  Package,
+} from 'lucide-react';
 import SEO from '@/components/SEO';
 
 const processSteps = [
   {
     step: 1,
     title: 'Consultation',
-    desc: 'Understand your vision, preferences, and budget for the perfect design.',
+    description: 'Understand your vision, preferences, and budget for the perfect design.',
     icon: Palette,
   },
   {
     step: 2,
     title: 'Design Planning',
-    desc: 'Create detailed layouts, 3D visualizations, and material selections.',
+    description: 'Create detailed layouts, 3D visualizations, and material selections.',
     icon: Ruler,
   },
   {
     step: 3,
     title: 'Approval & Execution',
-    desc: 'Finalize designs and begin implementation with quality craftsmanship.',
+    description: 'Finalize designs and begin implementation with quality craftsmanship.',
     icon: FileCheck,
   },
   {
     step: 4,
     title: 'Handover',
-    desc: 'Complete walkthrough and handover of your beautifully designed space.',
+    description: 'Complete walkthrough and handover of your beautifully designed space.',
     icon: Sparkles,
   },
+];
+
+const services = [
+  { icon: Sofa, title: 'Residential Interiors', desc: 'Apartments, villas & homes' },
+  { icon: LayoutGrid, title: 'Modular Kitchen Design', desc: 'Functional & stylish kitchens' },
+  { icon: Layers, title: 'Wardrobe & Storage', desc: 'Smart storage solutions' },
+  { icon: Lamp, title: 'Lighting Design', desc: 'Ambient & accent lighting' },
+  { icon: Package, title: 'Furniture Curation', desc: 'Curated furniture selection' },
+  { icon: Ruler, title: 'Space Planning', desc: 'Optimized layout design' },
+];
+
+const galleryImages = [
+  { id: '1615873968403-c6c33141022d', alt: 'Modern living room' },
+  { id: '1616046229478-9941d80bfb3f', alt: 'Contemporary interior' },
+  { id: '1616486338812-3dadaa4a57af', alt: 'Elegant bedroom' },
+  { id: '1618220179428-22790b46113c', alt: 'Minimalist design' },
+  { id: '1600607687939-ce8a6c25118c', alt: 'Cozy space' },
+  { id: '1600585154340-be6161a56a0c', alt: 'Modern apartment' },
 ];
 
 export default function InteriorDesign() {
@@ -38,84 +68,202 @@ export default function InteriorDesign() {
         description="Transform your space with professional interior design services from Houses Adda. Modern, functional, and stunning designs for apartments and villas."
         url="/services/interior-design"
       />
-      <div className="min-h-screen bg-[#F9F9F9]">
-        {/* Hero */}
-        <div className="bg-white border-b border-[#E5E5E5]">
-          <div className="container-custom py-16 md:py-24">
+
+      <div className="min-h-screen bg-white">
+        {/* Hero Section */}
+        <section className="relative overflow-hidden bg-gradient-to-br from-[#1A1A1A] via-[#2D2D2D] to-[#1A1A1A] text-white">
+          <div
+            className="absolute inset-0 bg-cover bg-center opacity-25"
+            style={{ backgroundImage: "url('/independent-house-section-bg.jpg')" }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/50" />
+          <div className="container-custom relative py-12 md:py-16 lg:py-20">
             <div className="max-w-3xl">
-              <h1 className="text-4xl md:text-5xl font-bold text-[#1A1A1A] mb-4">Interior Design</h1>
-              <p className="text-xl text-[#6B6B6B]">
-                Create beautiful, functional spaces with our professional interior design services. From concept to completion, we bring your vision to life.
+              <p className="text-[#E10600] text-sm font-semibold uppercase tracking-widest mb-4">
+                Transform Your Space
+              </p>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight mb-6 leading-[1.1]">
+                Interior
+                <span className="text-[#E10600]"> Design</span>
+              </h1>
+              <p className="text-lg md:text-xl text-white/85 leading-relaxed max-w-2xl">
+                Create beautiful, functional spaces with our professional design services. From concept to completion, we bring your vision to life.
               </p>
             </div>
           </div>
-        </div>
+        </section>
 
-        <div className="container-custom py-16">
-          <section className="mb-16">
-            <h2 className="text-2xl font-bold text-[#1A1A1A] mb-6">Design Services Overview</h2>
-            <p className="text-[#6B6B6B] mb-8 max-w-3xl leading-relaxed">
-              Our interior design team specializes in residential spaces—apartments, villas, and independent homes. We combine aesthetics with functionality to deliver spaces that reflect your personality while maximizing comfort and usability.
-            </p>
+        {/* Quick Highlights */}
+        <section className="relative -mt-6 z-10">
+          <div className="container-custom">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="bg-white rounded-2xl p-5 shadow-lg border border-[#E5E5E5]">
+                <div className="text-2xl font-bold text-[#E10600] mb-1">6+</div>
+                <div className="text-sm text-[#6B6B6B] font-medium">Design Services</div>
+              </div>
+              <div className="bg-white rounded-2xl p-5 shadow-lg border border-[#E5E5E5]">
+                <div className="text-2xl font-bold text-[#E10600] mb-1">4-Step</div>
+                <div className="text-sm text-[#6B6B6B] font-medium">Proven Process</div>
+              </div>
+              <div className="bg-white rounded-2xl p-5 shadow-lg border border-[#E5E5E5]">
+                <div className="text-2xl font-bold text-[#E10600] mb-1">3D</div>
+                <div className="text-sm text-[#6B6B6B] font-medium">Visualizations</div>
+              </div>
+              <div className="bg-white rounded-2xl p-5 shadow-lg border border-[#E5E5E5]">
+                <div className="text-2xl font-bold text-[#E10600] mb-1">End-to-End</div>
+                <div className="text-sm text-[#6B6B6B] font-medium">Execution</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Overview & Services */}
+        <section className="py-16 md:py-24">
+          <div className="container-custom">
+            <div className="max-w-3xl mb-12">
+              <p className="text-[#E10600] text-sm font-semibold uppercase tracking-wider mb-3">
+                Our Expertise
+              </p>
+              <h2 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-6">
+                Design Services Overview
+              </h2>
+              <p className="text-[#6B6B6B] text-lg leading-relaxed">
+                Our interior design team specializes in residential spaces—apartments, villas, and independent homes. We combine aesthetics with functionality to deliver spaces that reflect your personality while maximizing comfort.
+              </p>
+            </div>
+
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {['Residential Interiors', 'Modular Kitchen Design', 'Wardrobe & Storage Solutions', 'Lighting Design', 'Furniture Curation', 'Space Planning'].map((service) => (
-                <div key={service} className="bg-white rounded-2xl p-6 shadow-sm border border-[#E5E5E5]">
-                  <span className="text-[#1A1A1A] font-semibold">{service}</span>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="mb-16">
-            <h2 className="text-2xl font-bold text-[#1A1A1A] mb-8">Our Process</h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-              {processSteps.map(({ step, title, desc, icon: Icon }) => (
-                <div key={step} className="relative">
-                  <div className="w-12 h-12 rounded-xl bg-[#FADADD] flex items-center justify-center mb-4">
-                    <Icon className="h-6 w-6 text-[#E10600]" />
+              {services.map((item) => (
+                <div
+                  key={item.title}
+                  className="group p-6 rounded-2xl bg-[#F9F9F9] border border-[#E5E5E5] hover:bg-white hover:border-[#E10600]/20 hover:shadow-lg transition-all duration-300"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-[#E10600]/10 flex items-center justify-center mb-4 group-hover:bg-[#E10600] transition-colors">
+                    <item.icon className="h-6 w-6 text-[#E10600] group-hover:text-white transition-colors" />
                   </div>
-                  <span className="text-sm font-semibold text-[#E10600] mb-2 block">Step {step}</span>
-                  <h3 className="text-lg font-bold text-[#1A1A1A] mb-2">{title}</h3>
-                  <p className="text-[#6B6B6B] text-sm">{desc}</p>
+                  <h3 className="font-bold text-[#1A1A1A] text-lg mb-2">{item.title}</h3>
+                  <p className="text-[#6B6B6B] text-sm">{item.desc}</p>
                 </div>
               ))}
             </div>
-          </section>
+          </div>
+        </section>
 
-          {/* Gallery preview */}
-          <section className="mb-16">
-            <h2 className="text-2xl font-bold text-[#1A1A1A] mb-6">Gallery Preview</h2>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {[
-                '1600596542815-ffad4c1539a9',
-                '1600607687939-ce8a6c25118c',
-                '1600566753190-17f0baa2a6c3',
-                '1600585154340-be6161a56a0c',
-              ].map((id, i) => (
-                <div key={id} className="aspect-square rounded-2xl bg-[#E5E5E5] overflow-hidden">
+        {/* Process */}
+        <section className="py-16 md:py-24 bg-[#F9F9F9]">
+          <div className="container-custom">
+            <div className="text-center max-w-2xl mx-auto mb-12">
+              <p className="text-[#E10600] text-sm font-semibold uppercase tracking-wider mb-3">
+                How We Work
+              </p>
+              <h2 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-4">
+                Our Process
+              </h2>
+              <p className="text-[#6B6B6B]">
+                From initial consultation to final handover, we guide you every step of the way.
+              </p>
+            </div>
+
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {processSteps.map(({ step, title, description, icon: Icon }) => (
+                <div key={step} className="relative">
+                  <div className="bg-white rounded-2xl p-6 border border-[#E5E5E5] hover:border-[#E10600]/20 hover:shadow-lg transition-all h-full">
+                    <div className="flex items-center gap-4 mb-4">
+                      <div className="w-12 h-12 rounded-full bg-[#E10600] text-white font-bold flex items-center justify-center shrink-0">
+                        {step}
+                      </div>
+                      <div className="w-12 h-12 rounded-xl bg-[#E10600]/10 flex items-center justify-center shrink-0">
+                        <Icon className="h-6 w-6 text-[#E10600]" />
+                      </div>
+                    </div>
+                    <h3 className="font-bold text-[#1A1A1A] text-lg mb-2">{title}</h3>
+                    <p className="text-[#6B6B6B] text-sm leading-relaxed">{description}</p>
+                  </div>
+                  {step < 4 && (
+                    <div className="hidden lg:block absolute top-1/2 -right-4 w-8 h-0.5 bg-[#E5E5E5] -translate-y-1/2" />
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Gallery */}
+        <section className="py-16 md:py-24">
+          <div className="container-custom">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-10">
+              <div>
+                <p className="text-[#E10600] text-sm font-semibold uppercase tracking-wider mb-2">
+                  Our Work
+                </p>
+                <h2 className="text-2xl md:text-3xl font-bold text-[#1A1A1A]">
+                  Gallery Preview
+                </h2>
+              </div>
+              <Link
+                to="/gallery"
+                className="inline-flex items-center gap-2 text-[#E10600] font-semibold hover:text-[#B11226] transition-colors"
+              >
+                View Full Gallery
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {galleryImages.map((img) => (
+                <div
+                  key={img.id}
+                  className="aspect-[4/3] rounded-2xl overflow-hidden bg-[#E5E5E5] group"
+                >
                   <img
-                    src={`https://images.unsplash.com/photo-${id}?w=400&auto=format`}
-                    alt={`Interior design ${i + 1}`}
-                    className="w-full h-full object-cover"
+                    src={`https://images.unsplash.com/photo-${img.id}?w=600&auto=format`}
+                    alt={img.alt}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                 </div>
               ))}
             </div>
-            <Button asChild variant="outline" className="mt-6 border-[#E10600] text-[#E10600] hover:bg-[#FADADD]">
-              <Link to="/gallery">View Full Gallery</Link>
-            </Button>
-          </section>
-
-          <div className="bg-white rounded-2xl p-8 md:p-12 text-center border border-[#E5E5E5] shadow-sm">
-            <h3 className="text-2xl font-bold text-[#1A1A1A] mb-4">Ready to Transform Your Space?</h3>
-            <p className="text-[#6B6B6B] mb-6 max-w-xl mx-auto">
-              Get in touch with our design team for a consultation. We'll help you create a space you'll love.
-            </p>
-            <Button asChild className="bg-[#E10600] hover:bg-[#B11226]">
-              <Link to="/contact">Schedule Consultation</Link>
-            </Button>
           </div>
-        </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="py-16 md:py-24 bg-[#1A1A1A]">
+          <div className="container-custom">
+            <div className="max-w-3xl mx-auto text-center text-white">
+              <h2 className="text-2xl md:text-3xl font-bold mb-4">
+                Ready to Transform Your Space?
+              </h2>
+              <p className="text-white/80 mb-8">
+                Get in touch with our design team for a free consultation. We'll help you create a space you'll love.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  to="/contact"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-[#E10600] hover:bg-[#B11226] text-white font-semibold transition-colors"
+                >
+                  Schedule Consultation
+                  <ArrowRight className="h-5 w-5" />
+                </Link>
+                <a
+                  href="tel:+916301575658"
+                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border-2 border-white/30 text-white font-semibold hover:bg-white/10 transition-colors"
+                >
+                  <Phone className="h-5 w-5" />
+                  Call Now
+                </a>
+              </div>
+              <a
+                href="https://wa.me/916301575658"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center justify-center gap-2 mt-4 text-[#25D366] font-medium hover:underline"
+              >
+                <MessageCircle className="h-5 w-5" />
+                Or chat on WhatsApp
+              </a>
+            </div>
+          </div>
+        </section>
       </div>
     </>
   );

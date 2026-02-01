@@ -86,14 +86,8 @@ export function Header() {
       {/* Main Header */}
       <div className="container-custom py-3">
         <div className="flex items-center justify-between gap-4">
-          <Link to="/" className="flex items-center gap-3 shrink-0">
-            <div className="w-12 h-12 rounded-full overflow-hidden shadow-md flex items-center justify-center bg-white border border-[#E5E5E5]">
-              <img src="/logo.png" alt="Houses Adda" className="w-full h-full object-contain p-1" />
-            </div>
-            <div>
-              <h1 className="font-display font-bold text-xl text-[#1A1A1A]">Houses Adda</h1>
-              <p className="text-xs text-[#6B6B6B] -mt-0.5">Property Consultant</p>
-            </div>
+          <Link to="/" className="shrink-0 block">
+            <img src="/logo.png" alt="Houses Adda" className="h-10 w-10 md:h-12 md:w-12 object-contain rounded-lg" />
           </Link>
 
           <div className="hidden md:flex flex-1 justify-end">

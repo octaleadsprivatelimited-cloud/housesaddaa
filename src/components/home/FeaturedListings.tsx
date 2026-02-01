@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, Loader2, Building2 } from 'lucide-react';
 import useEmblaCarousel from 'embla-carousel-react';
-import { FeaturedListingCard } from './FeaturedListingCard';
+import { PropertyCard } from '@/components/property/PropertyCard';
 import { Property } from '@/types/property';
 import { getFeaturedProperties } from '@/services/propertyService';
 
@@ -56,17 +56,41 @@ export function FeaturedListings() {
   return (
     <section className="py-12 md:py-16 lg:py-20 bg-[#F5F5F5]">
       <div className="container-custom">
-        {/* Section Heading */}
-        <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-bold text-[#1A1A1A] mb-3">
-            Discover Our Featured Listings
-          </h2>
-          <p className="text-[#6B6B6B] text-base md:text-lg">
-            Handpicked properties curated for you
-          </p>
+        {/* Section Header: Title left, Arrows right */}
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
+          <div>
+            <h2 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-1">
+              Premium Properties
+            </h2>
+            <p className="text-[#6B6B6B] text-sm md:text-base">
+              Handpicked properties for discerning buyers
+            </p>
+          </div>
+          {!loading && properties.length > 0 && (
+            <div className="flex gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={scrollPrev}
+                disabled={!canScrollPrev}
+                className="w-10 h-10 rounded-full border border-[#E5E5E5] bg-white flex items-center justify-center text-[#1A1A1A] hover:bg-[#F5F5F5] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                aria-label="Previous"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={scrollNext}
+                disabled={!canScrollNext}
+                className="w-10 h-10 rounded-full border border-[#E5E5E5] bg-white flex items-center justify-center text-[#1A1A1A] hover:bg-[#F5F5F5] disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                aria-label="Next"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Featured Listings Slider */}
+        {/* Property Cards Slider */}
         <div className="relative">
           {loading ? (
             <div className="flex justify-center py-16">
@@ -87,42 +111,18 @@ export function FeaturedListings() {
               </a>
             </div>
           ) : (
-            <>
-              {/* Slider controls - top right */}
-              <div className="flex justify-end gap-2 mb-4">
-                <button
-                  type="button"
-                  onClick={scrollPrev}
-                  disabled={!canScrollPrev}
-                  className="w-10 h-10 rounded-full border border-[#E5E5E5] bg-white flex items-center justify-center text-[#1A1A1A] hover:bg-[#F5F5F5] disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
-                  aria-label="Previous"
-                >
-                  <ChevronLeft className="h-5 w-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={scrollNext}
-                  disabled={!canScrollNext}
-                  className="w-10 h-10 rounded-full border border-[#E5E5E5] bg-white flex items-center justify-center text-[#1A1A1A] hover:bg-[#F5F5F5] disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-sm"
-                  aria-label="Next"
-                >
-                  <ChevronRight className="h-5 w-5" />
-                </button>
+            <div className="overflow-hidden" ref={emblaRef}>
+              <div className="flex -ml-4 gap-0">
+                {properties.map((property) => (
+                  <div
+                    key={property.id}
+                    className="flex-[0_0_100%] sm:flex-[0_0_50%] lg:flex-[0_0_25%] min-w-0 pl-4"
+                  >
+                    <PropertyCard property={property} variant="premium" />
+                  </div>
+                ))}
               </div>
-
-              <div className="overflow-hidden" ref={emblaRef}>
-                <div className="flex -ml-4 gap-0">
-                  {properties.map((property) => (
-                    <div
-                      key={property.id}
-                      className="flex-[0_0_100%] sm:flex-[0_0_50%] lg:flex-[0_0_33.333%] min-w-0 pl-4"
-                    >
-                      <FeaturedListingCard property={property} />
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </>
+            </div>
           )}
         </div>
       </div>

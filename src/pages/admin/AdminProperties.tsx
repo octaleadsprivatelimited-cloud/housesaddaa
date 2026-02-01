@@ -147,11 +147,11 @@ export default function AdminProperties() {
                   <td className="p-4">
                     <div className="flex items-center gap-3">
                       <img 
-                        src={property.images[0] || '/placeholder.svg'} 
+                        src={property.images[0] || '/home-image.jpg'} 
                         alt={property.title}
                         className="w-16 h-12 rounded-lg object-cover"
                         onError={(e) => {
-                          (e.target as HTMLImageElement).src = '/placeholder.svg';
+                          (e.target as HTMLImageElement).src = '/home-image.jpg';
                         }}
                       />
                       <div>

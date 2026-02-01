@@ -1,4 +1,5 @@
 import { Shield, Clock, Award, Headphones } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const features = [
   {
@@ -25,49 +26,54 @@ const features = [
 
 export function WhyChooseUs() {
   return (
-    <section className="py-6 md:py-8 lg:py-10">
+    <section className="py-12 md:py-16 lg:py-20" aria-labelledby="section-why-choose-us">
       <div className="container-custom">
-        <div className="relative rounded-2xl p-6 md:p-8 lg:p-10 shadow-lg border-2 border-white/50 overflow-hidden">
-          {/* Background Image */}
-          <div 
-            className="absolute inset-0 bg-cover bg-center rounded-2xl"
-            style={{ backgroundImage: 'url(/why-choose-us-bg.jpg)' }}
-          />
-          {/* Overlay for readability */}
-          <div className="absolute inset-0 bg-[#FEF3C7]/40 rounded-2xl"></div>
-          
-          {/* Decorative elements */}
-          <div className="absolute top-0 left-0 w-40 h-40 bg-white/20 rounded-br-full blur-3xl z-10"></div>
-          <div className="absolute bottom-0 right-0 w-36 h-36 bg-white/20 rounded-tl-full blur-3xl z-10"></div>
-          
-        {/* Header */}
-        <div className="relative z-10 text-center mb-6 md:mb-12">
-          <h2 className="section-heading text-xl md:text-2xl lg:text-3xl">Why Choose Houses Adda</h2>
-          <p className="section-subheading text-sm md:text-base">
-            We make finding your dream home simple and hassle-free
+        {/* Section Header */}
+        <div className="text-center max-w-2xl mx-auto mb-12 md:mb-16">
+          <p className="text-[#E10600] text-sm font-semibold uppercase tracking-wider mb-3">
+            Our Promise
+          </p>
+          <h2 id="section-why-choose-us" className="text-2xl md:text-3xl lg:text-4xl font-bold text-[#1A1A1A] tracking-tight mb-4">
+            Why Choose Houses Adda
+          </h2>
+          <p className="text-[#6B6B6B] text-base md:text-lg leading-relaxed">
+            We make finding your dream home simple, transparent, and hassle-free
           </p>
         </div>
 
-        {/* Features Grid - 2x2 on mobile */}
-        <div className="relative z-10 grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6 lg:gap-8">
+        {/* Features Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
           {features.map((feature, index) => (
             <div
               key={feature.title}
-              className="group p-3 md:p-6 bg-card rounded-xl md:rounded-2xl border border-border hover:border-primary/30 hover:shadow-lg transition-all duration-300 text-center animate-slide-up"
-              style={{ animationDelay: `${index * 100}ms` }}
+              className="group relative p-6 md:p-8 bg-white rounded-2xl border border-[#E5E5E5] hover:border-[#E10600]/20 hover:shadow-xl hover:shadow-[#E10600]/5 transition-all duration-300 hover:-translate-y-1 focus-within:ring-2 focus-within:ring-[#E10600] focus-within:ring-offset-2"
+              style={{ animationDelay: `${index * 75}ms` }}
             >
-              <div className="w-10 h-10 md:w-16 md:h-16 mx-auto mb-2 md:mb-5 rounded-xl md:rounded-2xl gradient-primary flex items-center justify-center group-hover:scale-110 transition-transform">
-                <feature.icon className="h-5 w-5 md:h-8 md:w-8 text-primary-foreground" />
+              {/* Icon */}
+              <div className="w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-[#E10600]/10 flex items-center justify-center mb-5 group-hover:bg-[#E10600] transition-colors duration-300">
+                <feature.icon className="h-7 w-7 md:h-8 md:w-8 text-[#E10600] group-hover:text-white transition-colors duration-300" />
               </div>
-              <h3 className="font-semibold text-xs md:text-lg text-foreground mb-1 md:mb-2">
+
+              {/* Content */}
+              <h3 className="font-bold text-[#1A1A1A] text-lg md:text-xl mb-2">
                 {feature.title}
               </h3>
-              <p className="text-muted-foreground text-[10px] md:text-sm leading-relaxed line-clamp-2 md:line-clamp-none">
+              <p className="text-[#6B6B6B] text-sm md:text-base leading-relaxed">
                 {feature.description}
               </p>
             </div>
           ))}
         </div>
+
+        {/* Bottom CTA */}
+        <div className="mt-12 md:mt-16 text-center">
+          <Link
+            to="/about"
+            className="group inline-flex items-center gap-2 text-[#E10600] font-semibold hover:text-[#B11226] transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E10600] focus-visible:ring-offset-2 rounded-lg px-2 py-1"
+          >
+            Learn more about us
+            <span className="transition-transform duration-300 group-hover:translate-x-1">→</span>
+          </Link>
         </div>
       </div>
     </section>

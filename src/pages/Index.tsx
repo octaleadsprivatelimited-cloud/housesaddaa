@@ -1,6 +1,7 @@
 import { HeroSection } from '@/components/home/HeroSection';
 import { FeaturedListings } from '@/components/home/FeaturedListings';
 import { PropertyCategories } from '@/components/home/PropertyCategories';
+import { AllPropertiesSection } from '@/components/home/AllPropertiesSection';
 import { CategoryProperties } from '@/components/home/CategoryProperties';
 import { WhyChooseUs } from '@/components/home/WhyChooseUs';
 import { CTASection } from '@/components/home/CTASection';
@@ -63,6 +64,7 @@ const Index = () => {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteData) }} />
       <HeroSection />
       <PropertyCategories />
+      <AllPropertiesSection />
       <CategoryProperties />
       <FeaturedListings />
       <WhyChooseUs />
