@@ -11,6 +11,10 @@ import Properties from "./pages/Properties";
 import PropertyDetail from "./pages/PropertyDetail";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import Gallery from "./pages/Gallery";
+import HomeLoans from "./pages/services/HomeLoans";
+import InteriorDesign from "./pages/services/InteriorDesign";
+import PropertyPromotions from "./pages/services/PropertyPromotions";
 import Careers from "./pages/Careers";
 import Blog from "./pages/Blog";
 import Help from "./pages/Help";
@@ -46,6 +50,10 @@ const App = () => (
               <Route path="/property/:slug" element={<PropertyDetail />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/gallery" element={<Gallery />} />
+              <Route path="/services/home-loans" element={<HomeLoans />} />
+              <Route path="/services/interior-design" element={<InteriorDesign />} />
+              <Route path="/services/property-promotions" element={<PropertyPromotions />} />
               <Route path="/careers" element={<Careers />} />
               <Route path="/blog" element={<Blog />} />
               <Route path="/help" element={<Help />} />

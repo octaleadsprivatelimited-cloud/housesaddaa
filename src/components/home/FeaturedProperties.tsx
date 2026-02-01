@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Loader2, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { PropertyCard } from '@/components/property/PropertyCard';
+import { PropertyCardCarousel } from '@/components/property/PropertyCardCarousel';
 import { Property } from '@/types/property';
 import { getFeaturedProperties } from '@/services/propertyService';
 
@@ -78,17 +78,9 @@ export function FeaturedProperties() {
             </Button>
           </div>
         ) : (
-          /* Properties Grid - 2 columns on mobile */
-          <div className="relative z-10 grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6">
-            {properties.map((property, index) => (
-              <div
-                key={property.id}
-                className="animate-slide-up"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <PropertyCard property={property} variant="compact" />
-              </div>
-            ))}
+          /* Properties Slider */
+          <div className="relative z-10">
+            <PropertyCardCarousel properties={properties} variant="compact" />
           </div>
         )}
         </div>

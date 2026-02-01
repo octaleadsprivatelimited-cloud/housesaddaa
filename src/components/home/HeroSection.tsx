@@ -1,21 +1,13 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, MapPin, Home, IndianRupee } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Search, MapPin, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { propertyTypes } from '@/data/properties';
 import { useLocations } from '@/hooks/useLocations';
 import heroBg from '@/assets/hero-bg.jpg';
 
-const listingTabs = [
-  { id: 'sale', label: 'Buy' },
-  { id: 'rent', label: 'Rent' },
-  { id: 'lease', label: 'Lease' },
-  { id: 'pg', label: 'PG' },
-];
-
 const budgetOptions = [
-  { value: 'any', label: 'Any Budget' },
+  { value: 'any', label: '₹ Any Budget' },
   { value: '0-2500000', label: 'Under ₹25 Lakh' },
   { value: '2500000-5000000', label: '₹25 Lakh - ₹50 Lakh' },
   { value: '5000000-10000000', label: '₹50 Lakh - ₹1 Cr' },
@@ -23,138 +15,159 @@ const budgetOptions = [
   { value: '25000000+', label: 'Above ₹2.5 Cr' },
 ];
 
+const heroSlides: { title: string; subtitle: string; image: string }[] = [
+  {
+    title: 'Premium Apartments in Hitech City',
+    subtitle: 'Modern living spaces close to IT hubs',
+    image: heroBg,
+  },
+  {
+    title: 'Luxury Villas in Jubilee Hills',
+    subtitle: 'Exclusive residential properties',
+    image: '/featured-properties-bg.jpg',
+  },
+  {
+    title: 'Plots & Land in Financial District',
+    subtitle: 'Prime investment opportunities',
+    image: '/independent-house-section-bg.jpg',
+  },
+];
+
 export function HeroSection() {
   const navigate = useNavigate();
   const { allAreas, loading: locationsLoading } = useLocations();
-  const [listingType, setListingType] = useState<string>('sale');
-  const [area, setArea] = useState('');
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [location, setLocation] = useState('');
   const [propertyType, setPropertyType] = useState('');
   const [budget, setBudget] = useState('');
 
   const handleSearch = () => {
     const params = new URLSearchParams();
-    if (listingType) params.set('type', listingType);
-    if (area && area !== 'all') params.set('area', area);
+    if (location && location !== 'all') params.set('area', location);
     if (propertyType && propertyType !== 'all') params.set('propertyType', propertyType);
     if (budget && budget !== 'any') params.set('budget', budget);
     navigate(`/properties?${params.toString()}`);
   };
 
+  const nextSlide = () => setCurrentSlide((prev) => (prev + 1) % heroSlides.length);
+  const prevSlide = () => setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length);
+
+  const slide = heroSlides[currentSlide];
+
   return (
-    <section className="relative min-h-[500px] md:min-h-[600px] flex items-center justify-center">
+    <section className="relative min-h-[560px] md:min-h-[640px] flex items-end md:items-center">
       {/* Background Image */}
       <div className="absolute inset-0">
-        <img 
-          src={heroBg} 
-          alt="Modern luxury property" 
+        <img
+          src={slide.image}
+          alt=""
           className="w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-foreground/30" />
+        <div className="absolute inset-0 bg-black/40" />
       </div>
 
-      {/* Centered Search Box */}
-      <div className="relative z-10 w-full max-w-4xl mx-auto px-4">
-        {/* Listing Type Tabs */}
-        <div className="flex justify-center mb-4">
-          <div className="inline-flex bg-card/95 backdrop-blur-sm rounded-full p-1 shadow-lg">
-            {listingTabs.map((tab) => (
+      {/* Hero Slider Arrows */}
+      <button
+        onClick={prevSlide}
+        className="absolute left-4 md:left-6 top-1/2 -translate-y-1/2 z-20 w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/90 hover:bg-white text-foreground flex items-center justify-center shadow-lg transition-colors"
+        aria-label="Previous slide"
+      >
+        <ChevronLeft className="h-4 w-4 md:h-5 md:w-5" />
+      </button>
+      <button
+        onClick={nextSlide}
+        className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 z-20 w-8 h-8 md:w-9 md:h-9 rounded-full bg-white/90 hover:bg-white text-foreground flex items-center justify-center shadow-lg transition-colors"
+        aria-label="Next slide"
+      >
+        <ChevronRight className="h-4 w-4 md:h-5 md:w-5" />
+      </button>
+
+      {/* Content + Search Card */}
+      <div className="relative z-10 w-full container-custom pb-8 md:pb-12">
+        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
+          {/* Left: Hero Text */}
+          <div className="max-w-2xl">
+            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-3">
+              {slide.title}
+            </h1>
+            <p className="text-lg md:text-xl text-white/90">
+              {slide.subtitle}
+            </p>
+          </div>
+
+          {/* Right: Floating Search Card */}
+          <div className="bg-white rounded-2xl shadow-xl p-4 md:p-6 w-full max-w-2xl">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+              <Select value={location || 'all'} onValueChange={setLocation}>
+                <SelectTrigger className="h-12 rounded-xl border-gray-200">
+                  <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <SelectValue placeholder="Location" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Location</SelectItem>
+                  {locationsLoading ? (
+                    <SelectItem value="loading" disabled>Loading...</SelectItem>
+                  ) : (
+                    allAreas.map((areaName) => (
+                      <SelectItem key={areaName} value={areaName}>
+                        {areaName}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+
+              <Select value={propertyType || 'all'} onValueChange={setPropertyType}>
+                <SelectTrigger className="h-12 rounded-xl border-gray-200">
+                  <SelectValue placeholder="Any" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any</SelectItem>
+                  {propertyTypes.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>
+                      {type.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Select value={budget || 'any'} onValueChange={setBudget}>
+                <SelectTrigger className="h-12 rounded-xl border-gray-200">
+                  <SelectValue placeholder="₹ Any Budget" />
+                </SelectTrigger>
+                <SelectContent>
+                  {budgetOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
               <button
-                key={tab.id}
-                onClick={() => setListingType(tab.id)}
-                className={`px-6 py-2 rounded-full font-medium text-sm transition-all ${
-                  listingType === tab.id
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-foreground hover:bg-secondary'
-                }`}
+                onClick={handleSearch}
+                className="h-12 px-6 rounded-xl bg-brand-primary hover:bg-brand-dark text-white font-semibold flex items-center justify-center gap-2 transition-colors"
               >
-                {tab.label}
+                <Search className="h-5 w-5" />
+                Search
               </button>
-            ))}
+            </div>
           </div>
         </div>
 
-        {/* Search Form */}
-        <div className="bg-card/95 backdrop-blur-sm rounded-lg shadow-xl p-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-            {/* Area Select */}
-            <Select value={area} onValueChange={setArea}>
-              <SelectTrigger className="h-14 bg-background border-border">
-                <div className="flex flex-col items-start w-full">
-                  <span className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1">
-                    <MapPin className="h-3 w-3" />
-                    Area
-                  </span>
-                  <SelectValue placeholder="All Areas" className="text-sm font-medium" />
-                </div>
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border max-h-60">
-                <SelectItem value="all">All Areas</SelectItem>
-                {locationsLoading ? (
-                  <SelectItem value="loading" disabled>Loading...</SelectItem>
-                ) : (
-                  allAreas.map((areaName) => (
-                    <SelectItem key={areaName} value={areaName}>
-                      {areaName}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-
-            {/* Property Type Select */}
-            <Select value={propertyType} onValueChange={setPropertyType}>
-              <SelectTrigger className="h-14 bg-background border-border">
-                <div className="flex flex-col items-start w-full">
-                  <span className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1">
-                    <Home className="h-3 w-3" />
-                    Property Type
-                  </span>
-                  <SelectValue placeholder="All Types" className="text-sm font-medium" />
-                </div>
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border">
-                <SelectItem value="all">All Types</SelectItem>
-                {propertyTypes.map((type) => (
-                  <SelectItem key={type.value} value={type.value}>
-                    {type.icon} {type.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Budget Select */}
-            <Select value={budget} onValueChange={setBudget}>
-              <SelectTrigger className="h-14 bg-background border-border">
-                <div className="flex flex-col items-start w-full">
-                  <span className="text-xs text-muted-foreground uppercase tracking-wide flex items-center gap-1">
-                    <IndianRupee className="h-3 w-3" />
-                    Budget
-                  </span>
-                  <SelectValue placeholder="Any Budget" className="text-sm font-medium" />
-                </div>
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border">
-                {budgetOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-
-            {/* Search Button */}
-            <div className="flex justify-center md:justify-start">
-              <Button 
-                variant="default" 
-                size="lg" 
-                className="h-10 md:h-14 w-auto max-w-[200px] md:max-w-none bg-primary hover:bg-primary/90 text-primary-foreground text-sm md:text-base px-4 md:px-8"
-                onClick={handleSearch}
-              >
-                <Search className="h-4 w-4 md:h-5 md:w-5 mr-2" />
-                Search
-              </Button>
-            </div>
-          </div>
+        {/* Slider Dots */}
+        <div className="flex justify-center gap-2 mt-6 md:mt-8">
+          {heroSlides.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentSlide(i)}
+              className={`
+                w-2.5 h-2.5 rounded-full transition-colors
+                ${i === currentSlide ? 'bg-brand-primary w-8' : 'bg-white/60 hover:bg-white/80'}
+              `}
+              aria-label={`Go to slide ${i + 1}`}
+            />
+          ))}
         </div>
       </div>
     </section>

@@ -8,7 +8,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { formatPrice, amenities as amenitiesData, getPropertyTypeLabel } from '@/data/properties';
-import { PropertyCard } from '@/components/property/PropertyCard';
+import { PropertyCardCarousel } from '@/components/property/PropertyCardCarousel';
 import { cn } from '@/lib/utils';
 import { Property } from '@/types/property';
 import { getPropertyBySlug, getPropertiesByType } from '@/services/propertyService';
@@ -365,11 +365,7 @@ export default function PropertyDetailPage() {
         {similarProperties.length > 0 && (
           <div className="mt-16">
             <h2 className="section-heading mb-8">Similar Properties</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {similarProperties.map((p) => (
-                <PropertyCard key={p.id} property={p} />
-              ))}
-            </div>
+            <PropertyCardCarousel properties={similarProperties} variant="default" />
           </div>
         )}
       </div>

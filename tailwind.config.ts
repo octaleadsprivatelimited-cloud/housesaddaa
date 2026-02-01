@@ -18,6 +18,9 @@ export default {
         display: ['Playfair Display', 'serif'],
       },
       colors: {
+        "brand-primary": "#E10600",
+        "brand-dark": "#B11226",
+        "brand-light": "#FADADD",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",

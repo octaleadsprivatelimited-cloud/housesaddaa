@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -7,14 +9,12 @@
    Typography: Clean, modern, readable
 */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@500;600;700&display=swap');
-
 @layer base {
   :root {
-    /* Brand Colors - Red Theme */
-    --primary: 0 72% 51%;
+    /* Brand Colors - Red Theme (#E10600 primary, #B11226 dark) */
+    --primary: 2 100% 44%;
     --primary-foreground: 0 0% 100%;
-    --primary-hover: 0 72% 45%;
+    --primary-hover: 2 100% 35%;
     
     /* Accent - Warm Orange */
     --accent: 15 90% 55%;
@@ -162,15 +162,13 @@
     @apply bg-accent text-accent-foreground;
   }
   
-  /* Property Card Styles */
+  /* Property Card Styles - Premium real estate look */
   .property-card {
-    @apply bg-card rounded-xl overflow-hidden transition-all duration-300;
-    box-shadow: var(--shadow-card);
+    @apply overflow-hidden transition-all duration-300;
   }
   
   .property-card:hover {
-    box-shadow: var(--shadow-card-hover);
-    @apply -translate-y-1;
+    transform: translateY(-2px);
   }
   
   /* Search Bar Styles */

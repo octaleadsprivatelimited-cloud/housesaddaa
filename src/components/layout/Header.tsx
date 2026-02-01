@@ -1,88 +1,171 @@
-import { Link } from 'react-router-dom';
-import { useState } from 'react';
-import { Menu, X, Phone } from 'lucide-react';
+import { Link, NavLink, useLocation } from 'react-router-dom';
+import { useState, useRef, useEffect } from 'react';
+import { Menu, X, Phone, Mail, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-const navigation = [
-  { name: 'Buy', href: '/properties?type=sale' },
-  { name: 'Rent', href: '/properties?type=rent' },
-  { name: 'New Projects', href: '/properties?status=under-construction' },
-  { name: 'Plot', href: '/properties?propertyType=plot' },
-  { name: 'Commercial', href: '/properties?propertyType=commercial' },
+const mainNav = [
+  { name: 'Home', href: '/' },
+  { name: 'About Us', href: '/about' },
+  { name: 'Properties', href: '/properties' },
+  {
+    name: 'Services',
+    href: '/services',
+    children: [
+      { name: 'Home Loans', href: '/services/home-loans' },
+      { name: 'Interior Design', href: '/services/interior-design' },
+      { name: 'Property Promotions', href: '/services/property-promotions' },
+    ],
+  },
+  { name: 'Gallery', href: '/gallery' },
+  { name: 'Blog', href: '/blog' },
+  { name: 'Contact Us', href: '/contact' },
 ];
+
+const navLinkClass = ({ isActive }: { isActive: boolean }) =>
+  cn(
+    'relative font-medium transition-colors py-2',
+    'hover:text-[#E10600]',
+    isActive ? 'text-[#E10600]' : 'text-[#1A1A1A]',
+    'after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-[#E10600] after:transition-all after:duration-300',
+    'hover:after:w-full',
+    isActive && 'after:w-full'
+  );
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [servicesOpen, setServicesOpen] = useState(false);
+  const [mobileServicesOpen, setMobileServicesOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const location = useLocation();
+
+  const isServicesActive = location.pathname.startsWith('/services');
+
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setMobileServicesOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setServicesOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   return (
-    <header className="sticky top-0 z-50">
-      {/* Single header - Red background */}
-      <div className="bg-primary border-b border-primary/20">
+    <header className="sticky top-0 z-50 bg-white shadow-sm">
+      {/* Top Info Bar */}
+      <div className="bg-[#B11226] text-white">
         <div className="container-custom">
-          {/* Mobile: Single line with logo, phone, and menu */}
-          <div className="md:hidden flex items-center justify-between py-2">
-            {/* Logo - Smaller on mobile */}
-            <Link to="/" className="flex items-center gap-1.5 bg-white border border-white/20 rounded-md px-2 py-1 shadow-sm">
-              <img 
-                src="/logo.png" 
-                alt="Houses Adda Logo" 
-                className="h-6 w-auto"
-              />
-              <span className="font-display text-xs font-bold text-primary">Houses Adda</span>
-            </Link>
-
-            {/* Phone Number - Smaller on mobile */}
-            <a 
-              href="tel:+916301575658" 
-              className="flex items-center gap-1 text-primary-foreground hover:opacity-80 transition-opacity bg-primary/10 rounded-md px-2 py-1"
-            >
+          <div className="hidden md:flex items-center justify-between py-2 text-sm">
+            <div className="flex items-center gap-6">
+              <a href="tel:+916301575658" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
+                <Phone className="h-4 w-4" />
+                <span>+91 63015 75658</span>
+              </a>
+              <a href="mailto:info@housesadda.in" className="flex items-center gap-2 hover:opacity-90 transition-opacity">
+                <Mail className="h-4 w-4" />
+                <span>info@housesadda.in</span>
+              </a>
+            </div>
+            <p className="font-medium">Your Trusted Property Consultant in Hyderabad</p>
+          </div>
+          <div className="md:hidden flex items-center justify-between py-2 text-xs">
+            <a href="tel:+916301575658" className="flex items-center gap-1">
               <Phone className="h-3.5 w-3.5" />
-              <span className="font-medium text-xs">+91 63015 75658</span>
+              <span>+91 63015 75658</span>
             </a>
+            <span className="text-white/90">Trusted Property Consultant</span>
+          </div>
+        </div>
+      </div>
 
-            {/* Mobile menu button */}
-            <button
-              type="button"
-              className="p-2 text-primary-foreground hover:bg-primary/20 rounded-md transition-colors"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+      {/* Main Header */}
+      <div className="container-custom py-3">
+        <div className="flex items-center justify-between gap-4">
+          <Link to="/" className="flex items-center gap-3 shrink-0">
+            <div className="w-12 h-12 rounded-full bg-[#E10600] flex items-center justify-center text-white font-bold text-lg overflow-hidden shadow-md">
+              <span>HA</span>
+            </div>
+            <div>
+              <h1 className="font-display font-bold text-xl text-[#1A1A1A]">Houses Adda</h1>
+              <p className="text-xs text-[#6B6B6B] -mt-0.5">Property Consultant</p>
+            </div>
+          </Link>
+
+          <div className="hidden md:flex flex-1 justify-end">
+            <nav className="flex items-center gap-8">
+              {mainNav.map((item) =>
+                item.children ? (
+                  <div key={item.name} ref={dropdownRef} className="relative">
+                    <button
+                      onMouseEnter={() => setServicesOpen(true)}
+                      onClick={() => setServicesOpen(!servicesOpen)}
+                      className={cn(
+                        'flex items-center gap-1 font-medium transition-colors py-2',
+                        'hover:text-[#E10600]',
+                        isServicesActive ? 'text-[#E10600]' : 'text-[#1A1A1A]',
+                        'after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 after:bg-[#E10600] after:transition-all after:duration-300',
+                        'hover:after:w-full',
+                        isServicesActive && 'after:w-full'
+                      )}
+                    >
+                      {item.name}
+                      <ChevronDown className={cn('h-4 w-4 transition-transform', servicesOpen && 'rotate-180')} />
+                    </button>
+                    <div
+                      onMouseLeave={() => setServicesOpen(false)}
+                      className={cn(
+                        'absolute top-full left-0 mt-0 py-2 min-w-[200px] bg-white rounded-xl shadow-lg border border-gray-100',
+                        'transition-all duration-200',
+                        servicesOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2 pointer-events-none'
+                      )}
+                    >
+                      {item.children.map((child) => (
+                        <Link
+                          key={child.href}
+                          to={child.href}
+                          className="block px-4 py-2.5 text-[#1A1A1A] hover:bg-[#FADADD] hover:text-[#E10600] rounded-lg mx-1 transition-colors"
+                        >
+                          {child.name}
+                        </Link>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <NavLink key={item.name} to={item.href} className={navLinkClass}>
+                    {item.name}
+                  </NavLink>
+                )
+              )}
+            </nav>
+            <a
+              href="tel:+916301575658"
+              className="ml-6 flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#E10600] hover:bg-[#B11226] text-white font-semibold transition-colors shrink-0"
             >
-              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
+              <Phone className="h-4 w-4" />
+              Call Now
+            </a>
           </div>
 
-          {/* Desktop: Single line with logo, menu, and phone */}
-          <div className="hidden md:flex items-center justify-between py-2">
-            {/* Logo */}
-            <Link to="/" className="flex items-center gap-2 bg-white border border-white/20 rounded-lg px-3 py-1.5 shadow-sm">
-              <img 
-                src="/logo.png" 
-                alt="Houses Adda Logo" 
-                className="h-8 w-auto"
-              />
-              <span className="font-display text-lg font-bold text-primary">Houses Adda</span>
-            </Link>
-
-            {/* Desktop Navigation */}
-            <div className="flex items-center gap-8">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className="text-primary-foreground hover:text-primary-foreground/80 font-medium transition-colors"
-                >
-                  {item.name}
-                </Link>
-              ))}
-            </div>
-
-            {/* Phone Number */}
-            <a 
-              href="tel:+916301575658" 
-              className="flex items-center gap-2 text-primary-foreground hover:opacity-80 transition-opacity"
+          <div className="flex md:hidden items-center gap-2">
+            <a
+              href="tel:+916301575658"
+              className="flex items-center gap-1 px-3 py-2 rounded-lg bg-[#E10600] hover:bg-[#B11226] text-white text-sm font-semibold"
             >
-              <Phone className="h-3.5 w-3.5" />
-              <span className="font-medium text-sm">+91 63015 75658</span>
+              <Phone className="h-4 w-4" />
+              Call
             </a>
+            <button
+              type="button"
+              className="p-2 text-[#1A1A1A] hover:bg-[#F9F9F9] rounded-lg"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            >
+              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
           </div>
         </div>
       </div>
@@ -90,22 +173,49 @@ export function Header() {
       {/* Mobile menu */}
       <div
         className={cn(
-          'md:hidden absolute top-full left-0 right-0 bg-primary border-b border-primary/20 overflow-hidden transition-all duration-300 ease-in-out z-50',
-          mobileMenuOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'
+          'md:hidden bg-white border-t border-[#E5E5E5] overflow-hidden transition-all duration-300',
+          mobileMenuOpen ? 'max-h-[500px]' : 'max-h-0'
         )}
       >
-        <div className="container-custom py-4 space-y-2">
-          {navigation.map((item) => (
-            <Link
-              key={item.name}
-              to={item.href}
-              className="block py-2 text-primary-foreground hover:text-primary-foreground/80 font-medium transition-colors"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              {item.name}
-            </Link>
-          ))}
-        </div>
+        <nav className="container-custom py-4 space-y-1">
+          {mainNav.map((item) =>
+            item.children ? (
+              <div key={item.name}>
+                <button
+                  onClick={() => setMobileServicesOpen(!mobileServicesOpen)}
+                  className="flex items-center justify-between w-full py-3 font-medium text-[#1A1A1A] hover:text-[#E10600]"
+                >
+                  {item.name}
+                  <ChevronDown className={cn('h-4 w-4 transition-transform', mobileServicesOpen && 'rotate-180')} />
+                </button>
+                <div className={cn('overflow-hidden transition-all', mobileServicesOpen ? 'max-h-40' : 'max-h-0')}>
+                  <div className="pl-4 pb-2 space-y-1">
+                    {item.children.map((child) => (
+                      <Link
+                        key={child.href}
+                        to={child.href}
+                        className="block py-2 text-[#6B6B6B] hover:text-[#E10600] font-medium"
+                      >
+                        {child.name}
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={cn(
+                  'block py-3 font-medium transition-colors',
+                  location.pathname === item.href ? 'text-[#E10600]' : 'text-[#1A1A1A] hover:text-[#E10600]'
+                )}
+              >
+                {item.name}
+              </Link>
+            )
+          )}
+        </nav>
       </div>
     </header>
   );

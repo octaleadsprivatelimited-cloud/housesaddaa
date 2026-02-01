@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Loader2 } from 'lucide-react';
-import { PropertyCard } from '@/components/property/PropertyCard';
+import { PropertyCardCarousel } from '@/components/property/PropertyCardCarousel';
 import { getPropertiesByType } from '@/services/propertyService';
 import { Property } from '@/types/property';
 import { propertyTypes } from '@/data/properties';
@@ -86,16 +86,8 @@ function CategorySection({ propertyType, label }: CategorySectionProps) {
             <Loader2 className="h-6 w-6 md:h-8 md:w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className={`grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 lg:gap-6 ${isIndependentHouse ? 'relative z-10' : ''}`}>
-            {properties.map((property, index) => (
-              <div
-                key={property.id}
-                className="animate-slide-up"
-                style={{ animationDelay: `${index * 100}ms` }}
-              >
-                <PropertyCard property={property} variant="compact" />
-              </div>
-            ))}
+          <div className={isIndependentHouse ? 'relative z-10' : ''}>
+            <PropertyCardCarousel properties={properties} variant="compact" />
           </div>
         )}
         </div>
@@ -105,12 +97,10 @@ function CategorySection({ propertyType, label }: CategorySectionProps) {
 }
 
 export function CategoryProperties() {
-  // Display sections for main property types
-  const categoriesToShow = propertyTypes.slice(0, 6);
-
+  // Display sections for all property type categories
   return (
     <div>
-      {categoriesToShow.map((type) => (
+      {propertyTypes.map((type) => (
         <CategorySection
           key={type.value}
           propertyType={type.value}

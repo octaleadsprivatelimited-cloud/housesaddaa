@@ -7,9 +7,15 @@ const footerLinks = {
   company: [
     { name: 'About Us', href: '/about' },
     { name: 'Contact Us', href: '/contact' },
-    { name: 'Careers', href: '/careers' },
+    { name: 'Gallery', href: '/gallery' },
     { name: 'Blog', href: '/blog' },
-    { name: 'Sitemap', href: '/sitemap.xml' },
+    { name: 'Careers', href: '/careers' },
+    { name: 'Sitemap', href: '/sitemap' },
+  ],
+  services: [
+    { name: 'Home Loans', href: '/services/home-loans' },
+    { name: 'Interior Design', href: '/services/interior-design' },
+    { name: 'Property Promotions', href: '/services/property-promotions' },
   ],
   properties: [
     { name: 'Buy Property', href: '/properties?type=sale' },
@@ -85,7 +91,7 @@ export function Footer() {
       
       {/* Main Footer */}
       <div className="relative z-10 container-custom py-12 md:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
           {/* Brand */}
           <div>
             <Link to="/" className="flex items-center gap-2 mb-4">
@@ -115,6 +121,7 @@ export function Footer() {
 
           {/* Links */}
           <FooterSection title="Company" links={footerLinks.company} sectionKey="company" />
+          <FooterSection title="Services" links={footerLinks.services} sectionKey="services" />
           <FooterSection title="Properties" links={footerLinks.properties} sectionKey="properties" />
         </div>
       </div>
