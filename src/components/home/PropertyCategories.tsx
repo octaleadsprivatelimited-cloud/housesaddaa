@@ -99,7 +99,7 @@ export function PropertyCategories() {
             to="/properties"
             className="inline-flex items-center gap-2 px-6 py-3 text-sm font-medium text-[#E10600] hover:text-[#B11226] border-2 border-[#E10600]/30 hover:border-[#E10600] rounded-xl transition-all duration-300 hover:shadow-md hover:shadow-[#E10600]/10"
           >
-            View All Properties
+            View Properties
             <ArrowRight className="h-4 w-4" />
           </Link>
         </div>

@@ -33,7 +33,7 @@ export function AllPropertiesSection() {
               Explore Listings
             </p>
             <h2 id="section-all-properties" className="text-2xl md:text-3xl lg:text-4xl font-bold text-[#1A1A1A] tracking-tight">
-              All Properties
+              Properties
             </h2>
             <p className="mt-2 text-[#6B6B6B] text-base">
               Browse our complete collection of verified properties
@@ -43,7 +43,7 @@ export function AllPropertiesSection() {
             to="/properties"
             className="group inline-flex items-center justify-center gap-2 shrink-0 px-6 py-3 bg-[#E10600] hover:bg-[#B11226] text-white text-sm font-semibold rounded-xl transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E10600] focus-visible:ring-offset-2"
           >
-            View All Properties
+            View Properties
             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </div>

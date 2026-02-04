@@ -74,7 +74,7 @@ export function FeaturedProperties() {
               Properties will appear here once they are added through the admin panel.
             </p>
             <Button variant="outline" size="sm" asChild className="bg-white/10 hover:bg-white/20 text-white border-white/30">
-              <Link to="/properties">Browse All Properties</Link>
+              <Link to="/properties">Browse Properties</Link>
             </Button>
           </div>
         ) : (

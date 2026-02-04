@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import { Facebook, Twitter, Instagram, Linkedin, MapPin, Phone, Mail, ChevronDown, ChevronUp } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Linkedin, Youtube, MapPin, Phone, Mail, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const footerLinks = {
@@ -36,6 +36,7 @@ const socialLinks = [
   { name: 'Twitter', icon: Twitter, href: 'https://twitter.com' },
   { name: 'Instagram', icon: Instagram, href: 'https://instagram.com' },
   { name: 'LinkedIn', icon: Linkedin, href: 'https://linkedin.com' },
+  { name: 'YouTube', icon: Youtube, href: 'https://youtube.com' },
 ];
 
 export function Footer() {
@@ -140,7 +141,7 @@ export function Footer() {
               Octaleads Pvt Ltd.
             </a>
           </p>
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-4 mr-14 sm:mr-16">
             {socialLinks.map((social) => (
               <a
                 key={social.name}

@@ -85,6 +85,12 @@ export const getProperties = async (
         return false;
       }
       
+      // Price range filter
+      if (filters?.priceRange) {
+        if (filters.priceRange.min != null && p.price < filters.priceRange.min) return false;
+        if (filters.priceRange.max != null && p.price > filters.priceRange.max) return false;
+      }
+
       // Bedrooms filter
       if (filters?.bedrooms && filters.bedrooms.length > 0) {
         if (!filters.bedrooms.includes(p.bedrooms)) {

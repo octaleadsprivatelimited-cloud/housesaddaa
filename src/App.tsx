@@ -29,6 +29,8 @@ import AdminAddProperty from "./pages/admin/AdminAddProperty";
 import AdminEditProperty from "./pages/admin/AdminEditProperty";
 import AdminEnquiries from "./pages/admin/AdminEnquiries";
 import AdminLocations from "./pages/admin/AdminLocations";
+import AdminPartners from "./pages/admin/AdminPartners";
+import AdminGallery from "./pages/admin/AdminGallery";
 import AdminSettings from "./pages/admin/AdminSettings";
 import NotFound from "./pages/NotFound";
 
@@ -70,6 +72,8 @@ const App = () => (
               <Route path="properties/add" element={<AdminAddProperty />} />
               <Route path="properties/edit/:id" element={<AdminEditProperty />} />
               <Route path="enquiries" element={<AdminEnquiries />} />
+              <Route path="partners" element={<AdminPartners />} />
+              <Route path="gallery" element={<AdminGallery />} />
               <Route path="locations" element={<AdminLocations />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>

@@ -92,6 +92,25 @@ export interface Enquiry {
   createdAt: Date;
 }
 
+export type PartnerType = 'bank' | 'company';
+
+export interface Partner {
+  id: string;
+  type: PartnerType;
+  title: string;
+  imageUrl: string; // base64 data URL or public URL
+  order?: number;
+  createdAt: Date;
+}
+
+export interface GalleryVideo {
+  id: string;
+  title: string;
+  videoId: string; // YouTube video ID for embed
+  order?: number;
+  createdAt: Date;
+}
+
 export interface LocationOption {
   id: string;
   country: string;

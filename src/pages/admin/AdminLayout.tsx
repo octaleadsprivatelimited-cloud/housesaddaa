@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Building2, Plus, Users, MapPin, 
-  Settings, LogOut, Menu, X, Bell, Search
+  Settings, LogOut, Menu, X, Bell, Search, Handshake, Video
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -14,6 +14,8 @@ const sidebarLinks = [
   { name: 'Properties', href: '/admin/properties', icon: Building2 },
   { name: 'Add Property', href: '/admin/properties/add', icon: Plus },
   { name: 'Enquiries', href: '/admin/enquiries', icon: Users },
+  { name: 'Partners', href: '/admin/partners', icon: Handshake },
+  { name: 'Gallery Videos', href: '/admin/gallery', icon: Video },
   { name: 'Locations', href: '/admin/locations', icon: MapPin },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];

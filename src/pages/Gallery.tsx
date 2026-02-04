@@ -1,7 +1,9 @@
-import { useState } from 'react';
-import { X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { X, Loader2 } from 'lucide-react';
 import SEO from '@/components/SEO';
 import { cn } from '@/lib/utils';
+import { getGalleryVideos } from '@/services/galleryVideoService';
+import { GalleryVideo } from '@/types/property';
 
 const galleryImages = [
   { id: '1', src: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800', alt: 'Luxury apartment living room' },
@@ -19,8 +21,17 @@ const galleryImages = [
 ];
 
 export default function Gallery() {
+  const [videos, setVideos] = useState<GalleryVideo[]>([]);
+  const [videosLoading, setVideosLoading] = useState(true);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [selectedImage, setSelectedImage] = useState<typeof galleryImages[0] | null>(null);
+
+  useEffect(() => {
+    getGalleryVideos()
+      .then(setVideos)
+      .catch(() => setVideos([]))
+      .finally(() => setVideosLoading(false));
+  }, []);
 
   const openLightbox = (img: typeof galleryImages[0]) => {
     setSelectedImage(img);
@@ -62,6 +73,36 @@ export default function Gallery() {
             </p>
           </div>
 
+          {/* YouTube Videos - from admin */}
+          {videosLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-[#E10600]" />
+            </div>
+          ) : videos.length > 0 ? (
+            <section className="mb-16">
+              <h2 className="text-2xl font-bold text-[#1A1A1A] mb-6">Videos</h2>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {videos.map((video) => (
+                  <div key={video.id} className="rounded-2xl overflow-hidden bg-white shadow-sm border border-[#EEE]">
+                    <div className="aspect-video bg-[#1a1a1a] relative">
+                      <iframe
+                        title={video.title}
+                        src={`https://www.youtube.com/embed/${video.videoId}`}
+                        className="absolute inset-0 w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-semibold text-[#1A1A1A]">{video.title}</h3>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : null}
+
+          <h2 className="text-2xl font-bold text-[#1A1A1A] mb-6">Photos</h2>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
             {galleryImages.map((img) => (
               <button

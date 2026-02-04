@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import useEmblaCarousel from 'embla-carousel-react';
 import {
   Building2,
   CheckCircle2,
@@ -9,19 +11,11 @@ import {
   Clock,
   Shield,
   MessageCircle,
-  Landmark,
   Calculator,
 } from 'lucide-react';
 import SEO from '@/components/SEO';
-
-const partnerBanks = [
-  'HDFC Bank',
-  'ICICI Bank',
-  'State Bank of India',
-  'Axis Bank',
-  'Kotak Mahindra Bank',
-  'IndusInd Bank',
-];
+import { getPartnersByType } from '@/services/partnerService';
+import { Partner } from '@/types/property';
 
 const benefits = [
   {
@@ -52,6 +46,74 @@ const processSteps = [
   { step: 3, title: 'Apply', description: 'We assist with documentation and submission.' },
   { step: 4, title: 'Disburse', description: 'Receive funds once approved and start your dream home journey.' },
 ];
+
+function PartnerBanksSlider() {
+  const [banks, setBanks] = useState<Partner[]>([]);
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    align: 'start',
+    loop: banks.length > 1,
+    containScroll: 'trimSnaps',
+    slidesToScroll: 1,
+    breakpoints: { '(min-width: 768px)': { slidesToScroll: 2 } },
+  });
+
+  useEffect(() => {
+    getPartnersByType('bank')
+      .then(setBanks)
+      .catch(() => setBanks([]));
+  }, []);
+
+  useEffect(() => {
+    if (!emblaApi) return;
+    const interval = setInterval(() => emblaApi.scrollNext(), 1800);
+    return () => clearInterval(interval);
+  }, [emblaApi]);
+
+  if (banks.length === 0) return null;
+
+  return (
+    <div className="relative">
+      <div className="overflow-hidden px-2" ref={emblaRef}>
+        <div className="flex -ml-4 gap-0">
+          {banks.map((bank) => (
+            <div
+              key={bank.id}
+              className="flex-[0_0_50%] sm:flex-[0_0_33.333%] md:flex-[0_0_25%] min-w-0 pl-4"
+            >
+              <div className="bg-white rounded-xl md:rounded-2xl p-4 md:p-6 flex flex-col items-center justify-center min-h-[100px] md:min-h-[120px] border border-[#E5E5E5] hover:border-[#E10600]/30 hover:shadow-lg transition-all duration-300 group">
+                <BankLogo bank={bank} />
+                <span className="text-[#6B6B6B] text-xs mt-2 font-medium group-hover:text-[#E10600] transition-colors">
+                  {bank.title}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function BankLogo({ bank }: { bank: Partner }) {
+  const [error, setError] = useState(false);
+  const initial = bank.title.split(/\s+/).map((w) => w[0]).join('').slice(0, 4);
+  return (
+    <div className="w-14 h-14 md:w-16 md:h-16 flex items-center justify-center shrink-0">
+      {!error ? (
+        <img
+          src={bank.imageUrl}
+          alt={bank.title}
+          className="max-w-full max-h-full object-contain"
+          onError={() => setError(true)}
+        />
+      ) : (
+        <div className="w-full h-full rounded-xl bg-[#FEF2F2] flex items-center justify-center">
+          <span className="text-[#E10600] font-bold text-sm md:text-base">{initial}</span>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function HomeLoans() {
   return (
@@ -186,7 +248,7 @@ export default function HomeLoans() {
                   </div>
                 </div>
 
-                {/* Partner Banks */}
+                {/* Partner Banks Slider */}
                 <div>
                   <h2 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-4">
                     Partner Banks
@@ -194,17 +256,7 @@ export default function HomeLoans() {
                   <p className="text-[#6B6B6B] mb-6">
                     We work with India's leading banks to offer you a wide range of home loan options.
                   </p>
-                  <div className="flex flex-wrap gap-3">
-                    {partnerBanks.map((bank) => (
-                      <div
-                        key={bank}
-                        className="flex items-center gap-2 px-5 py-3 bg-white rounded-xl border border-[#E5E5E5] hover:border-[#E10600]/30 hover:shadow-md transition-all group"
-                      >
-                        <Landmark className="h-5 w-5 text-[#E10600]/70 group-hover:text-[#E10600]" />
-                        <span className="font-semibold text-[#1A1A1A]">{bank}</span>
-                      </div>
-                    ))}
-                  </div>
+                  <PartnerBanksSlider />
                 </div>
               </div>
 

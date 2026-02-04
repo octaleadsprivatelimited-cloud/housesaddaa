@@ -107,7 +107,7 @@ export function FeaturedListings() {
                 href="/properties"
                 className="px-6 py-2 rounded-xl bg-[#E10600] hover:bg-[#B11226] text-white font-medium inline-block"
               >
-                Browse All Properties
+                Browse Properties
               </a>
             </div>
           ) : (

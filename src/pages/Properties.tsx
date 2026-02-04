@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
-import { Filter, Grid3X3, List, SlidersHorizontal, X, Loader2 } from 'lucide-react';
+import { Filter, Grid3X3, List, SlidersHorizontal, X, Loader2, Search, MapPin, Home, IndianRupee } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -13,14 +13,40 @@ import { getProperties } from '@/services/propertyService';
 import { useLocations } from '@/hooks/useLocations';
 import SEO from '@/components/SEO';
 
+const budgetOptions = [
+  { value: 'any', label: '₹ Any Budget' },
+  { value: '0-2500000', label: 'Under ₹25 Lakh' },
+  { value: '2500000-5000000', label: '₹25 Lakh - ₹50 Lakh' },
+  { value: '5000000-10000000', label: '₹50 Lakh - ₹1 Cr' },
+  { value: '10000000-25000000', label: '₹1 Cr - ₹2.5 Cr' },
+  { value: '25000000+', label: 'Above ₹2.5 Cr' },
+];
+
+function budgetToPriceRange(budget: string | null): { min?: number; max?: number } | undefined {
+  if (!budget || budget === 'any') return undefined;
+  if (budget === '25000000+') return { min: 25000000 };
+  const [minStr, maxStr] = budget.split('-');
+  const min = minStr ? Number(minStr) : undefined;
+  const max = maxStr ? Number(maxStr) : undefined;
+  return { min, max };
+}
+
+function priceRangeToBudget(priceRange?: { min?: number; max?: number }): string {
+  if (!priceRange) return 'any';
+  if (priceRange.min === 25000000 && !priceRange.max) return '25000000+';
+  if (priceRange.min != null && priceRange.max != null) return `${priceRange.min}-${priceRange.max}`;
+  return 'any';
+}
+
 export default function PropertiesPage() {
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   
   // Generate dynamic SEO based on filters
   const type = searchParams.get('type') || '';
   const propertyType = searchParams.get('propertyType') || '';
   const city = searchParams.get('city') || '';
   const area = searchParams.get('area') || '';
+  const budgetParam = searchParams.get('budget') || '';
   
   const getSEOTitle = () => {
     if (type && propertyType && city) {
@@ -64,11 +90,13 @@ export default function PropertiesPage() {
   const initialListingType = searchParams.get('type') as 'sale' | 'rent' | null;
   const initialArea = searchParams.get('area');
   const initialPropertyType = searchParams.get('propertyType');
+  const initialBudget = searchParams.get('budget') || '';
   
   const [filters, setFilters] = useState<PropertyFilter>({
     listingType: initialListingType || undefined,
     location: initialArea ? { area: initialArea } : undefined,
     propertyTypes: initialPropertyType ? [initialPropertyType as any] : undefined,
+    priceRange: budgetToPriceRange(initialBudget || null),
   });
 
   // Fetch properties from Firestore
@@ -93,10 +121,28 @@ export default function PropertiesPage() {
     filters.location?.area,
     filters.propertyTypes?.length,
     filters.bedrooms?.length,
+    filters.priceRange && (filters.priceRange.min != null || filters.priceRange.max != null),
   ].filter(Boolean).length;
+
+  const applyHeroFilter = (listingType: 'sale' | 'rent' | '', area: string, propertyType: string, budget: string) => {
+    const params = new URLSearchParams();
+    if (listingType) params.set('type', listingType);
+    if (area && area !== 'all') params.set('area', area);
+    if (propertyType && propertyType !== 'all') params.set('propertyType', propertyType);
+    if (budget && budget !== 'any') params.set('budget', budget);
+    setSearchParams(params.toString() ? params : new URLSearchParams());
+    setFilters({
+      ...filters,
+      listingType: listingType || undefined,
+      location: area && area !== 'all' ? { area } : undefined,
+      propertyTypes: propertyType && propertyType !== 'all' ? [propertyType as any] : undefined,
+      priceRange: budgetToPriceRange(budget || null),
+    });
+  };
 
   const clearFilters = () => {
     setFilters({});
+    setSearchParams(new URLSearchParams());
   };
 
   const FilterContent = () => (
@@ -220,12 +266,125 @@ export default function PropertiesPage() {
           <h1 className="font-display text-3xl font-bold text-foreground">
             {filters.listingType === 'rent' ? 'Properties for Rent' : 
              filters.listingType === 'sale' ? 'Properties for Sale' : 
-             'All Properties'}
+             'Properties'}
             {filters.location?.area && ` in ${filters.location.area}`}
           </h1>
           <p className="text-muted-foreground mt-1">
             {loading ? 'Loading...' : `${properties.length} properties found`}
           </p>
+        </div>
+      </div>
+
+      {/* Quick filter bar */}
+      <div className="bg-white border-b border-[#EEE]">
+        <div className="container-custom py-4">
+          <div className="flex flex-col gap-4">
+            <p className="text-xs font-medium text-[#888] uppercase tracking-wider">Quick filters</p>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex rounded-lg border border-[#E5E5E5] p-1 bg-[#FAFAFA]">
+                <button
+                  type="button"
+                  onClick={() => applyHeroFilter(
+                    filters.listingType === 'sale' ? '' : 'sale',
+                    filters.location?.area || 'all',
+                    filters.propertyTypes?.[0] || 'all',
+                    priceRangeToBudget(filters.priceRange)
+                  )}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${filters.listingType === 'sale' ? 'bg-[#E10600] text-white shadow-sm' : 'text-[#555] hover:text-[#1A1A1A]'}`}
+                >
+                  Buy
+                </button>
+                <button
+                  type="button"
+                  onClick={() => applyHeroFilter(
+                    filters.listingType === 'rent' ? '' : 'rent',
+                    filters.location?.area || 'all',
+                    filters.propertyTypes?.[0] || 'all',
+                    priceRangeToBudget(filters.priceRange)
+                  )}
+                  className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${filters.listingType === 'rent' ? 'bg-[#E10600] text-white shadow-sm' : 'text-[#555] hover:text-[#1A1A1A]'}`}
+                >
+                  Rent
+                </button>
+              </div>
+              <div className="h-8 w-px bg-[#E5E5E5] hidden sm:block" />
+              <Select
+                value={filters.location?.area || 'all'}
+                onValueChange={(area) => applyHeroFilter(
+                  filters.listingType || '',
+                  area,
+                  filters.propertyTypes?.[0] || 'all',
+                  priceRangeToBudget(filters.priceRange)
+                )}
+              >
+                <SelectTrigger className="w-[180px] sm:w-[200px] h-10 rounded-lg border-[#E5E5E5] bg-[#FAFAFA] text-sm">
+                  <MapPin className="h-4 w-4 text-[#888] shrink-0 mr-1.5" />
+                  <SelectValue placeholder="Location" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All locations</SelectItem>
+                  {locationsLoading ? (
+                    <SelectItem value="loading" disabled>Loading...</SelectItem>
+                  ) : (
+                    allAreas.map((areaName) => (
+                      <SelectItem key={areaName} value={areaName}>{areaName}</SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
+              <Select
+                value={filters.propertyTypes?.[0] || 'all'}
+                onValueChange={(propertyType) => applyHeroFilter(
+                  filters.listingType || '',
+                  filters.location?.area || 'all',
+                  propertyType,
+                  priceRangeToBudget(filters.priceRange)
+                )}
+              >
+                <SelectTrigger className="w-[160px] sm:w-[180px] h-10 rounded-lg border-[#E5E5E5] bg-[#FAFAFA] text-sm">
+                  <Home className="h-4 w-4 text-[#888] shrink-0 mr-1.5" />
+                  <SelectValue placeholder="Type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any type</SelectItem>
+                  {propertyTypes.map((type) => (
+                    <SelectItem key={type.value} value={type.value}>{type.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <Select
+                value={priceRangeToBudget(filters.priceRange)}
+                onValueChange={(budget) => applyHeroFilter(
+                  filters.listingType || '',
+                  filters.location?.area || 'all',
+                  filters.propertyTypes?.[0] || 'all',
+                  budget
+                )}
+              >
+                <SelectTrigger className="w-[160px] sm:w-[180px] h-10 rounded-lg border-[#E5E5E5] bg-[#FAFAFA] text-sm">
+                  <IndianRupee className="h-4 w-4 text-[#888] shrink-0 mr-1.5" />
+                  <SelectValue placeholder="Budget" />
+                </SelectTrigger>
+                <SelectContent>
+                  {budgetOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {activeFilterCount > 0 && (
+                <>
+                  <div className="h-8 w-px bg-[#E5E5E5] hidden sm:block" />
+                  <button
+                    type="button"
+                    onClick={() => clearFilters()}
+                    className="text-sm font-medium text-[#E10600] hover:underline"
+                  >
+                    Clear all
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
         </div>
       </div>
 

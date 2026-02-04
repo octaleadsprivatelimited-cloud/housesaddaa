@@ -40,9 +40,11 @@ export function HeroSection() {
   const [location, setLocation] = useState('');
   const [propertyType, setPropertyType] = useState('');
   const [budget, setBudget] = useState('');
+  const [listingType, setListingType] = useState<'sale' | 'rent' | ''>('');
 
   const handleSearch = () => {
     const params = new URLSearchParams();
+    if (listingType) params.set('type', listingType);
     if (location && location !== 'all') params.set('area', location);
     if (propertyType && propertyType !== 'all') params.set('propertyType', propertyType);
     if (budget && budget !== 'any') params.set('budget', budget);
@@ -82,11 +84,11 @@ export function HeroSection() {
         <ChevronRight className="h-5 w-5" />
       </button>
 
-      {/* Content */}
-      <div className="relative z-10 w-full container-custom flex-1 flex flex-col pt-16 md:pt-24 pb-8 md:pb-12">
-        {/* Hero Text + Search Bar - grouped together, pushed down */}
-        <div className="flex flex-col gap-4 md:gap-5">
-          {/* Title - left aligned */}
+      {/* Content - centered */}
+      <div className="relative z-10 w-full container-custom flex-1 flex flex-col items-center justify-center pt-16 md:pt-24 pb-8 md:pb-12 text-center">
+        {/* Hero Text + Search Filter - centered */}
+        <div className="flex flex-col gap-4 md:gap-5 items-center w-full max-w-3xl">
+          {/* Title - centered */}
           <div>
             <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight mb-2">
               {slide.title}
@@ -96,8 +98,24 @@ export function HeroSection() {
             </p>
           </div>
 
-          {/* Search Card - directly below title, smaller */}
-          <div className="bg-white/95 rounded-xl shadow-lg p-3 md:p-4 w-full max-w-2xl">
+          {/* Search Filter Card - centered */}
+          <div className="bg-white/95 rounded-xl shadow-lg p-3 md:p-4 w-full max-w-3xl">
+            <div className="flex flex-wrap gap-2 mb-3 justify-center">
+              <button
+                type="button"
+                onClick={() => setListingType(listingType === 'sale' ? '' : 'sale')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${listingType === 'sale' ? 'bg-[#E10600] text-white' : 'bg-[#F5F5F5] text-[#6B6B6B] hover:bg-[#E5E5E5]'}`}
+              >
+                Buy
+              </button>
+              <button
+                type="button"
+                onClick={() => setListingType(listingType === 'rent' ? '' : 'rent')}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${listingType === 'rent' ? 'bg-[#E10600] text-white' : 'bg-[#F5F5F5] text-[#6B6B6B] hover:bg-[#E5E5E5]'}`}
+              >
+                Rent
+              </button>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
               <Select value={location || 'all'} onValueChange={setLocation}>
                 <SelectTrigger className="h-10 rounded-lg border-[#E5E5E5] bg-[#F5F5F5] text-sm">
