@@ -304,36 +304,6 @@ export default function HomeLoans() {
             </div>
           </div>
         </section>
-
-        {/* Bottom CTA */}
-        <section className="py-16 md:py-20 bg-[#F9F9F9]">
-          <div className="container-custom">
-            <div className="max-w-3xl mx-auto text-center">
-              <h2 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-4">
-                Ready to finance your dream home?
-              </h2>
-              <p className="text-[#6B6B6B] mb-8">
-                Our loan specialists are here to guide you. Contact us for a free, no-obligation consultation.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  to="/contact"
-                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-[#E10600] hover:bg-[#B11226] text-white font-semibold transition-colors"
-                >
-                  Schedule a Call
-                  <ArrowRight className="h-5 w-5" />
-                </Link>
-                <a
-                  href="tel:+916301575658"
-                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border-2 border-[#E10600] text-[#E10600] font-semibold hover:bg-[#E10600] hover:text-white transition-colors"
-                >
-                  <Phone className="h-5 w-5" />
-                  Call Now
-                </a>
-              </div>
-            </div>
-          </div>
-        </section>
       </div>
     </>
   );

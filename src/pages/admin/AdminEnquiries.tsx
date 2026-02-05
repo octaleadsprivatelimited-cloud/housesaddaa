@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { collection, getDocs, orderBy, query } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
-import { Loader2, Mail, Phone, Calendar, Building2 } from 'lucide-react';
+import { Loader2, Mail, Phone, Calendar, Building2, MapPin, IndianRupee, Home, BedDouble, Wallet } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
@@ -14,6 +14,11 @@ interface Enquiry {
   propertyId?: string;
   propertyTitle?: string;
   createdAt: Date;
+  propertyLocation?: string;
+  budgetExpecting?: string;
+  propertyType?: string;
+  bhk?: string;
+  pricingLooking?: string;
 }
 
 export default function AdminEnquiries() {
@@ -98,6 +103,44 @@ export default function AdminEnquiries() {
                     {enquiry.phone}
                   </a>
                 </div>
+                {(enquiry.propertyLocation || enquiry.budgetExpecting) && (
+                  <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                    {enquiry.propertyLocation && (
+                      <span className="flex items-center gap-1">
+                        <MapPin className="h-4 w-4" />
+                        {enquiry.propertyLocation}
+                      </span>
+                    )}
+                    {enquiry.budgetExpecting && (
+                      <span className="flex items-center gap-1">
+                        <IndianRupee className="h-4 w-4" />
+                        {enquiry.budgetExpecting}
+                      </span>
+                    )}
+                  </div>
+                )}
+                {(enquiry.propertyType || enquiry.bhk || enquiry.pricingLooking) && (
+                  <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+                    {enquiry.propertyType && (
+                      <span className="flex items-center gap-1">
+                        <Home className="h-4 w-4" />
+                        {enquiry.propertyType.replace(/-/g, ' ')}
+                      </span>
+                    )}
+                    {enquiry.bhk && (
+                      <span className="flex items-center gap-1">
+                        <BedDouble className="h-4 w-4" />
+                        {enquiry.bhk} BHK
+                      </span>
+                    )}
+                    {enquiry.pricingLooking && (
+                      <span className="flex items-center gap-1">
+                        <Wallet className="h-4 w-4" />
+                        {enquiry.pricingLooking}
+                      </span>
+                    )}
+                  </div>
+                )}
                 <p className="text-muted-foreground">{enquiry.message}</p>
               </CardContent>
             </Card>

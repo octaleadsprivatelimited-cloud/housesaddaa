@@ -90,6 +90,13 @@ export interface Enquiry {
   message: string;
   status: 'new' | 'contacted' | 'closed';
   createdAt: Date;
+  /** For "Promote your property" form */
+  propertyLocation?: string;
+  budgetExpecting?: string;
+  /** For "Need help finding a property?" form */
+  propertyType?: string;
+  bhk?: string;
+  pricingLooking?: string;
 }
 
 export type PartnerType = 'bank' | 'company';

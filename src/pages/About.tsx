@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import {
   Building2,
   Users,
@@ -7,7 +6,6 @@ import {
   Eye,
   Shield,
   Clock,
-  ArrowRight,
   MapPin,
   Phone,
   Mail,
@@ -274,35 +272,6 @@ export default function About() {
                     <span>Hyderabad, Telangana</span>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="py-16 md:py-24 bg-white">
-          <div className="container-custom">
-            <div className="bg-gradient-to-r from-[#E10600] to-[#B11226] rounded-3xl p-8 md:p-12 lg:p-16 text-white text-center">
-              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4">
-                Start your property journey today
-              </h2>
-              <p className="text-white/90 text-lg mb-8 max-w-2xl mx-auto">
-                Browse our verified listings or reach out for personalized assistance.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  to="/properties"
-                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-white text-[#E10600] font-semibold hover:bg-white/95 transition-colors"
-                >
-                  Browse Properties
-                  <ArrowRight className="h-5 w-5" />
-                </Link>
-                <Link
-                  to="/contact"
-                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border-2 border-white text-white font-semibold hover:bg-white/10 transition-colors"
-                >
-                  Contact Us
-                </Link>
               </div>
             </div>
           </div>

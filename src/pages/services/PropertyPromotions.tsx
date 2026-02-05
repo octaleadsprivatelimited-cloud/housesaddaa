@@ -1,12 +1,8 @@
-import { Link } from 'react-router-dom';
 import {
   Megaphone,
   Globe,
   BarChart3,
   Share2,
-  ArrowRight,
-  Phone,
-  MessageCircle,
   CheckCircle2,
   Target,
   TrendingUp,
@@ -207,45 +203,6 @@ export default function PropertyPromotions() {
                   </div>
                 </div>
               ))}
-            </div>
-          </div>
-        </section>
-
-        {/* CTA Section */}
-        <section className="py-16 md:py-24 bg-[#1A1A1A]">
-          <div className="container-custom">
-            <div className="max-w-3xl mx-auto text-center text-white">
-              <h2 className="text-2xl md:text-3xl font-bold mb-4">
-                Promote Your Property
-              </h2>
-              <p className="text-white/80 mb-8">
-                Ready to get more visibility for your listing? Contact us to discuss promotion packages tailored to your property.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  to="/contact"
-                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-[#E10600] hover:bg-[#B11226] text-white font-semibold transition-colors"
-                >
-                  Get Started
-                  <ArrowRight className="h-5 w-5" />
-                </Link>
-                <a
-                  href="tel:+916301575658"
-                  className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border-2 border-white/30 text-white font-semibold hover:bg-white/10 transition-colors"
-                >
-                  <Phone className="h-5 w-5" />
-                  Call Now
-                </a>
-              </div>
-              <a
-                href="https://wa.me/916301575658"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center justify-center gap-2 mt-4 text-[#25D366] font-medium hover:underline"
-              >
-                <MessageCircle className="h-5 w-5" />
-                Or chat on WhatsApp
-              </a>
             </div>
           </div>
         </section>
