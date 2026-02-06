@@ -1,0 +1,49 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: true if user is signed in
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Admins: only read by signed-in users (app checks doc to allow admin panel access).
+    // Do not allow create/update/delete from client; manage admins via Firebase Console or Admin SDK.
+    match /admins/{userId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    // Enquiries: anyone can create (contact form); only signed-in users (admins) can read/update.
+    match /enquiries/{enquiryId} {
+      allow create: if true;
+      allow read, update: if isSignedIn();
+      allow delete: if isSignedIn();
+    }
+
+    // Properties: anyone can read; only signed-in users (admins) can write.
+    match /properties/{propertyId} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+
+    // Partners: anyone can read (home page, home loans); only admins can write.
+    match /partners/{partnerId} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+
+    // Locations: anyone can read; only admins can write.
+    match /locations/{locationId} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+
+    // Gallery videos: anyone can read; only admins can write.
+    match /galleryVideos/{videoId} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+  }
+}

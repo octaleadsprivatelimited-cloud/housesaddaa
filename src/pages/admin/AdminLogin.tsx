@@ -4,7 +4,7 @@ import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
-import { signInAdmin } from '@/services/authService';
+import { signInAdmin, resetPassword } from '@/services/authService';
 
 export default function AdminLogin() {
   const navigate = useNavigate();
@@ -13,6 +13,7 @@ export default function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [resetting, setResetting] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,10 +26,14 @@ export default function AdminLogin() {
         description: 'You have successfully logged in.',
       });
       navigate('/admin');
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Invalid email or password.';
+      const hint = message.includes('admin access')
+        ? ' Add your user in Firestore "admins" collection (see ADMIN_SETUP.md).'
+        : '';
       toast({
         title: 'Login Failed',
-        description: error.message || 'Invalid email or password.',
+        description: message + hint,
         variant: 'destructive',
       });
     } finally {
@@ -109,6 +114,29 @@ export default function AdminLogin() {
             >
               {isLoading ? 'Signing in...' : 'Sign In'}
             </Button>
+
+            <button
+              type="button"
+              disabled={resetting || isLoading}
+              onClick={async () => {
+                if (!email.trim()) {
+                  toast({ title: 'Enter your email first', variant: 'destructive' });
+                  return;
+                }
+                setResetting(true);
+                try {
+                  await resetPassword(email.trim());
+                  toast({ title: 'Check your email', description: 'Password reset link sent to ' + email });
+                } catch {
+                  toast({ title: 'Reset failed', description: 'Check the email or try again.', variant: 'destructive' });
+                } finally {
+                  setResetting(false);
+                }
+              }}
+              className="text-sm text-primary hover:underline disabled:opacity-50"
+            >
+              {resetting ? 'Sending...' : 'Forgot password?'}
+            </button>
           </form>
 
           <div className="mt-6 p-4 bg-secondary/50 rounded-lg text-sm text-muted-foreground">

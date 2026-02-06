@@ -69,7 +69,11 @@ function PartnerBanksSlider() {
     return () => clearInterval(interval);
   }, [emblaApi]);
 
-  if (banks.length === 0) return null;
+  if (banks.length === 0) {
+    return (
+      <p className="text-[#6B6B6B] text-sm py-4">Add partner banks from Admin → Partners (Banks).</p>
+    );
+  }
 
   return (
     <div className="relative">
