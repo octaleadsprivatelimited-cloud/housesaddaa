@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Outlet, Link, useNavigate, useLocation } from 'react-router-dom';
 import { 
   LayoutDashboard, Building2, Plus, Users, MapPin, 
-  Settings, LogOut, Menu, X, Bell, Search, Handshake, Video
+  Settings, LogOut, Menu, X, Bell, Search, Handshake, Video, FileText, BookOpen
 } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -17,6 +17,8 @@ const sidebarLinks = [
   { name: 'Partners', href: '/admin/partners', icon: Handshake },
   { name: 'Gallery Videos', href: '/admin/gallery', icon: Video },
   { name: 'Locations', href: '/admin/locations', icon: MapPin },
+  { name: 'Site Content', href: '/admin/site-content', icon: FileText },
+  { name: 'Blog', href: '/admin/blog', icon: BookOpen },
   { name: 'Settings', href: '/admin/settings', icon: Settings },
 ];
 
@@ -76,12 +78,12 @@ export default function AdminLayout() {
         {/* Sidebar */}
         <aside 
           className={cn(
-            'fixed lg:static inset-y-0 left-0 z-40 w-64 bg-card border-r border-border transform transition-transform duration-200 lg:transform-none',
+            'fixed lg:static inset-y-0 left-0 z-40 w-64 bg-card border-r border-border transform transition-transform duration-200 lg:transform-none flex flex-col h-full',
             sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
           )}
         >
           {/* Logo */}
-          <div className="hidden lg:flex items-center gap-2 p-6 border-b border-border">
+          <div className="hidden lg:flex items-center gap-2 p-6 border-b border-border shrink-0">
             <div className="w-10 h-10 rounded-lg bg-primary flex items-center justify-center">
               <span className="text-primary-foreground font-bold text-xl">H</span>
             </div>
@@ -91,8 +93,8 @@ export default function AdminLayout() {
             </div>
           </div>
 
-          {/* Navigation */}
-          <nav className="p-4 space-y-1 mt-16 lg:mt-0">
+          {/* Navigation - scrollable so Blog/Settings don't overlap Logout */}
+          <nav className="p-4 space-y-1 mt-16 lg:mt-0 flex-1 overflow-y-auto min-h-0">
             {sidebarLinks.map((link) => {
               const isActive = location.pathname === link.href;
               return (
@@ -107,18 +109,18 @@ export default function AdminLayout() {
                       : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
                   )}
                 >
-                  <link.icon className="h-5 w-5" />
+                  <link.icon className="h-5 w-5 shrink-0" />
                   {link.name}
                 </Link>
               );
             })}
           </nav>
 
-          {/* Logout */}
-          <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-border">
+          {/* Logout - fixed at bottom */}
+          <div className="p-4 border-t border-border shrink-0">
             <button
               onClick={handleLogout}
-              className="flex items-center gap-3 px-4 py-3 w-full text-muted-foreground hover:text-destructive transition-colors"
+              className="flex items-center gap-3 px-4 py-3 w-full rounded-lg text-muted-foreground hover:bg-secondary hover:text-destructive transition-colors"
             >
               <LogOut className="h-5 w-5" />
               Logout

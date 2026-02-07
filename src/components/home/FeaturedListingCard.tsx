@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Maximize2, Heart, GitCompare } from 'lucide-react';
 import { Property } from '@/types/property';
-import { getPropertyTypeLabel } from '@/data/properties';
+import { usePropertyTypes } from '@/hooks/usePropertyTypes';
 
 function formatPrice(price: number, listingType: 'sale' | 'rent'): string {
   if (listingType === 'rent') return `₹${price.toLocaleString('en-IN')}`;
@@ -21,6 +21,7 @@ interface FeaturedListingCardProps {
 }
 
 export function FeaturedListingCard({ property }: FeaturedListingCardProps) {
+  const { getPropertyTypeLabel } = usePropertyTypes();
   const priceStr = formatPrice(property.price, property.listingType);
   const priceSuffix = formatPriceSuffix(property);
 

@@ -27,28 +27,19 @@ export function AllPropertiesSection() {
     <section className="py-12 md:py-16 lg:py-20" aria-labelledby="section-all-properties">
       <div className="container-custom">
         {/* Section Header */}
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-8 md:mb-10">
-          <div>
-            <p className="text-[#E10600] text-sm font-semibold uppercase tracking-wider mb-2">
-              Explore Listings
-            </p>
-            <h2 id="section-all-properties" className="text-2xl md:text-3xl lg:text-4xl font-bold text-[#1A1A1A] tracking-tight">
-              Properties
-            </h2>
-            <p className="mt-2 text-[#6B6B6B] text-base">
-              Browse our complete collection of verified properties
-            </p>
-          </div>
-          <Link
-            to="/properties"
-            className="group inline-flex items-center justify-center gap-2 shrink-0 px-6 py-3 bg-[#E10600] hover:bg-[#B11226] text-white text-sm font-semibold rounded-xl transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E10600] focus-visible:ring-offset-2"
-          >
-            View Properties
-            <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
-          </Link>
+        <div className="mb-8 md:mb-10">
+          <p className="text-[#E10600] text-sm font-semibold uppercase tracking-wider mb-2">
+            Explore Listings
+          </p>
+          <h2 id="section-all-properties" className="text-2xl md:text-3xl lg:text-4xl font-bold text-[#1A1A1A] tracking-tight">
+            Properties
+          </h2>
+          <p className="mt-2 text-[#6B6B6B] text-base">
+            Browse our complete collection of verified properties
+          </p>
         </div>
 
-        {/* Properties Grid */}
+        {/* Properties Grid - 3 columns, 3–4 rows */}
         {loading ? (
           <div className="flex justify-center py-16">
             <Loader2 className="h-10 w-10 animate-spin text-[#E10600]" />
@@ -69,13 +60,24 @@ export function AllPropertiesSection() {
             </Link>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {properties.map((property) => (
-              <div key={property.id} className="h-full min-h-[400px]">
-                <PropertyCard property={property} variant="default" />
-              </div>
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {properties.map((property) => (
+                <div key={property.id} className="h-full min-h-[400px]">
+                  <PropertyCard property={property} variant="default" />
+                </div>
+              ))}
+            </div>
+            <div className="flex justify-center mt-10">
+              <Link
+                to="/properties"
+                className="group inline-flex items-center justify-center gap-2 px-8 py-3.5 bg-[#E10600] hover:bg-[#B11226] text-white text-sm font-semibold rounded-xl transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E10600] focus-visible:ring-offset-2"
+              >
+                View All
+                <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
+              </Link>
+            </div>
+          </>
         )}
       </div>
     </section>

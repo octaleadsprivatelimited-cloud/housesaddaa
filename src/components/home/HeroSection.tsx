@@ -1,10 +1,18 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, MapPin, Home, IndianRupee, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, BedDouble, Home, IndianRupee, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { propertyTypes } from '@/data/properties';
-import { useLocations } from '@/hooks/useLocations';
+import { usePropertyTypes } from '@/hooks/usePropertyTypes';
 import heroBg from '@/assets/hero-bg.jpg';
+
+const bhkOptions = [
+  { value: 'any', label: 'Any BHK' },
+  { value: '1', label: '1 BHK' },
+  { value: '2', label: '2 BHK' },
+  { value: '3', label: '3 BHK' },
+  { value: '4', label: '4 BHK' },
+  { value: '4+', label: '4+ BHK' },
+];
 
 const budgetOptions = [
   { value: 'any', label: '₹ Any Budget' },
@@ -17,27 +25,27 @@ const budgetOptions = [
 
 const heroSlides: { title: string; subtitle: string; image: string }[] = [
   {
-    title: 'Premium Apartments in Hitech City',
-    subtitle: 'Modern living spaces close to IT hubs',
+    title: 'Find Your Dream Home',
+    subtitle: 'Verified properties for every budget—apartments, villas & more',
     image: heroBg,
   },
   {
-    title: 'Luxury Villas in Jubilee Hills',
-    subtitle: 'Exclusive residential properties',
+    title: 'Buy or Rent with Confidence',
+    subtitle: 'India\'s trusted real estate platform. Explore thousands of listings.',
     image: '/featured-properties-bg.jpg',
   },
   {
-    title: 'Plots & Land in Financial District',
-    subtitle: 'Prime investment opportunities',
+    title: 'Your Perfect Property Awaits',
+    subtitle: 'Expert support, verified listings, and a seamless search experience.',
     image: '/independent-house-section-bg.jpg',
   },
 ];
 
 export function HeroSection() {
   const navigate = useNavigate();
-  const { allAreas, loading: locationsLoading } = useLocations();
+  const { propertyTypes } = usePropertyTypes();
   const [currentSlide, setCurrentSlide] = useState(0);
-  const [location, setLocation] = useState('');
+  const [bhk, setBhk] = useState('');
   const [propertyType, setPropertyType] = useState('');
   const [budget, setBudget] = useState('');
   const [listingType, setListingType] = useState<'sale' | 'rent' | ''>('');
@@ -45,7 +53,7 @@ export function HeroSection() {
   const handleSearch = () => {
     const params = new URLSearchParams();
     if (listingType) params.set('type', listingType);
-    if (location && location !== 'all') params.set('area', location);
+    if (bhk && bhk !== 'any') params.set('bhk', bhk);
     if (propertyType && propertyType !== 'all') params.set('propertyType', propertyType);
     if (budget && budget !== 'any') params.set('budget', budget);
     navigate(`/properties?${params.toString()}`);
@@ -117,22 +125,17 @@ export function HeroSection() {
               </button>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-2">
-              <Select value={location || 'all'} onValueChange={setLocation}>
+              <Select value={bhk || 'any'} onValueChange={setBhk}>
                 <SelectTrigger className="h-10 rounded-lg border-[#E5E5E5] bg-[#F5F5F5] text-sm">
-                  <MapPin className="h-3.5 w-3.5 text-[#6B6B6B] shrink-0" />
-                  <SelectValue placeholder="Enter location..." />
+                  <BedDouble className="h-3.5 w-3.5 text-[#6B6B6B] shrink-0" />
+                  <SelectValue placeholder="Any BHK" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Enter location...</SelectItem>
-                  {locationsLoading ? (
-                    <SelectItem value="loading" disabled>Loading...</SelectItem>
-                  ) : (
-                    allAreas.map((areaName) => (
-                      <SelectItem key={areaName} value={areaName}>
-                        {areaName}
-                      </SelectItem>
-                    ))
-                  )}
+                  {bhkOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
 

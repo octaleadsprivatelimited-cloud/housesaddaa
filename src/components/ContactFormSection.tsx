@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { submitEnquiry } from '@/services/enquiryService';
 import { toast } from '@/components/ui/sonner';
+import { usePropertyTypes } from '@/hooks/usePropertyTypes';
 
 const PAGE_CONTENT: Record<string, { title: string; description: string }> = {
   '/': {
@@ -76,6 +77,7 @@ export function ContactFormSection() {
     return DEFAULT_CONTENT;
   };
   const content = getContent();
+  const { propertyTypes } = usePropertyTypes();
 
   const isPromotionsPage = pathname === '/services/property-promotions';
   const isPropertiesPage = pathname === '/properties';
@@ -132,16 +134,20 @@ export function ContactFormSection() {
   };
 
   return (
-    <section className="bg-[#F5F5F5] border-t border-[#EEE]">
+    <section className="bg-[#E10600]/5 border-t-2 border-[#E10600]/20">
       <div className="container-custom py-12 md:py-16">
         <div className="max-w-2xl mx-auto">
-          <h2 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] text-center mb-2">
+          <h2 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] text-center mb-2 relative inline-block w-full">
             {content.title}
+            <span className="block mt-2 mx-auto w-16 h-1 rounded-full bg-[#E10600]" aria-hidden />
           </h2>
           <p className="text-[#6B6B6B] text-center mb-8">
             {content.description}
           </p>
-          <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-[#E5E5E5] p-6 md:p-8 shadow-sm">
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white rounded-2xl border-2 border-[#E10600]/20 shadow-lg shadow-[#E10600]/5 p-6 md:p-8"
+          >
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="footer-name" className="text-[#1A1A1A]">Name</Label>
@@ -217,15 +223,11 @@ export function ContactFormSection() {
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="apartment">Apartment</SelectItem>
-                      <SelectItem value="villa">Villa</SelectItem>
-                      <SelectItem value="independent-house">Independent House</SelectItem>
-                      <SelectItem value="plot">Plot</SelectItem>
-                      <SelectItem value="commercial">Commercial</SelectItem>
-                      <SelectItem value="penthouse">Penthouse</SelectItem>
-                      <SelectItem value="studio">Studio</SelectItem>
-                      <SelectItem value="builder-floor">Builder Floor</SelectItem>
-                      <SelectItem value="farmhouse">Farmhouse</SelectItem>
+                      {propertyTypes.map((type) => (
+                        <SelectItem key={type.value} value={type.value}>
+                          {type.label}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>

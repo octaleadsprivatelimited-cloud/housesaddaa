@@ -7,7 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { propertyTypes, locations, amenities, furnishingOptions, propertyStatusOptions, bhkOptions } from '@/data/properties';
+import { amenities, furnishingOptions, propertyStatusOptions, bhkOptions } from '@/data/properties';
+import { usePropertyTypes } from '@/hooks/usePropertyTypes';
+import { useLocations } from '@/hooks/useLocations';
 import { addProperty } from '@/services/propertyService';
 import { PropertyType } from '@/types/property';
 import { imageToBase64, validateImage } from '@/services/imageService';
@@ -52,8 +54,10 @@ export default function AdminAddProperty() {
     metaDescription: '',
   });
 
+  const { propertyTypes } = usePropertyTypes();
+  const { locations } = useLocations();
   const selectedCity = locations.find((l) => l.city === formData.city);
-  const areas = selectedCity?.areas || [];
+  const areas = selectedCity?.areas ?? [];
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);

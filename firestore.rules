@@ -45,5 +45,23 @@ service cloud.firestore {
       allow read: if true;
       allow create, update, delete: if isSignedIn();
     }
+
+    // Site settings (stats, etc.): anyone can read; only admins can write.
+    match /siteSettings/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+
+    // Property types (for filters/dropdowns): anyone can read; only admins can write.
+    match /propertyTypes/{typeId} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+
+    // Blogs: anyone can read published; only admins can write. List/detail use isPublished filter.
+    match /blogs/{blogId} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
   }
 }

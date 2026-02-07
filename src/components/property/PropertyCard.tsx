@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Bed, Bath, Square, Phone } from 'lucide-react';
 import { Property } from '@/types/property';
-import { getPropertyTypeLabel } from '@/data/properties';
+import { usePropertyTypes } from '@/hooks/usePropertyTypes';
 import { cn } from '@/lib/utils';
 
 interface PropertyCardProps {
@@ -36,6 +36,7 @@ const PLACEHOLDER_IMAGE = '/home-image.jpg';
 
 export function PropertyCard({ property, variant = 'default' }: PropertyCardProps) {
   const [imgError, setImgError] = useState(false);
+  const { getPropertyTypeLabel } = usePropertyTypes();
   const isFeatured = variant === 'featured';
   const isCompact = variant === 'compact';
   const priceDisplay = formatPriceDisplay(property.price, property.listingType);

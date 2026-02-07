@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
-import { propertyTypes } from '@/data/properties';
-import type { PropertyType } from '@/types/property';
+import { usePropertyTypes } from '@/hooks/usePropertyTypes';
 
 const categoryImages: Record<string, string> = {
   apartment: 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=400&auto=format',
@@ -16,7 +15,7 @@ const categoryImages: Record<string, string> = {
 };
 
 interface CategoryCardProps {
-  type: { value: PropertyType; label: string; icon: string };
+  type: { value: string; label: string; icon: string };
   index: number;
 }
 
@@ -59,6 +58,7 @@ function CategoryCard({ type, index }: CategoryCardProps) {
 }
 
 export function PropertyCategories() {
+  const { propertyTypes } = usePropertyTypes();
   const displayTypes = propertyTypes.slice(0, 6);
 
   return (

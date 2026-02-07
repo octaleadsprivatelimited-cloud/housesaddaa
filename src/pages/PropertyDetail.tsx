@@ -7,7 +7,8 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { formatPrice, amenities as amenitiesData, getPropertyTypeLabel } from '@/data/properties';
+import { formatPrice, amenities as amenitiesData } from '@/data/properties';
+import { usePropertyTypes } from '@/hooks/usePropertyTypes';
 import { PropertyCardCarousel } from '@/components/property/PropertyCardCarousel';
 import { cn } from '@/lib/utils';
 import { Property } from '@/types/property';
@@ -25,6 +26,7 @@ const amenityIcons: Record<string, React.ElementType> = {
 
 export default function PropertyDetailPage() {
   const { slug } = useParams();
+  const { getPropertyTypeLabel } = usePropertyTypes();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [property, setProperty] = useState<Property | null>(null);
   const [similarProperties, setSimilarProperties] = useState<Property[]>([]);

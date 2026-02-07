@@ -14,6 +14,7 @@ import {
   Package,
 } from 'lucide-react';
 import SEO from '@/components/SEO';
+import { useServiceHighlights } from '@/hooks/useServiceHighlights';
 
 const processSteps = [
   {
@@ -61,6 +62,7 @@ const galleryImages = [
 ];
 
 export default function InteriorDesign() {
+  const { highlights } = useServiceHighlights('interiorDesign');
   return (
     <>
       <SEO
@@ -97,22 +99,12 @@ export default function InteriorDesign() {
         <section className="relative -mt-6 z-10">
           <div className="container-custom">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white rounded-2xl p-5 shadow-lg border border-[#E5E5E5]">
-                <div className="text-2xl font-bold text-[#E10600] mb-1">6+</div>
-                <div className="text-sm text-[#6B6B6B] font-medium">Design Services</div>
-              </div>
-              <div className="bg-white rounded-2xl p-5 shadow-lg border border-[#E5E5E5]">
-                <div className="text-2xl font-bold text-[#E10600] mb-1">4-Step</div>
-                <div className="text-sm text-[#6B6B6B] font-medium">Proven Process</div>
-              </div>
-              <div className="bg-white rounded-2xl p-5 shadow-lg border border-[#E5E5E5]">
-                <div className="text-2xl font-bold text-[#E10600] mb-1">3D</div>
-                <div className="text-sm text-[#6B6B6B] font-medium">Visualizations</div>
-              </div>
-              <div className="bg-white rounded-2xl p-5 shadow-lg border border-[#E5E5E5]">
-                <div className="text-2xl font-bold text-[#E10600] mb-1">End-to-End</div>
-                <div className="text-sm text-[#6B6B6B] font-medium">Execution</div>
-              </div>
+              {highlights.map((h, i) => (
+                <div key={i} className="bg-white rounded-2xl p-5 shadow-lg border border-[#E5E5E5]">
+                  <div className="text-2xl font-bold text-[#E10600] mb-1">{h.value}</div>
+                  <div className="text-sm text-[#6B6B6B] font-medium">{h.label}</div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -143,6 +135,44 @@ export default function InteriorDesign() {
                   </div>
                   <h3 className="font-bold text-[#1A1A1A] text-lg mb-2">{item.title}</h3>
                   <p className="text-[#6B6B6B] text-sm">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Gallery */}
+        <section className="py-16 md:py-24">
+          <div className="container-custom">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-10">
+              <div>
+                <p className="text-[#E10600] text-sm font-semibold uppercase tracking-wider mb-2">
+                  Our Work
+                </p>
+                <h2 className="text-2xl md:text-3xl font-bold text-[#1A1A1A]">
+                  Gallery Preview
+                </h2>
+              </div>
+              <Link
+                to="/gallery"
+                className="inline-flex items-center gap-2 text-[#E10600] font-semibold hover:text-[#B11226] transition-colors"
+              >
+                View Full Gallery
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {galleryImages.map((img) => (
+                <div
+                  key={img.id}
+                  className="aspect-[4/3] rounded-2xl overflow-hidden bg-[#E5E5E5] group"
+                >
+                  <img
+                    src={`https://images.unsplash.com/photo-${img.id}?w=600&auto=format`}
+                    alt={img.alt}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
                 </div>
               ))}
             </div>
@@ -182,44 +212,6 @@ export default function InteriorDesign() {
                   {step < 4 && (
                     <div className="hidden lg:block absolute top-1/2 -right-4 w-8 h-0.5 bg-[#E5E5E5] -translate-y-1/2" />
                   )}
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* Gallery */}
-        <section className="py-16 md:py-24">
-          <div className="container-custom">
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-10">
-              <div>
-                <p className="text-[#E10600] text-sm font-semibold uppercase tracking-wider mb-2">
-                  Our Work
-                </p>
-                <h2 className="text-2xl md:text-3xl font-bold text-[#1A1A1A]">
-                  Gallery Preview
-                </h2>
-              </div>
-              <Link
-                to="/gallery"
-                className="inline-flex items-center gap-2 text-[#E10600] font-semibold hover:text-[#B11226] transition-colors"
-              >
-                View Full Gallery
-                <ArrowRight className="h-5 w-5" />
-              </Link>
-            </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {galleryImages.map((img) => (
-                <div
-                  key={img.id}
-                  className="aspect-[4/3] rounded-2xl overflow-hidden bg-[#E5E5E5] group"
-                >
-                  <img
-                    src={`https://images.unsplash.com/photo-${img.id}?w=600&auto=format`}
-                    alt={img.alt}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
                 </div>
               ))}
             </div>

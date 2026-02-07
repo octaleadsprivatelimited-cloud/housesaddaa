@@ -55,3 +55,12 @@ The app only allows sign-in if the user’s UID exists in the `admins` collectio
 - [ ] That document has a `role` field set to `admin` or `super-admin`.
 
 After this, login with your email and password should work.
+
+## Blog (optional)
+
+To use the **Blog** feature (Admin → Blog):
+
+1. **Firestore indexes**: When you first load the blog list or a post, Firestore may ask you to create composite indexes. Use the link in the error message to create them, or in Firestore go to **Indexes** and add:
+   - Collection: `blogs` — fields: `isPublished` (Asc), `publishedAt` (Desc).
+   - Collection: `blogs` — fields: `slug` (Asc), `isPublished` (Asc).
+2. **Pagination**: The public blog and admin list load 10 posts per page and use “Load more” to reduce Firebase reads.

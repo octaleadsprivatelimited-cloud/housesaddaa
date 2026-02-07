@@ -37,7 +37,7 @@ export function ClientsCarousel() {
             Trusted by Leading Brands
           </h2>
           <p className="text-[#6B6B6B]">
-            Banks and developers who trust Houses Adda for property solutions
+            Our partners who trust Houses Adda for property solutions
           </p>
         </div>
 

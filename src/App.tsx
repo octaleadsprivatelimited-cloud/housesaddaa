@@ -17,6 +17,7 @@ import InteriorDesign from "./pages/services/InteriorDesign";
 import PropertyPromotions from "./pages/services/PropertyPromotions";
 import Careers from "./pages/Careers";
 import Blog from "./pages/Blog";
+import BlogPostDetail from "./pages/BlogPostDetail";
 import Help from "./pages/Help";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
@@ -32,6 +33,9 @@ import AdminLocations from "./pages/admin/AdminLocations";
 import AdminPartners from "./pages/admin/AdminPartners";
 import AdminGallery from "./pages/admin/AdminGallery";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminSiteContent from "./pages/admin/AdminSiteContent";
+import AdminBlog from "./pages/admin/AdminBlog";
+import AdminBlogEdit from "./pages/admin/AdminBlogEdit";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -63,6 +67,7 @@ const App = () => (
               <Route path="/services/property-promotions" element={<PropertyPromotions />} />
               <Route path="/careers" element={<Careers />} />
               <Route path="/blog" element={<Blog />} />
+              <Route path="/blog/:slug" element={<BlogPostDetail />} />
               <Route path="/help" element={<Help />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />
@@ -80,6 +85,10 @@ const App = () => (
               <Route path="partners" element={<AdminPartners />} />
               <Route path="gallery" element={<AdminGallery />} />
               <Route path="locations" element={<AdminLocations />} />
+              <Route path="site-content" element={<AdminSiteContent />} />
+              <Route path="blog" element={<AdminBlog />} />
+              <Route path="blog/add" element={<AdminBlogEdit />} />
+              <Route path="blog/edit/:id" element={<AdminBlogEdit />} />
               <Route path="settings" element={<AdminSettings />} />
             </Route>
             

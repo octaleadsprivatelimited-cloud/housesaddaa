@@ -16,6 +16,7 @@ import {
 import SEO from '@/components/SEO';
 import { getPartnersByType } from '@/services/partnerService';
 import { Partner } from '@/types/property';
+import { useServiceHighlights } from '@/hooks/useServiceHighlights';
 
 const benefits = [
   {
@@ -120,6 +121,7 @@ function BankLogo({ bank }: { bank: Partner }) {
 }
 
 export default function HomeLoans() {
+  const { highlights } = useServiceHighlights('homeLoans');
   return (
     <>
       <SEO
@@ -156,22 +158,12 @@ export default function HomeLoans() {
         <section className="relative -mt-6 z-10">
           <div className="container-custom">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white rounded-2xl p-5 shadow-lg border border-[#E5E5E5]">
-                <div className="text-2xl font-bold text-[#E10600] mb-1">6+</div>
-                <div className="text-sm text-[#6B6B6B] font-medium">Partner Banks</div>
-              </div>
-              <div className="bg-white rounded-2xl p-5 shadow-lg border border-[#E5E5E5]">
-                <div className="text-2xl font-bold text-[#E10600] mb-1">Best</div>
-                <div className="text-sm text-[#6B6B6B] font-medium">Interest Rates</div>
-              </div>
-              <div className="bg-white rounded-2xl p-5 shadow-lg border border-[#E5E5E5]">
-                <div className="text-2xl font-bold text-[#E10600] mb-1">Quick</div>
-                <div className="text-sm text-[#6B6B6B] font-medium">Processing</div>
-              </div>
-              <div className="bg-white rounded-2xl p-5 shadow-lg border border-[#E5E5E5]">
-                <div className="text-2xl font-bold text-[#E10600] mb-1">0</div>
-                <div className="text-sm text-[#6B6B6B] font-medium">Hidden Charges</div>
-              </div>
+              {highlights.map((h, i) => (
+                <div key={i} className="bg-white rounded-2xl p-5 shadow-lg border border-[#E5E5E5]">
+                  <div className="text-2xl font-bold text-[#E10600] mb-1">{h.value}</div>
+                  <div className="text-sm text-[#6B6B6B] font-medium">{h.label}</div>
+                </div>
+              ))}
             </div>
           </div>
         </section>

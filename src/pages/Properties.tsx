@@ -5,7 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { PropertyCard } from '@/components/property/PropertyCard';
-import { propertyTypes, bhkOptions } from '@/data/properties';
+import { bhkOptions } from '@/data/properties';
+import { usePropertyTypes } from '@/hooks/usePropertyTypes';
 import { Property, PropertyFilter } from '@/types/property';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
@@ -40,6 +41,7 @@ function priceRangeToBudget(priceRange?: { min?: number; max?: number }): string
 
 export default function PropertiesPage() {
   const [searchParams, setSearchParams] = useSearchParams();
+  const { propertyTypes } = usePropertyTypes();
   
   // Generate dynamic SEO based on filters
   const type = searchParams.get('type') || '';
@@ -91,12 +93,20 @@ export default function PropertiesPage() {
   const initialArea = searchParams.get('area');
   const initialPropertyType = searchParams.get('propertyType');
   const initialBudget = searchParams.get('budget') || '';
-  
+  const initialBhk = searchParams.get('bhk') || '';
+  const bhkToBedrooms = (bhk: string): number[] | undefined => {
+    if (!bhk || bhk === 'any') return undefined;
+    if (bhk === '4+') return [4, 5];
+    const n = parseInt(bhk, 10);
+    return Number.isNaN(n) ? undefined : [n];
+  };
+
   const [filters, setFilters] = useState<PropertyFilter>({
     listingType: initialListingType || undefined,
     location: initialArea ? { area: initialArea } : undefined,
     propertyTypes: initialPropertyType ? [initialPropertyType as any] : undefined,
     priceRange: budgetToPriceRange(initialBudget || null),
+    bedrooms: bhkToBedrooms(initialBhk),
   });
 
   // Fetch properties from Firestore
@@ -276,11 +286,11 @@ export default function PropertiesPage() {
       </div>
 
       {/* Quick filter bar */}
-      <div className="bg-white border-b border-[#EEE]">
+      <div className="bg-[#FAFAFA] border-b border-[#E5E5E5]">
         <div className="container-custom py-4">
-          <div className="flex flex-col gap-4">
-            <p className="text-xs font-medium text-[#888] uppercase tracking-wider">Quick filters</p>
-            <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-col items-center gap-3">
+            <p className="text-xs font-medium text-[#6B6B6B] uppercase tracking-wider">Quick filters</p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
               <div className="flex rounded-lg border border-[#E5E5E5] p-1 bg-[#FAFAFA]">
                 <button
                   type="button"

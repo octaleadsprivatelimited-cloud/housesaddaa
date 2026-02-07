@@ -10,7 +10,8 @@ import {
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
-import { formatPrice, getPropertyTypeLabel } from '@/data/properties';
+import { formatPrice } from '@/data/properties';
+import { usePropertyTypes } from '@/hooks/usePropertyTypes';
 import { Property } from '@/types/property';
 import { getAllPropertiesAdmin, togglePropertyStatus, deleteProperty } from '@/services/propertyService';
 import { useToast } from '@/hooks/use-toast';
@@ -20,6 +21,7 @@ export default function AdminProperties() {
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
+  const { getPropertyTypeLabel } = usePropertyTypes();
   
   // Fetch properties from Firestore
   useEffect(() => {

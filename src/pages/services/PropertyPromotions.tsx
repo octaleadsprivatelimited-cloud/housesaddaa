@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import {
   Megaphone,
   Globe,
@@ -7,8 +8,19 @@ import {
   Target,
   TrendingUp,
   Users,
+  ArrowRight,
 } from 'lucide-react';
 import SEO from '@/components/SEO';
+import { useServiceHighlights } from '@/hooks/useServiceHighlights';
+
+const galleryImages = [
+  { id: '1600596542815-ffad4c1539a9', alt: 'Property listing' },
+  { id: '1600585154340-be6161a56a0c', alt: 'Modern home' },
+  { id: '1600607687939-ce8a6c25118c', alt: 'Residential property' },
+  { id: '1613490493576-7fde63acd811', alt: 'Premium property' },
+  { id: '1600566753190-17f0baa2a6c3', alt: 'House exterior' },
+  { id: '1600047509807-ba87471cf18e', alt: 'Luxury villa' },
+];
 
 const digitalChannels = [
   {
@@ -43,6 +55,7 @@ const benefits = [
 ];
 
 export default function PropertyPromotions() {
+  const { highlights } = useServiceHighlights('propertyPromotions');
   return (
     <>
       <SEO
@@ -79,22 +92,12 @@ export default function PropertyPromotions() {
         <section className="relative -mt-6 z-10">
           <div className="container-custom">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <div className="bg-white rounded-2xl p-5 shadow-lg border border-[#E5E5E5]">
-                <div className="text-2xl font-bold text-[#E10600] mb-1">Digital +</div>
-                <div className="text-sm text-[#6B6B6B] font-medium">Offline Reach</div>
-              </div>
-              <div className="bg-white rounded-2xl p-5 shadow-lg border border-[#E5E5E5]">
-                <div className="text-2xl font-bold text-[#E10600] mb-1">Targeted</div>
-                <div className="text-sm text-[#6B6B6B] font-medium">Audience</div>
-              </div>
-              <div className="bg-white rounded-2xl p-5 shadow-lg border border-[#E5E5E5]">
-                <div className="text-2xl font-bold text-[#E10600] mb-1">Quick</div>
-                <div className="text-sm text-[#6B6B6B] font-medium">Listing Setup</div>
-              </div>
-              <div className="bg-white rounded-2xl p-5 shadow-lg border border-[#E5E5E5]">
-                <div className="text-2xl font-bold text-[#E10600] mb-1">Max</div>
-                <div className="text-sm text-[#6B6B6B] font-medium">Visibility</div>
-              </div>
+              {highlights.map((h, i) => (
+                <div key={i} className="bg-white rounded-2xl p-5 shadow-lg border border-[#E5E5E5]">
+                  <div className="text-2xl font-bold text-[#E10600] mb-1">{h.value}</div>
+                  <div className="text-sm text-[#6B6B6B] font-medium">{h.label}</div>
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -201,6 +204,44 @@ export default function PropertyPromotions() {
                     <h3 className="font-bold text-[#1A1A1A] text-lg mb-1">{item.title}</h3>
                     <p className="text-[#6B6B6B] text-sm">{item.desc}</p>
                   </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Gallery */}
+        <section className="py-16 md:py-24 bg-[#F9F9F9]">
+          <div className="container-custom">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-10">
+              <div>
+                <p className="text-[#E10600] text-sm font-semibold uppercase tracking-wider mb-2">
+                  Promoted Properties
+                </p>
+                <h2 className="text-2xl md:text-3xl font-bold text-[#1A1A1A]">
+                  Gallery Preview
+                </h2>
+              </div>
+              <Link
+                to="/gallery"
+                className="inline-flex items-center gap-2 text-[#E10600] font-semibold hover:text-[#B11226] transition-colors"
+              >
+                View Full Gallery
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {galleryImages.map((img) => (
+                <div
+                  key={img.id}
+                  className="aspect-[4/3] rounded-2xl overflow-hidden bg-[#E5E5E5] group"
+                >
+                  <img
+                    src={`https://images.unsplash.com/photo-${img.id}?w=600&auto=format`}
+                    alt={img.alt}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
                 </div>
               ))}
             </div>

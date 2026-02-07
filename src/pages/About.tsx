@@ -12,10 +12,12 @@ import {
   Sparkles,
   Heart,
   CheckCircle2,
+  Loader2,
 } from 'lucide-react';
 import SEO from '@/components/SEO';
+import { useStats } from '@/hooks/useStats';
 
-const stats = [
+const defaultStats = [
   { value: '500+', label: 'Properties Listed' },
   { value: '1000+', label: 'Happy Clients' },
   { value: '50+', label: 'Locations' },
@@ -68,6 +70,9 @@ const commitments = [
 ];
 
 export default function About() {
+  const { stats = defaultStats, loading: statsLoading } = useStats();
+  const displayStats = stats.length > 0 ? stats : defaultStats;
+
   return (
     <>
       <SEO
@@ -103,17 +108,27 @@ export default function About() {
         {/* Stats Bar */}
         <section className="relative -mt-8 z-10">
           <div className="container-custom">
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              {stats.map((stat, i) => (
-                <div
-                  key={stat.label}
-                  className="bg-white rounded-2xl p-6 shadow-xl shadow-black/5 border border-[#E5E5E5] hover:shadow-[#E10600]/10 hover:border-[#E10600]/20 transition-all duration-300"
-                >
-                  <div className="text-2xl md:text-3xl font-bold text-[#E10600] mb-1">{stat.value}</div>
-                  <div className="text-sm text-[#6B6B6B] font-medium">{stat.label}</div>
-                </div>
-              ))}
-            </div>
+            {statsLoading ? (
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {defaultStats.map((_, i) => (
+                  <div key={i} className="bg-white rounded-2xl p-6 border border-[#E5E5E5] flex items-center justify-center min-h-[88px]">
+                    <Loader2 className="h-6 w-6 animate-spin text-[#E10600]" />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                {displayStats.map((stat, i) => (
+                  <div
+                    key={`${stat.label}-${i}`}
+                    className="bg-white rounded-2xl p-6 shadow-xl shadow-black/5 border border-[#E5E5E5] hover:shadow-[#E10600]/10 hover:border-[#E10600]/20 transition-all duration-300"
+                  >
+                    <div className="text-2xl md:text-3xl font-bold text-[#E10600] mb-1">{stat.value}</div>
+                    <div className="text-sm text-[#6B6B6B] font-medium">{stat.label}</div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
@@ -136,10 +151,10 @@ export default function About() {
                 </p>
               </div>
               <div className="relative">
-                <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-[#F5F5F5]">
+                <div className="aspect-[4/3] rounded-2xl overflow-hidden bg-[#F5F5F5] shadow-lg border border-[#E5E5E5]">
                   <img
-                    src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=800&auto=format"
-                    alt="Modern real estate"
+                    src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&auto=format"
+                    alt="Modern building - Houses Adda real estate"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -149,8 +164,8 @@ export default function About() {
                       <Heart className="h-6 w-6 text-[#E10600]" />
                     </div>
                     <div>
-                      <div className="font-bold text-[#1A1A1A]">1000+</div>
-                      <div className="text-sm text-[#6B6B6B]">Happy Families</div>
+                      <div className="font-bold text-[#1A1A1A]">{displayStats[1]?.value ?? '1000+'}</div>
+                      <div className="text-sm text-[#6B6B6B]">{displayStats[1]?.label ?? 'Happy Families'}</div>
                     </div>
                   </div>
                 </div>

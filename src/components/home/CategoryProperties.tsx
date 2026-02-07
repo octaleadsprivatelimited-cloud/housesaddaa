@@ -4,7 +4,7 @@ import { ArrowRight, Loader2 } from 'lucide-react';
 import { PropertyCardCarousel } from '@/components/property/PropertyCardCarousel';
 import { getPropertiesByType, getFeaturedProperties } from '@/services/propertyService';
 import { Property } from '@/types/property';
-import { propertyTypes } from '@/data/properties';
+import { usePropertyTypes } from '@/hooks/usePropertyTypes';
 
 interface CategorySectionProps {
   propertyType: string;
@@ -127,6 +127,7 @@ function FeaturedPropertiesSection() {
 }
 
 export function CategoryProperties() {
+  const { propertyTypes } = usePropertyTypes();
   return (
     <div>
       {propertyTypes
