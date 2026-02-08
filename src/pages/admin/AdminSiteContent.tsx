@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { BarChart3, Building2, Plus, Trash2, Loader2, Sparkles } from 'lucide-react';
+import { BarChart3, Building2, Plus, Trash2, Loader2, Sparkles, Youtube } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,8 +20,11 @@ import {
   setStats,
   getServiceHighlights,
   setServiceHighlights,
+  getYoutubeVideos,
+  setYoutubeVideos,
   type StatItem,
   type ServiceHighlightKey,
+  type YouTubeVideoItem,
 } from '@/services/siteSettingsService';
 import {
   getPropertyTypesFromFirestore,
@@ -49,6 +52,12 @@ export default function AdminSiteContent() {
   const [highlights, setHighlightsState] = useState<StatItem[]>([]);
   const [loadingHighlights, setLoadingHighlights] = useState(true);
   const [savingHighlights, setSavingHighlights] = useState(false);
+  const [youtubeVideos, setYoutubeVideosState] = useState<YouTubeVideoItem[]>([]);
+  const [loadingYoutube, setLoadingYoutube] = useState(true);
+  const [savingYoutube, setSavingYoutube] = useState(false);
+  const [newYoutubeId, setNewYoutubeId] = useState('');
+  const [newYoutubeTitle, setNewYoutubeTitle] = useState('');
+  const [addingYoutube, setAddingYoutube] = useState(false);
 
   const loadStats = async () => {
     setLoadingStats(true);
@@ -107,9 +116,22 @@ export default function AdminSiteContent() {
     loadHighlights(highlightsKey);
   }, [highlightsKey]);
 
+  const loadYoutubeVideos = async () => {
+    setLoadingYoutube(true);
+    try {
+      const data = await getYoutubeVideos();
+      setYoutubeVideosState(data);
+    } catch {
+      toast({ title: 'Error', description: 'Failed to load YouTube videos', variant: 'destructive' });
+    } finally {
+      setLoadingYoutube(false);
+    }
+  };
+
   useEffect(() => {
     loadStats();
     loadPropertyTypes();
+    loadYoutubeVideos();
   }, []);
 
   const handleSaveStats = async () => {
@@ -135,6 +157,67 @@ export default function AdminSiteContent() {
       toast({ title: 'Error', description: 'Failed to save highlights', variant: 'destructive' });
     } finally {
       setSavingHighlights(false);
+    }
+  };
+
+  function parseYoutubeVideoId(input: string): string | null {
+    const trimmed = input.trim();
+    if (!trimmed) return null;
+    const watchMatch = trimmed.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([a-zA-Z0-9_-]{11})/);
+    if (watchMatch) return watchMatch[1];
+    if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
+    return null;
+  }
+
+  const handleAddYoutubeVideo = async () => {
+    const videoId = parseYoutubeVideoId(newYoutubeId);
+    if (!videoId) {
+      toast({
+        title: 'Invalid video',
+        description: 'Paste a YouTube URL (e.g. youtube.com/watch?v=...) or an 11-character video ID',
+        variant: 'destructive',
+      });
+      return;
+    }
+    if (youtubeVideos.some((v) => v.videoId === videoId)) {
+      toast({ title: 'Duplicate', description: 'This video is already in the list', variant: 'destructive' });
+      return;
+    }
+    setAddingYoutube(true);
+    try {
+      const next = [...youtubeVideos, { videoId, title: newYoutubeTitle.trim() || undefined }];
+      setYoutubeVideosState(next);
+      await setYoutubeVideos(next);
+      toast({ title: 'Added', description: 'Video added to home page section' });
+      setNewYoutubeId('');
+      setNewYoutubeTitle('');
+    } catch {
+      toast({ title: 'Error', description: 'Failed to add video', variant: 'destructive' });
+    } finally {
+      setAddingYoutube(false);
+    }
+  };
+
+  const handleRemoveYoutubeVideo = async (index: number) => {
+    const next = youtubeVideos.filter((_, i) => i !== index);
+    setYoutubeVideosState(next);
+    try {
+      await setYoutubeVideos(next);
+      toast({ title: 'Removed', description: 'Video removed from section' });
+    } catch {
+      toast({ title: 'Error', description: 'Failed to remove', variant: 'destructive' });
+    }
+  };
+
+  const handleSaveYoutubeVideos = async () => {
+    setSavingYoutube(true);
+    try {
+      await setYoutubeVideos(youtubeVideos);
+      toast({ title: 'Saved', description: 'YouTube section updated' });
+    } catch {
+      toast({ title: 'Error', description: 'Failed to save', variant: 'destructive' });
+    } finally {
+      setSavingYoutube(false);
     }
   };
 
@@ -297,6 +380,85 @@ export default function AdminSiteContent() {
               <Button onClick={handleSaveHighlights} disabled={savingHighlights}>
                 {savingHighlights ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
                 Save highlights
+              </Button>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* YouTube channel (home page section) */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Youtube className="h-5 w-5" />
+            YouTube channel (home page)
+          </CardTitle>
+          <CardDescription>
+            Videos from <a href="https://www.youtube.com/@Housesadda" target="_blank" rel="noopener noreferrer" className="text-primary underline">youtube.com/@Housesadda</a>. Add video ID or paste full URL. Clicking a video on the site opens it on YouTube; visitors can go to your channel from the section.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="space-y-1">
+              <Label htmlFor="youtube-video-id">Video URL or ID</Label>
+              <Input
+                id="youtube-video-id"
+                value={newYoutubeId}
+                onChange={(e) => setNewYoutubeId(e.target.value)}
+                placeholder="youtube.com/watch?v=... or video ID"
+                className="w-[280px]"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label htmlFor="youtube-video-title">Title (optional)</Label>
+              <Input
+                id="youtube-video-title"
+                value={newYoutubeTitle}
+                onChange={(e) => setNewYoutubeTitle(e.target.value)}
+                placeholder="Video title"
+                className="w-[200px]"
+              />
+            </div>
+            <Button onClick={handleAddYoutubeVideo} disabled={addingYoutube}>
+              {addingYoutube ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Plus className="h-4 w-4 mr-1" />}
+              Add video
+            </Button>
+          </div>
+          {loadingYoutube ? (
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Loading…
+            </div>
+          ) : youtubeVideos.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No videos yet. Add videos above to show them on the home page.</p>
+          ) : (
+            <>
+              <div className="rounded-lg border divide-y">
+                {youtubeVideos.map((v, i) => (
+                  <div key={`${v.videoId}-${i}`} className="flex items-center gap-4 px-4 py-3">
+                    <img
+                      src={`https://img.youtube.com/vi/${v.videoId}/mqdefault.jpg`}
+                      alt=""
+                      className="w-24 h-14 object-cover rounded"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{v.title || `Video ${v.videoId}`}</p>
+                      <p className="text-xs text-muted-foreground">{v.videoId}</p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:text-destructive"
+                      onClick={() => handleRemoveYoutubeVideo(i)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+              <Button onClick={handleSaveYoutubeVideos} disabled={savingYoutube}>
+                {savingYoutube ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Save order
               </Button>
             </>
           )}

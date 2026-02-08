@@ -3,28 +3,17 @@ import { X, Loader2 } from 'lucide-react';
 import SEO from '@/components/SEO';
 import { cn } from '@/lib/utils';
 import { getGalleryVideos } from '@/services/galleryVideoService';
+import { getMainGalleryImages } from '@/services/mainGalleryService';
+import type { MainGalleryImage } from '@/services/mainGalleryService';
 import { GalleryVideo } from '@/types/property';
-
-const galleryImages = [
-  { id: '1', src: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=800', alt: 'Luxury apartment living room' },
-  { id: '2', src: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=800', alt: 'Modern kitchen' },
-  { id: '3', src: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=800', alt: 'Spacious bedroom' },
-  { id: '4', src: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800', alt: 'Contemporary villa exterior' },
-  { id: '5', src: 'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=800', alt: 'Premium bathroom' },
-  { id: '6', src: 'https://images.unsplash.com/photo-1600566752355-35792bedcfea?w=800', alt: 'Elegant dining area' },
-  { id: '7', src: 'https://images.unsplash.com/photo-1600047509807-ba8f99d2cdde?w=800', alt: 'Apartment balcony view' },
-  { id: '8', src: 'https://images.unsplash.com/photo-1600217979540-6b0c5d1e6f26?w=800', alt: 'Modern living space' },
-  { id: '9', src: 'https://images.unsplash.com/photo-1600573472592-401b489a3cdc?w=800', alt: 'Interior design detail' },
-  { id: '10', src: 'https://images.unsplash.com/photo-1600585154526-990dced4db0d?w=800', alt: 'House exterior' },
-  { id: '11', src: 'https://images.unsplash.com/photo-1600047509358-9dc75507daeb?w=800', alt: 'Cozy interior' },
-  { id: '12', src: 'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=800', alt: 'Luxury home interior' },
-];
 
 export default function Gallery() {
   const [videos, setVideos] = useState<GalleryVideo[]>([]);
   const [videosLoading, setVideosLoading] = useState(true);
+  const [galleryImages, setGalleryImages] = useState<MainGalleryImage[]>([]);
+  const [imagesLoading, setImagesLoading] = useState(true);
   const [lightboxOpen, setLightboxOpen] = useState(false);
-  const [selectedImage, setSelectedImage] = useState<typeof galleryImages[0] | null>(null);
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   useEffect(() => {
     getGalleryVideos()
@@ -33,29 +22,34 @@ export default function Gallery() {
       .finally(() => setVideosLoading(false));
   }, []);
 
-  const openLightbox = (img: typeof galleryImages[0]) => {
-    setSelectedImage(img);
+  useEffect(() => {
+    getMainGalleryImages()
+      .then(setGalleryImages)
+      .catch(() => setGalleryImages([]))
+      .finally(() => setImagesLoading(false));
+  }, []);
+
+  const openLightbox = (index: number) => {
+    setSelectedIndex(index);
     setLightboxOpen(true);
   };
 
   const closeLightbox = () => {
     setLightboxOpen(false);
-    setSelectedImage(null);
+    setSelectedIndex(null);
   };
 
   const goNext = () => {
-    if (!selectedImage) return;
-    const idx = galleryImages.findIndex((i) => i.id === selectedImage.id);
-    const next = galleryImages[(idx + 1) % galleryImages.length];
-    setSelectedImage(next);
+    if (selectedIndex === null || galleryImages.length === 0) return;
+    setSelectedIndex((selectedIndex + 1) % galleryImages.length);
   };
 
   const goPrev = () => {
-    if (!selectedImage) return;
-    const idx = galleryImages.findIndex((i) => i.id === selectedImage.id);
-    const prev = galleryImages[(idx - 1 + galleryImages.length) % galleryImages.length];
-    setSelectedImage(prev);
+    if (selectedIndex === null || galleryImages.length === 0) return;
+    setSelectedIndex((selectedIndex - 1 + galleryImages.length) % galleryImages.length);
   };
+
+  const selectedImage = selectedIndex !== null ? galleryImages[selectedIndex] : null;
 
   return (
     <>
@@ -103,22 +97,30 @@ export default function Gallery() {
           ) : null}
 
           <h2 className="text-2xl font-bold text-[#1A1A1A] mb-6">Photos</h2>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-            {galleryImages.map((img) => (
-              <button
-                key={img.id}
-                type="button"
-                onClick={() => openLightbox(img)}
-                className="aspect-square rounded-2xl overflow-hidden bg-[#E5E5E5] group focus:outline-none focus:ring-2 focus:ring-[#E10600] focus:ring-offset-2"
-              >
-                <img
-                  src={img.src}
-                  alt={img.alt}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </button>
-            ))}
-          </div>
+          {imagesLoading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-[#E10600]" />
+            </div>
+          ) : galleryImages.length === 0 ? (
+            <p className="text-[#6B6B6B] py-8 text-center">No photos yet. Add images from Admin → Gallery → Main Gallery Photos.</p>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+              {galleryImages.map((img, index) => (
+                <button
+                  key={index}
+                  type="button"
+                  onClick={() => openLightbox(index)}
+                  className="aspect-square rounded-2xl overflow-hidden bg-[#E5E5E5] group focus:outline-none focus:ring-2 focus:ring-[#E10600] focus:ring-offset-2"
+                >
+                  <img
+                    src={img.imageUrl}
+                    alt={img.alt || 'Gallery'}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
@@ -144,8 +146,8 @@ export default function Gallery() {
             onClick={(e) => e.stopPropagation()}
           >
             <img
-              src={selectedImage.src.replace('w=800', 'w=1200')}
-              alt={selectedImage.alt}
+              src={selectedImage.imageUrl.includes('w=') ? selectedImage.imageUrl.replace(/w=\d+/, 'w=1200') : selectedImage.imageUrl}
+              alt={selectedImage.alt || 'Gallery'}
               className="max-w-full max-h-[85vh] object-contain rounded-lg"
             />
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white text-sm">

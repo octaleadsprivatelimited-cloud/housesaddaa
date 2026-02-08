@@ -4,6 +4,7 @@ import { PropertyCategories } from '@/components/home/PropertyCategories';
 import { AllPropertiesSection } from '@/components/home/AllPropertiesSection';
 import { CategoryProperties } from '@/components/home/CategoryProperties';
 import { WhyChooseUs } from '@/components/home/WhyChooseUs';
+import { YouTubeSection } from '@/components/home/YouTubeSection';
 import { ClientsCarousel } from '@/components/home/ClientsCarousel';
 import SEO from '@/components/SEO';
 import StructuredData from '@/components/StructuredData';
@@ -64,6 +65,7 @@ const Index = () => {
       <HeroSection />
       <PropertyCategories />
       <AllPropertiesSection />
+      <YouTubeSection />
       <CategoryProperties />
       <FeaturedListings />
       <WhyChooseUs />

@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Palette,
@@ -5,16 +6,16 @@ import {
   FileCheck,
   Sparkles,
   ArrowRight,
-  Phone,
-  MessageCircle,
   Sofa,
   Lamp,
   Layers,
   LayoutGrid,
   Package,
+  Loader2,
 } from 'lucide-react';
 import SEO from '@/components/SEO';
 import { useServiceHighlights } from '@/hooks/useServiceHighlights';
+import { getInteriorDesignGallery, type InteriorDesignGalleryImage } from '@/services/interiorDesignGalleryService';
 
 const processSteps = [
   {
@@ -52,17 +53,17 @@ const services = [
   { icon: Ruler, title: 'Space Planning', desc: 'Optimized layout design' },
 ];
 
-const galleryImages = [
-  { id: '1615873968403-c6c33141022d', alt: 'Modern living room' },
-  { id: '1616046229478-9941d80bfb3f', alt: 'Contemporary interior' },
-  { id: '1616486338812-3dadaa4a57af', alt: 'Elegant bedroom' },
-  { id: '1618220179428-22790b46113c', alt: 'Minimalist design' },
-  { id: '1600607687939-ce8a6c25118c', alt: 'Cozy space' },
-  { id: '1600585154340-be6161a56a0c', alt: 'Modern apartment' },
-];
-
 export default function InteriorDesign() {
   const { highlights } = useServiceHighlights('interiorDesign');
+  const [galleryImages, setGalleryImages] = useState<InteriorDesignGalleryImage[]>([]);
+  const [galleryLoading, setGalleryLoading] = useState(true);
+
+  useEffect(() => {
+    getInteriorDesignGallery()
+      .then(setGalleryImages)
+      .catch(() => setGalleryImages([]))
+      .finally(() => setGalleryLoading(false));
+  }, []);
   return (
     <>
       <SEO
@@ -162,20 +163,28 @@ export default function InteriorDesign() {
               </Link>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {galleryImages.map((img) => (
-                <div
-                  key={img.id}
-                  className="aspect-[4/3] rounded-2xl overflow-hidden bg-[#E5E5E5] group"
-                >
-                  <img
-                    src={`https://images.unsplash.com/photo-${img.id}?w=600&auto=format`}
-                    alt={img.alt}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-              ))}
-            </div>
+            {galleryLoading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-10 w-10 animate-spin text-[#E10600]" />
+              </div>
+            ) : galleryImages.length === 0 ? (
+              <p className="text-[#6B6B6B] py-8 text-center">Add images from Admin → Gallery → Interior Design Gallery.</p>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {galleryImages.map((img, i) => (
+                  <div
+                    key={i}
+                    className="aspect-[4/3] rounded-2xl overflow-hidden bg-[#E5E5E5] group"
+                  >
+                    <img
+                      src={img.imageUrl}
+                      alt={img.alt || 'Interior design'}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 

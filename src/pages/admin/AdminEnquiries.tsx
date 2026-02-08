@@ -5,6 +5,22 @@ import { Loader2, Mail, Phone, Calendar, Building2, MapPin, IndianRupee, Home, B
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 
+const INTENT_LABELS: Record<string, string> = {
+  buy: 'Buy',
+  sell: 'Sell',
+  'take-a-rent': 'Take a Rent',
+  'give-for-rental': 'Give For a Rental',
+};
+
+const PROPERTY_TYPE_LABELS: Record<string, string> = {
+  flat: 'Flat',
+  villa: 'Villa',
+  'independent-house': 'Independent House',
+  'open-plot': 'Open plot',
+  'commercial-space': 'Commercial Space',
+  other: 'Other',
+};
+
 interface Enquiry {
   id: string;
   name: string;
@@ -14,6 +30,7 @@ interface Enquiry {
   propertyId?: string;
   propertyTitle?: string;
   createdAt: Date;
+  intent?: string;
   propertyLocation?: string;
   budgetExpecting?: string;
   propertyType?: string;
@@ -103,6 +120,12 @@ export default function AdminEnquiries() {
                     {enquiry.phone}
                   </a>
                 </div>
+                {enquiry.intent && (
+                  <div className="text-sm text-muted-foreground">
+                    <span className="font-medium text-foreground">Intent: </span>
+                    {INTENT_LABELS[enquiry.intent] || enquiry.intent}
+                  </div>
+                )}
                 {(enquiry.propertyLocation || enquiry.budgetExpecting) && (
                   <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                     {enquiry.propertyLocation && (
@@ -124,7 +147,7 @@ export default function AdminEnquiries() {
                     {enquiry.propertyType && (
                       <span className="flex items-center gap-1">
                         <Home className="h-4 w-4" />
-                        {enquiry.propertyType.replace(/-/g, ' ')}
+                        {PROPERTY_TYPE_LABELS[enquiry.propertyType] || enquiry.propertyType.replace(/-/g, ' ')}
                       </span>
                     )}
                     {enquiry.bhk && (
@@ -141,7 +164,7 @@ export default function AdminEnquiries() {
                     )}
                   </div>
                 )}
-                <p className="text-muted-foreground">{enquiry.message}</p>
+                {enquiry.message && <p className="text-muted-foreground">{enquiry.message}</p>}
               </CardContent>
             </Card>
           ))}

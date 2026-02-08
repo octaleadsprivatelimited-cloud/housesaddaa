@@ -11,8 +11,12 @@ export function FeaturedListings() {
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: 'start',
-    loop: false,
+    loop: true,
     containScroll: 'trimSnaps',
+    slidesToScroll: 2,
+    breakpoints: {
+      '(max-width: 639px)': { slidesToScroll: 1 },
+    },
   });
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
@@ -38,6 +42,12 @@ export function FeaturedListings() {
   }, [emblaApi, onSelect]);
 
   useEffect(() => {
+    if (!emblaApi || properties.length <= 2) return;
+    const interval = setInterval(() => emblaApi.scrollNext(), 4500);
+    return () => clearInterval(interval);
+  }, [emblaApi, properties.length]);
+
+  useEffect(() => {
     const fetchProperties = async () => {
       setLoading(true);
       try {
@@ -60,7 +70,7 @@ export function FeaturedListings() {
         <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4 mb-6">
           <div>
             <h2 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-1">
-              Premium Properties
+              Featured Properties
             </h2>
             <p className="text-[#6B6B6B] text-sm md:text-base">
               Handpicked properties for discerning buyers
@@ -111,14 +121,14 @@ export function FeaturedListings() {
               </a>
             </div>
           ) : (
-            <div className="overflow-hidden" ref={emblaRef}>
+            <div className="overflow-hidden px-2 sm:px-0" ref={emblaRef}>
               <div className="flex -ml-4 gap-0">
                 {properties.map((property) => (
                   <div
                     key={property.id}
-                    className="flex-[0_0_100%] sm:flex-[0_0_50%] lg:flex-[0_0_25%] min-w-0 pl-4"
+                    className="flex-[0_0_100%] sm:flex-[0_0_50%] min-w-0 pl-4"
                   >
-                    <PropertyCard property={property} variant="premium" />
+                    <PropertyCard property={property} variant="compact" />
                   </div>
                 ))}
               </div>

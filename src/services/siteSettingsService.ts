@@ -75,3 +75,39 @@ export async function setServiceHighlights(key: ServiceHighlightKey, items: Stat
   const ref = doc(db, SITE_SETTINGS_COLLECTION, `highlights_${key}`);
   await setDoc(ref, { items });
 }
+
+// YouTube channel videos (home page section)
+export interface YouTubeVideoItem {
+  videoId: string;
+  title?: string;
+}
+
+const YOUTUBE_DOC_ID = 'youtube';
+
+// Default videos from @Housesadda channel – add more from Admin → Site Content → YouTube
+const defaultYoutubeVideos: YouTubeVideoItem[] = [
+  { videoId: 'FsyIlU2Gl_0' },
+  { videoId: 'Latvgu9xuts' },
+  { videoId: '_Z1_M42-EXg' },
+  { videoId: 'cjHG8mpaHEk' },
+  { videoId: 'rrRkQeVOq-k' },
+  { videoId: 'y___vn0_E7s' },
+];
+
+export async function getYoutubeVideos(): Promise<YouTubeVideoItem[]> {
+  try {
+    const ref = doc(db, SITE_SETTINGS_COLLECTION, YOUTUBE_DOC_ID);
+    const snap = await getDoc(ref);
+    if (snap.exists() && Array.isArray(snap.data()?.items) && (snap.data()?.items as YouTubeVideoItem[]).length > 0) {
+      return snap.data().items as YouTubeVideoItem[];
+    }
+  } catch (e) {
+    console.error('getYoutubeVideos error', e);
+  }
+  return defaultYoutubeVideos;
+}
+
+export async function setYoutubeVideos(items: YouTubeVideoItem[]): Promise<void> {
+  const ref = doc(db, SITE_SETTINGS_COLLECTION, YOUTUBE_DOC_ID);
+  await setDoc(ref, { items });
+}

@@ -90,10 +90,12 @@ export interface Enquiry {
   message: string;
   status: 'new' | 'contacted' | 'closed';
   createdAt: Date;
-  /** For "Promote your property" form */
+  /** Contact page: Buy / Sell / Take a Rent / Give For a Rental */
+  intent?: string;
+  /** For "Promote your property" / contact form */
   propertyLocation?: string;
   budgetExpecting?: string;
-  /** For "Need help finding a property?" form */
+  /** For "Need help finding a property?" / contact form */
   propertyType?: string;
   bhk?: string;
   pricingLooking?: string;
