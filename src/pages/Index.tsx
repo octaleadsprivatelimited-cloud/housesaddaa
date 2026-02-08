@@ -27,13 +27,17 @@ const Index = () => {
     },
     address: {
       '@type': 'PostalAddress',
-      streetAddress: '8-1-284-/ou/25, OU Colony, Shaikpet, Manikonda',
+      streetAddress: '8-1-284-/ou/25, OU Colony, Shaikpet',
       addressLocality: 'Hyderabad',
       addressRegion: 'Telangana',
       postalCode: '500104',
       addressCountry: 'IN'
     },
     sameAs: [
+      'https://www.youtube.com/@Housesadda',
+      'https://www.facebook.com/share/1METREdCYd/',
+      'https://x.com/housesadda',
+      'https://www.instagram.com/housesadda',
       'https://www.octaleads.com'
     ]
   };

@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { useState } from 'react';
-import { Facebook, Twitter, Instagram, Linkedin, Youtube, MapPin, Phone, Mail, ChevronDown, ChevronUp } from 'lucide-react';
+import { Facebook, Twitter, Instagram, Youtube, MapPin, Phone, Mail, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const footerLinks = {
@@ -32,11 +32,10 @@ const footerLinks = {
 };
 
 const socialLinks = [
-  { name: 'Facebook', icon: Facebook, href: 'https://facebook.com' },
-  { name: 'Twitter', icon: Twitter, href: 'https://twitter.com' },
-  { name: 'Instagram', icon: Instagram, href: 'https://instagram.com' },
-  { name: 'LinkedIn', icon: Linkedin, href: 'https://linkedin.com' },
-  { name: 'YouTube', icon: Youtube, href: 'https://youtube.com' },
+  { name: 'YouTube', icon: Youtube, href: 'https://www.youtube.com/@Housesadda' },
+  { name: 'Facebook', icon: Facebook, href: 'https://www.facebook.com/share/1METREdCYd/?mibextid=wwXIfr' },
+  { name: 'X', icon: Twitter, href: 'https://x.com/housesadda?s=21' },
+  { name: 'Instagram', icon: Instagram, href: 'https://www.instagram.com/housesadda?igsh=MWo0ZzA0cXE4bXU2eQ%3D%3D&utm_source=qr' },
 ];
 
 export function Footer() {
@@ -113,10 +112,15 @@ export function Footer() {
                 <Phone className="h-4 w-4" />
                 +91 63015 75658
               </a>
-              <div className="flex items-start gap-2 text-primary-foreground/70">
-                <MapPin className="h-4 w-4 mt-0.5" />
-                <span>8-1-284-/ou/25, OU Colony, Shaikpet, Manikonda, Hyderabad, Telangana 500104</span>
-              </div>
+              <a
+                href="https://maps.app.goo.gl/h4Pzv6uoowF3czKT6"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-start gap-2 text-primary-foreground/70 hover:text-accent transition-colors"
+              >
+                <MapPin className="h-4 w-4 mt-0.5 shrink-0" />
+                <span>Houses Adda, 8-1-284-/ou/25, OU Colony, Shaikpet, Hyderabad, Telangana 500104</span>
+              </a>
             </div>
           </div>
 
