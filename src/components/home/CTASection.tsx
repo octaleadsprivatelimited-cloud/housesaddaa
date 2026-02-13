@@ -37,6 +37,17 @@ export function CTASection() {
                   <ArrowRight className="h-4 w-4 md:h-5 md:w-5 ml-2" />
                 </Link>
               </Button>
+              <Button
+                variant="outline"
+                size="default"
+                className="md:text-base md:px-6 md:py-3 border-2 border-white/60 text-white hover:bg-white/10"
+                asChild
+              >
+                <Link to="/contact-form">
+                  Enquire Now / Get a Quote
+                  <ArrowRight className="h-4 w-4 md:h-5 md:w-5 ml-2" />
+                </Link>
+              </Button>
             </div>
 
             {/* Trust Indicators */}

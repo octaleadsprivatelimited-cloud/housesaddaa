@@ -11,6 +11,7 @@ import Properties from "./pages/Properties";
 import PropertyDetail from "./pages/PropertyDetail";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import ContactForm from "./pages/ContactForm";
 import Gallery from "./pages/Gallery";
 import HomeLoans from "./pages/services/HomeLoans";
 import InteriorDesign from "./pages/services/InteriorDesign";
@@ -61,6 +62,7 @@ const App = () => (
               <Route path="/property/:slug" element={<PropertyDetail />} />
               <Route path="/about" element={<About />} />
               <Route path="/contact" element={<Contact />} />
+              <Route path="/contact-form" element={<ContactForm />} />
               <Route path="/gallery" element={<Gallery />} />
               <Route path="/services/home-loans" element={<HomeLoans />} />
               <Route path="/services/interior-design" element={<InteriorDesign />} />

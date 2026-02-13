@@ -1,14 +1,15 @@
-import { 
-  collection, 
-  doc, 
-  getDocs, 
-  addDoc, 
+import {
+  collection,
+  doc,
+  getDocs,
+  addDoc,
   updateDoc,
   query,
   orderBy,
   where,
+  onSnapshot,
   Timestamp,
-  DocumentSnapshot
+  DocumentSnapshot,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { Enquiry } from "@/types/property";
@@ -16,24 +17,32 @@ import { Enquiry } from "@/types/property";
 const ENQUIRIES_COLLECTION = "enquiries";
 
 // Convert Firestore document to Enquiry
-const docToEnquiry = (doc: DocumentSnapshot): Enquiry => {
-  const data = doc.data();
+const docToEnquiry = (d: DocumentSnapshot): Enquiry => {
+  const data = d.data();
   if (!data) throw new Error("Document data is undefined");
-  
   return {
     ...data,
-    id: doc.id,
+    id: d.id,
     createdAt: data.createdAt?.toDate() || new Date(),
   } as Enquiry;
 };
 
-// Submit new enquiry (public)
-export const submitEnquiry = async (enquiry: Omit<Enquiry, 'id' | 'createdAt' | 'status'>): Promise<string> => {
-  const docRef = await addDoc(collection(db, ENQUIRIES_COLLECTION), {
+/** Payload for new enquiry (all optional except name, email, phone, message for contact form) */
+export type EnquiryInput = Partial<Omit<Enquiry, 'id' | 'createdAt' | 'status'>> & {
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+};
+
+// Submit new enquiry (public) - accepts new contact form fields and legacy fields
+export const submitEnquiry = async (enquiry: EnquiryInput): Promise<string> => {
+  const payload: Record<string, unknown> = {
     ...enquiry,
     status: 'new',
-    createdAt: Timestamp.now()
-  });
+    createdAt: Timestamp.now(),
+  };
+  const docRef = await addDoc(collection(db, ENQUIRIES_COLLECTION), payload);
   return docRef.id;
 };
 
@@ -75,4 +84,22 @@ export const getNewEnquiriesCount = async (): Promise<number> => {
   );
   const snapshot = await getDocs(q);
   return snapshot.size;
+};
+
+// Admin: Real-time subscription to enquiries (projectType filter applied client-side to avoid composite index)
+export const subscribeEnquiries = (
+  onUpdate: (enquiries: Enquiry[]) => void,
+  projectTypeFilter?: 'residential' | 'commercial'
+): (() => void) => {
+  const q = query(
+    collection(db, ENQUIRIES_COLLECTION),
+    orderBy("createdAt", "desc")
+  );
+  return onSnapshot(q, (snapshot) => {
+    let list = snapshot.docs.map((d) => docToEnquiry(d));
+    if (projectTypeFilter) {
+      list = list.filter((e) => e.projectType === projectTypeFilter);
+    }
+    onUpdate(list);
+  });
 };

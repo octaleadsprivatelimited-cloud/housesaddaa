@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { MapPin, Bed, Bath, Square, Phone } from 'lucide-react';
+import { MapPin, Bed, Bath, Square, Phone, Compass, Building2 } from 'lucide-react';
 import { Property } from '@/types/property';
 import { usePropertyTypes } from '@/hooks/usePropertyTypes';
 import { cn } from '@/lib/utils';
@@ -108,17 +108,34 @@ export function PropertyCard({ property, variant = 'default' }: PropertyCardProp
           </div>
 
           <div className={cn('flex items-center gap-4 text-[#6B6B6B]', isCompact ? 'text-xs mb-2' : 'text-sm mb-4')}>
-            {property.bedrooms > 0 && (
-              <span className="flex items-center gap-1">
-                <Bed className="h-4 w-4 text-[#6B6B6B]/70" />
-                {property.bedrooms} BHK
-              </span>
-            )}
-            {property.bathrooms > 0 && (
-              <span className="flex items-center gap-1">
-                <Bath className="h-4 w-4 text-[#6B6B6B]/70" />
-                {property.bathrooms}
-              </span>
+            {property.propertyType === 'commercial' ? (
+              <>
+                {property.facings && (
+                  <span className="flex items-center gap-1">
+                    <Compass className="h-4 w-4 text-[#6B6B6B]/70" />
+                    {property.facings}
+                  </span>
+                )}
+                <span className="flex items-center gap-1">
+                  <Building2 className="h-4 w-4 text-[#6B6B6B]/70" />
+                  Commercial
+                </span>
+              </>
+            ) : (
+              <>
+                {property.bedrooms > 0 && (
+                  <span className="flex items-center gap-1">
+                    <Bed className="h-4 w-4 text-[#6B6B6B]/70" />
+                    {property.bedrooms} BHK
+                  </span>
+                )}
+                {property.bathrooms > 0 && (
+                  <span className="flex items-center gap-1">
+                    <Bath className="h-4 w-4 text-[#6B6B6B]/70" />
+                    {property.bathrooms}
+                  </span>
+                )}
+              </>
             )}
             <span className="flex items-center gap-1">
               <Square className="h-4 w-4 text-[#6B6B6B]/70" />

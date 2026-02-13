@@ -36,6 +36,14 @@ export interface Property {
   enquiries: number;
   metaTitle?: string;
   metaDescription?: string;
+  /** PDF or document download URL (uploaded in admin) */
+  brochureUrl?: string;
+  /** YouTube video ID for property video (e.g. from watch?v=ID or youtu.be/ID) */
+  youtubeVideoId?: string;
+  /** Commercial: facing direction (e.g. North, East) */
+  facings?: string;
+  /** Floor plan image URLs (compressed on upload) */
+  floorPlanUrls?: string[];
 }
 
 export type PropertyType = 
@@ -80,25 +88,35 @@ export interface PropertyFilter {
   sortBy?: 'price-low' | 'price-high' | 'newest' | 'popular';
 }
 
+export type EnquiryProjectType = 'residential' | 'commercial';
+
 export interface Enquiry {
   id: string;
-  propertyId: string;
-  propertyTitle: string;
+  propertyId?: string;
+  propertyTitle?: string;
   name: string;
   email: string;
   phone: string;
+  /** Additional contact number (do not replace primary) */
+  alternatePhone?: string;
   message: string;
   status: 'new' | 'contacted' | 'closed';
   createdAt: Date;
+  /** Contact form: Residential / Commercial */
+  projectType?: EnquiryProjectType;
   /** Contact page: Buy / Sell / Take a Rent / Give For a Rental */
   intent?: string;
-  /** For "Promote your property" / contact form */
   propertyLocation?: string;
   budgetExpecting?: string;
-  /** For "Need help finding a property?" / contact form */
   propertyType?: string;
   bhk?: string;
   pricingLooking?: string;
+  /** Commercial only */
+  companyName?: string;
+  /** Commercial: project location */
+  projectLocation?: string;
+  /** Commercial: optional budget */
+  estimatedBudget?: string;
 }
 
 export type PartnerType = 'bank' | 'company';

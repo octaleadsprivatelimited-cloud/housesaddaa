@@ -1,18 +1,21 @@
 import { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Upload, X, Loader2 } from 'lucide-react';
+import { ArrowLeft, Upload, X, Loader2, FileText, Youtube, LayoutGrid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { amenities, furnishingOptions, propertyStatusOptions, bhkOptions } from '@/data/properties';
+import { amenities, furnishingOptions, propertyStatusOptions, bhkOptions, facingOptions } from '@/data/properties';
 import { usePropertyTypes } from '@/hooks/usePropertyTypes';
 import { useLocations } from '@/hooks/useLocations';
-import { addProperty } from '@/services/propertyService';
+import { addProperty, updateProperty } from '@/services/propertyService';
 import { PropertyType } from '@/types/property';
 import { imageToBase64, validateImage } from '@/services/imageService';
+import { uploadBrochure } from '@/services/brochureService';
+import { uploadFloorPlans, validateFloorPlanFile } from '@/services/floorPlanService';
+import { parseYouTubeVideoId } from '@/services/galleryVideoService';
 
 // Generate slug from title
 const generateSlug = (title: string, city: string): string => {
@@ -28,8 +31,12 @@ export default function AdminAddProperty() {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isProcessingImages, setIsProcessingImages] = useState(false);
+  const [isUploadingBrochure, setIsUploadingBrochure] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const brochureInputRef = useRef<HTMLInputElement>(null);
+  const floorPlanInputRef = useRef<HTMLInputElement>(null);
   const [images, setImages] = useState<string[]>([]); // Base64 strings
+  const [youtubeVideoUrl, setYoutubeVideoUrl] = useState('');
   
   const [formData, setFormData] = useState({
     title: '',
@@ -52,7 +59,9 @@ export default function AdminAddProperty() {
     isFeatured: false,
     metaTitle: '',
     metaDescription: '',
+    facings: '',
   });
+  const isCommercial = formData.propertyType === 'commercial';
 
   const { propertyTypes } = usePropertyTypes();
   const { locations } = useLocations();
@@ -121,7 +130,8 @@ export default function AdminAddProperty() {
     setIsSubmitting(true);
 
     try {
-      // Prepare property data
+      const parsedYoutubeId = parseYouTubeVideoId(youtubeVideoUrl) || undefined;
+
       const propertyData = {
         title: formData.title,
         slug: generateSlug(formData.title, formData.city),
@@ -135,8 +145,8 @@ export default function AdminAddProperty() {
           city: formData.city,
           area: formData.area,
         },
-        bedrooms: parseInt(formData.bedrooms) || 0,
-        bathrooms: parseInt(formData.bathrooms) || 0,
+        bedrooms: isCommercial ? 0 : parseInt(formData.bedrooms) || 0,
+        bathrooms: isCommercial ? 0 : parseInt(formData.bathrooms) || 0,
         area: parseInt(formData.areaSize) || 0,
         areaUnit: 'sqft' as const,
         furnishing: formData.furnishing as 'furnished' | 'semi-furnished' | 'unfurnished',
@@ -153,10 +163,44 @@ export default function AdminAddProperty() {
         isVerified: false,
         metaTitle: formData.metaTitle || formData.title,
         metaDescription: formData.metaDescription || formData.description.slice(0, 160),
+        ...(parsedYoutubeId && { youtubeVideoId: parsedYoutubeId }),
+        ...(isCommercial && formData.facings && { facings: formData.facings }),
       };
 
-      // Add to Firestore
-      await addProperty(propertyData);
+      const newId = await addProperty(propertyData);
+
+      const floorPlanFiles = Array.from(floorPlanInputRef.current?.files || []);
+      if (floorPlanFiles.length > 0) {
+        const validFiles = floorPlanFiles.filter((f) => validateFloorPlanFile(f).valid);
+        if (validFiles.length > 0) {
+          try {
+            const floorPlanUrls = await uploadFloorPlans(newId, validFiles);
+            await updateProperty(newId, { floorPlanUrls });
+          } catch (err: unknown) {
+            toast({
+              title: 'Property added but floor plan upload failed',
+              description: err instanceof Error ? err.message : 'You can add floor plans later by editing the property.',
+              variant: 'destructive',
+            });
+          }
+        }
+      }
+
+      const brochureFile = brochureInputRef.current?.files?.[0];
+      if (brochureFile) {
+        setIsUploadingBrochure(true);
+        try {
+          const brochureUrl = await uploadBrochure(newId, brochureFile);
+          await updateProperty(newId, { brochureUrl });
+        } catch (err: unknown) {
+          toast({
+            title: 'Property added but brochure upload failed',
+            description: err instanceof Error ? err.message : 'You can add the brochure later by editing the property.',
+            variant: 'destructive',
+          });
+        }
+        setIsUploadingBrochure(false);
+      }
       
       toast({
         title: 'Property Added!',
@@ -256,6 +300,35 @@ export default function AdminAddProperty() {
                 <span className="text-sm">{isProcessingImages ? 'Processing...' : 'Add Images'}</span>
               </button>
             )}
+          </div>
+        </div>
+
+        {/* Brochure & YouTube Video (optional) */}
+        <div className="bg-card rounded-xl border border-border p-6">
+          <h2 className="font-semibold text-lg mb-4">Brochure & Video (optional)</h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+                <FileText className="h-4 w-4" /> Brochure (PDF or Word)
+              </label>
+              <input
+                type="file"
+                ref={brochureInputRef}
+                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Max 10MB. PDF or Word. PDFs are compressed automatically before upload.</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+                <Youtube className="h-4 w-4" /> YouTube Video
+              </label>
+              <Input
+                placeholder="e.g. https://www.youtube.com/watch?v=VIDEO_ID"
+                value={youtubeVideoUrl}
+                onChange={(e) => setYoutubeVideoUrl(e.target.value)}
+              />
+            </div>
           </div>
         </div>
 
@@ -374,35 +447,57 @@ export default function AdminAddProperty() {
         <div className="bg-card rounded-xl border border-border p-6">
           <h2 className="font-semibold text-lg mb-4">Property Details</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Bedrooms</label>
-              <Select 
-                value={formData.bedrooms} 
-                onValueChange={(v) => setFormData({ ...formData, bedrooms: v })}
-              >
-                <SelectTrigger className="bg-background">
-                  <SelectValue placeholder="BHK" />
-                </SelectTrigger>
-                <SelectContent className="bg-card border-border">
-                  {bhkOptions.map((bhk) => (
-                    <SelectItem key={bhk} value={bhk.toString()}>
-                      {bhk} BHK
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">Bathrooms</label>
-              <Input
-                type="number"
-                placeholder="e.g., 2"
-                value={formData.bathrooms}
-                onChange={(e) => setFormData({ ...formData, bathrooms: e.target.value })}
-              />
-            </div>
-            
+            {!isCommercial && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Bedrooms (BHK)</label>
+                  <Select 
+                    value={formData.bedrooms} 
+                    onValueChange={(v) => setFormData({ ...formData, bedrooms: v })}
+                  >
+                    <SelectTrigger className="bg-background">
+                      <SelectValue placeholder="BHK" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card border-border">
+                      {bhkOptions.map((bhk) => (
+                        <SelectItem key={bhk} value={bhk.toString()}>
+                          {bhk} BHK
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Bathrooms</label>
+                  <Input
+                    type="number"
+                    placeholder="e.g., 2"
+                    value={formData.bathrooms}
+                    onChange={(e) => setFormData({ ...formData, bathrooms: e.target.value })}
+                  />
+                </div>
+              </>
+            )}
+            {isCommercial && (
+              <div>
+                <label className="block text-sm font-medium mb-2">Facings</label>
+                <Select 
+                  value={formData.facings} 
+                  onValueChange={(v) => setFormData({ ...formData, facings: v })}
+                >
+                  <SelectTrigger className="bg-background">
+                    <SelectValue placeholder="Select facing" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border">
+                    {facingOptions.map((f) => (
+                      <SelectItem key={f} value={f}>
+                        {f}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium mb-2">Area (sqft)</label>
               <Input
@@ -412,7 +507,6 @@ export default function AdminAddProperty() {
                 onChange={(e) => setFormData({ ...formData, areaSize: e.target.value })}
               />
             </div>
-            
             <div>
               <label className="block text-sm font-medium mb-2">Furnishing</label>
               <Select 
@@ -450,6 +544,20 @@ export default function AdminAddProperty() {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="mt-4">
+            <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+              <LayoutGrid className="h-4 w-4" /> Floor Plans
+            </label>
+            <input
+              type="file"
+              ref={floorPlanInputRef}
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              multiple
+              className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+            />
+            <p className="text-xs text-muted-foreground mt-1">Images are compressed automatically. Max 10 images, 5MB each.</p>
           </div>
         </div>
 

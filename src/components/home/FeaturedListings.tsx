@@ -10,22 +10,21 @@ export function FeaturedListings() {
   const [loading, setLoading] = useState(true);
 
   const [emblaRef, emblaApi] = useEmblaCarousel({
-    align: 'start',
+    align: 'center',
     loop: true,
     containScroll: 'trimSnaps',
-    slidesToScroll: 2,
-    breakpoints: {
-      '(max-width: 639px)': { slidesToScroll: 1 },
-    },
+    slidesToScroll: 1,
   });
   const [canScrollPrev, setCanScrollPrev] = useState(false);
   const [canScrollNext, setCanScrollNext] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
   const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
   const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
 
   const onSelect = useCallback(() => {
     if (!emblaApi) return;
+    setSelectedIndex(emblaApi.selectedScrollSnap());
     setCanScrollPrev(emblaApi.canScrollPrev());
     setCanScrollNext(emblaApi.canScrollNext());
   }, [emblaApi]);
@@ -41,10 +40,17 @@ export function FeaturedListings() {
     };
   }, [emblaApi, onSelect]);
 
+  // Auto-scroll carousel every 4 seconds (short delay so Embla is ready after slides render)
   useEffect(() => {
-    if (!emblaApi || properties.length <= 2) return;
-    const interval = setInterval(() => emblaApi.scrollNext(), 4500);
-    return () => clearInterval(interval);
+    if (!emblaApi || properties.length === 0) return;
+    let intervalId: ReturnType<typeof setInterval>;
+    const timeoutId = setTimeout(() => {
+      intervalId = setInterval(() => emblaApi.scrollNext(), 4000);
+    }, 500);
+    return () => {
+      clearTimeout(timeoutId);
+      if (intervalId) clearInterval(intervalId);
+    };
   }, [emblaApi, properties.length]);
 
   useEffect(() => {
@@ -100,7 +106,7 @@ export function FeaturedListings() {
           )}
         </div>
 
-        {/* Property Cards Slider */}
+        {/* Property Cards Slider - one card per slide */}
         <div className="relative">
           {loading ? (
             <div className="flex justify-center py-16">
@@ -121,18 +127,40 @@ export function FeaturedListings() {
               </a>
             </div>
           ) : (
-            <div className="overflow-hidden px-2 sm:px-0" ref={emblaRef}>
-              <div className="flex -ml-4 gap-0">
-                {properties.map((property) => (
-                  <div
-                    key={property.id}
-                    className="flex-[0_0_100%] sm:flex-[0_0_50%] min-w-0 pl-4"
-                  >
-                    <PropertyCard property={property} variant="compact" />
-                  </div>
-                ))}
+            <>
+              <div className="overflow-hidden px-1" ref={emblaRef}>
+                <div className="flex gap-6 -ml-6">
+                  {properties.map((property) => (
+                    <div
+                      key={property.id}
+                      className="flex-[0_0_100%] min-w-0 pl-6"
+                    >
+                      <div className="h-full max-w-4xl mx-auto">
+                        <PropertyCard property={property} variant="featured" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+              {/* Carousel dots */}
+              {properties.length > 1 && (
+                <div className="flex justify-center gap-2 mt-8">
+                  {properties.map((_, index) => (
+                    <button
+                      key={index}
+                      type="button"
+                      onClick={() => emblaApi?.scrollTo(index)}
+                      className={`h-2 rounded-full transition-all duration-200 ${
+                        index === selectedIndex
+                          ? 'bg-[#E10600] w-8'
+                          : 'bg-[#E5E5E5] w-2 hover:bg-[#ccc]'
+                      }`}
+                      aria-label={`Go to property ${index + 1}`}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

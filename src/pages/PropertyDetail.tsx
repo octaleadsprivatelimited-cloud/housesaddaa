@@ -3,10 +3,17 @@ import { useParams, Link } from 'react-router-dom';
 import { 
   MapPin, Bed, Bath, Square, Heart, Share2, Phone, 
   BadgeCheck, Calendar, Eye, MessageSquare, ArrowLeft,
-  Car, Dumbbell, Waves, Shield, Zap, Building2, Loader2, MessageCircle
+  Car, Dumbbell, Waves, Shield, Zap, Building2, Loader2, MessageCircle,
+  Download, Youtube, Copy, Compass, LayoutGrid
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { formatPrice, amenities as amenitiesData } from '@/data/properties';
 import { usePropertyTypes } from '@/hooks/usePropertyTypes';
 import { PropertyCardCarousel } from '@/components/property/PropertyCardCarousel';
@@ -14,6 +21,22 @@ import { cn } from '@/lib/utils';
 import { Property } from '@/types/property';
 import { getPropertyBySlug, getPropertiesByType } from '@/services/propertyService';
 import SEO from '@/components/SEO';
+import { toast } from '@/components/ui/sonner';
+
+const WISHLIST_KEY = 'housesadda_wishlist';
+
+function getWishlistSlugs(): string[] {
+  try {
+    const raw = localStorage.getItem(WISHLIST_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function setWishlistSlugs(slugs: string[]) {
+  localStorage.setItem(WISHLIST_KEY, JSON.stringify(slugs));
+}
 
 const amenityIcons: Record<string, React.ElementType> = {
   parking: Car,
@@ -31,6 +54,7 @@ export default function PropertyDetailPage() {
   const [property, setProperty] = useState<Property | null>(null);
   const [similarProperties, setSimilarProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isInWishlist, setIsInWishlist] = useState(false);
 
   useEffect(() => {
     const fetchProperty = async () => {
@@ -57,6 +81,44 @@ export default function PropertyDetailPage() {
 
     fetchProperty();
   }, [slug]);
+
+  useEffect(() => {
+    if (property?.slug) {
+      setIsInWishlist(getWishlistSlugs().includes(property.slug));
+    }
+  }, [property?.slug]);
+
+  const toggleWishlist = () => {
+    if (!property?.slug) return;
+    const slugs = getWishlistSlugs();
+    const next = slugs.includes(property.slug)
+      ? slugs.filter((s) => s !== property.slug)
+      : [...slugs, property.slug];
+    setWishlistSlugs(next);
+    setIsInWishlist(next.includes(property.slug));
+    toast.success(next.includes(property.slug) ? 'Added to wishlist' : 'Removed from wishlist');
+  };
+
+  const shareUrl = property ? `${window.location.origin}/property/${property.slug}` : '';
+  const shareText = property
+    ? `${property.title} in ${property.location.area}, ${property.location.city}. ${property.listingType === 'sale' ? 'Sale' : 'Rent'} - ${formatPrice(property.price, property.listingType)}`
+    : '';
+
+  const shareLinks = property
+    ? {
+        whatsapp: `https://wa.me/?text=${encodeURIComponent(shareText + ' ' + shareUrl)}`,
+        facebook: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+        twitter: `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(shareText)}`,
+        linkedin: `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
+      }
+    : null;
+
+  function copyShareUrl(url: string) {
+    navigator.clipboard.writeText(url).then(
+      () => toast.success('Link copied to clipboard'),
+      () => toast.error('Could not copy link')
+    );
+  }
 
   if (loading) {
     return (
@@ -172,12 +234,58 @@ export default function PropertyDetailPage() {
 
                 {/* Actions */}
                 <div className="absolute top-4 right-4 flex gap-2">
-                  <button className="w-10 h-10 rounded-full bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors">
-                    <Heart className="h-5 w-5" />
+                  <button
+                    type="button"
+                    onClick={toggleWishlist}
+                    className={cn(
+                      'w-10 h-10 rounded-full bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors',
+                      isInWishlist && 'text-[#E10600]'
+                    )}
+                    aria-label={isInWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+                  >
+                    <Heart className={cn('h-5 w-5', isInWishlist && 'fill-current')} />
                   </button>
-                  <button className="w-10 h-10 rounded-full bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors">
-                    <Share2 className="h-5 w-5" />
-                  </button>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        type="button"
+                        className="w-10 h-10 rounded-full bg-card/90 backdrop-blur-sm flex items-center justify-center hover:bg-card transition-colors"
+                        aria-label="Share property"
+                      >
+                        <Share2 className="h-5 w-5" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuItem asChild>
+                        <a href={shareLinks?.whatsapp} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                          <MessageCircle className="h-4 w-4 text-[#25D366]" />
+                          WhatsApp
+                        </a>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <a href={shareLinks?.facebook} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                          <span className="text-[#1877F2] font-bold text-sm">f</span>
+                          Facebook
+                        </a>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <a href={shareLinks?.twitter} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                          <Share2 className="h-4 w-4" />
+                          X (Twitter)
+                        </a>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <a href={shareLinks?.linkedin} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2">
+                          <Share2 className="h-4 w-4" />
+                          LinkedIn
+                        </a>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => copyShareUrl(shareUrl)} className="flex items-center gap-2">
+                        <Copy className="h-4 w-4" />
+                        Copy link
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
 
@@ -226,16 +334,36 @@ export default function PropertyDetailPage() {
 
               {/* Quick Stats */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4 border-y border-border">
-                <div className="text-center">
-                  <Bed className="h-6 w-6 mx-auto text-primary mb-1" />
-                  <div className="font-semibold">{property.bedrooms}</div>
-                  <div className="text-sm text-muted-foreground">Bedrooms</div>
-                </div>
-                <div className="text-center">
-                  <Bath className="h-6 w-6 mx-auto text-primary mb-1" />
-                  <div className="font-semibold">{property.bathrooms}</div>
-                  <div className="text-sm text-muted-foreground">Bathrooms</div>
-                </div>
+                {property.propertyType === 'commercial' ? (
+                  <>
+                    {property.facings ? (
+                      <div className="text-center">
+                        <Compass className="h-6 w-6 mx-auto text-primary mb-1" />
+                        <div className="font-semibold">{property.facings}</div>
+                        <div className="text-sm text-muted-foreground">Facing</div>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <Building2 className="h-6 w-6 mx-auto text-primary mb-1" />
+                        <div className="font-semibold">Commercial</div>
+                        <div className="text-sm text-muted-foreground">Type</div>
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div className="text-center">
+                      <Bed className="h-6 w-6 mx-auto text-primary mb-1" />
+                      <div className="font-semibold">{property.bedrooms}</div>
+                      <div className="text-sm text-muted-foreground">Bedrooms</div>
+                    </div>
+                    <div className="text-center">
+                      <Bath className="h-6 w-6 mx-auto text-primary mb-1" />
+                      <div className="font-semibold">{property.bathrooms}</div>
+                      <div className="text-sm text-muted-foreground">Bathrooms</div>
+                    </div>
+                  </>
+                )}
                 <div className="text-center">
                   <Square className="h-6 w-6 mx-auto text-primary mb-1" />
                   <div className="font-semibold">{property.area.toLocaleString()}</div>
@@ -289,6 +417,65 @@ export default function PropertyDetailPage() {
               )}
             </div>
 
+            {/* Floor Plans */}
+            {property.floorPlanUrls && property.floorPlanUrls.length > 0 && (
+              <div className="bg-card rounded-2xl border border-border p-6">
+                <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2">
+                  <LayoutGrid className="h-5 w-5" /> Floor Plans
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {property.floorPlanUrls.map((url, i) => (
+                    <a
+                      key={i}
+                      href={url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="block rounded-xl overflow-hidden border border-border hover:border-primary/50 transition-colors"
+                    >
+                      <img src={url} alt={`Floor plan ${i + 1}`} className="w-full h-48 object-contain bg-muted/30" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Brochure download */}
+            {property.brochureUrl && (
+              <div className="bg-card rounded-2xl border border-border p-6">
+                <h2 className="font-display text-xl font-bold mb-4">Brochure</h2>
+                <a
+                  href={property.brochureUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
+                >
+                  <Download className="h-5 w-5" />
+                  Download Brochure
+                </a>
+              </div>
+            )}
+
+            {/* YouTube video */}
+            {property.youtubeVideoId && (
+              <div className="bg-card rounded-2xl border border-border p-6">
+                <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2">
+                  <Youtube className="h-6 w-6 text-[#FF0000]" />
+                  Property Video
+                </h2>
+                <div className="aspect-video w-full max-w-2xl rounded-xl overflow-hidden bg-muted">
+                  <iframe
+                    title="Property video"
+                    src={`https://www.youtube.com/embed/${property.youtubeVideoId}`}
+                    width="100%"
+                    height="100%"
+                    className="w-full h-full border-0"
+                    allowFullScreen
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  />
+                </div>
+              </div>
+            )}
+
             {/* Amenities */}
             <div className="bg-card rounded-2xl border border-border p-6">
               <h2 className="font-display text-xl font-bold mb-4">Amenities</h2>
@@ -332,6 +519,17 @@ export default function PropertyDetailPage() {
               </div>
 
               <div className="space-y-3">
+                {property.brochureUrl && (
+                  <a
+                    href={property.brochureUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl border-2 border-primary bg-primary/5 text-primary font-semibold hover:bg-primary/10 transition-colors"
+                  >
+                    <Download className="h-5 w-5" />
+                    Download Brochure
+                  </a>
+                )}
                 <Button 
                   variant="default" 
                   className="w-full" 
@@ -352,6 +550,56 @@ export default function PropertyDetailPage() {
                   <MessageCircle className="h-5 w-5" />
                   WhatsApp
                 </a>
+
+                <div className="pt-3 border-t border-border">
+                  <p className="text-sm font-medium text-muted-foreground mb-2">Share this property</p>
+                  <div className="flex flex-wrap gap-2">
+                    <a
+                      href={shareLinks?.whatsapp}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-9 h-9 rounded-lg bg-[#25D366]/10 hover:bg-[#25D366]/20 flex items-center justify-center text-[#25D366]"
+                      aria-label="Share on WhatsApp"
+                    >
+                      <MessageCircle className="h-5 w-5" />
+                    </a>
+                    <a
+                      href={shareLinks?.facebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-9 h-9 rounded-lg bg-[#1877F2]/10 hover:bg-[#1877F2]/20 flex items-center justify-center text-[#1877F2] font-bold text-sm"
+                      aria-label="Share on Facebook"
+                    >
+                      f
+                    </a>
+                    <a
+                      href={shareLinks?.twitter}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-9 h-9 rounded-lg bg-muted hover:bg-muted/80 flex items-center justify-center text-foreground"
+                      aria-label="Share on X (Twitter)"
+                    >
+                      <Share2 className="h-4 w-4" />
+                    </a>
+                    <a
+                      href={shareLinks?.linkedin}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-9 h-9 rounded-lg bg-[#0A66C2]/10 hover:bg-[#0A66C2]/20 flex items-center justify-center text-[#0A66C2]"
+                      aria-label="Share on LinkedIn"
+                    >
+                      <Share2 className="h-4 w-4" />
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => copyShareUrl(shareUrl)}
+                      className="w-9 h-9 rounded-lg bg-muted hover:bg-muted/80 flex items-center justify-center text-foreground"
+                      aria-label="Copy link"
+                    >
+                      <Copy className="h-4 w-4" />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

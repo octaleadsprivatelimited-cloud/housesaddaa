@@ -1,18 +1,21 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Upload, X, Loader2 } from 'lucide-react';
+import { ArrowLeft, Upload, X, Loader2, FileText, Youtube, LayoutGrid } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { amenities, furnishingOptions, propertyStatusOptions, bhkOptions } from '@/data/properties';
+import { amenities, furnishingOptions, propertyStatusOptions, bhkOptions, facingOptions } from '@/data/properties';
 import { usePropertyTypes } from '@/hooks/usePropertyTypes';
 import { useLocations } from '@/hooks/useLocations';
 import { getPropertyById, updateProperty } from '@/services/propertyService';
 import { PropertyType } from '@/types/property';
 import { imageToBase64, validateImage } from '@/services/imageService';
+import { uploadBrochure, validateBrochureFile } from '@/services/brochureService';
+import { uploadFloorPlans, validateFloorPlanFile } from '@/services/floorPlanService';
+import { parseYouTubeVideoId } from '@/services/galleryVideoService';
 
 export default function AdminEditProperty() {
   const { id } = useParams<{ id: string }>();
@@ -21,8 +24,14 @@ export default function AdminEditProperty() {
   const [loading, setLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isProcessingImages, setIsProcessingImages] = useState(false);
+  const [isUploadingBrochure, setIsUploadingBrochure] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const brochureInputRef = useRef<HTMLInputElement>(null);
+  const floorPlanInputRef = useRef<HTMLInputElement>(null);
   const [images, setImages] = useState<string[]>([]);
+  const [brochureUrl, setBrochureUrl] = useState('');
+  const [youtubeVideoUrl, setYoutubeVideoUrl] = useState('');
+  const [floorPlanUrls, setFloorPlanUrls] = useState<string[]>([]);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -45,7 +54,9 @@ export default function AdminEditProperty() {
     isFeatured: false,
     metaTitle: '',
     metaDescription: '',
+    facings: '',
   });
+  const isCommercial = formData.propertyType === 'commercial';
 
   // Fetch property data
   useEffect(() => {
@@ -86,8 +97,12 @@ export default function AdminEditProperty() {
           isFeatured: property.isFeatured || false,
           metaTitle: property.metaTitle || '',
           metaDescription: property.metaDescription || '',
+          facings: property.facings || '',
         });
         setImages(property.images || []);
+        setBrochureUrl(property.brochureUrl || '');
+        setYoutubeVideoUrl(property.youtubeVideoId ? `https://www.youtube.com/watch?v=${property.youtubeVideoId}` : '');
+        setFloorPlanUrls(property.floorPlanUrls || []);
       } catch (error) {
         console.error('Error fetching property:', error);
         toast({
@@ -172,6 +187,44 @@ export default function AdminEditProperty() {
     setIsSubmitting(true);
 
     try {
+      let finalBrochureUrl = brochureUrl;
+      const brochureFile = brochureInputRef.current?.files?.[0];
+      if (brochureFile) {
+        setIsUploadingBrochure(true);
+        try {
+          finalBrochureUrl = await uploadBrochure(id, brochureFile);
+        } catch (err: unknown) {
+          toast({
+            title: 'Brochure upload failed',
+            description: err instanceof Error ? err.message : 'Please try again.',
+            variant: 'destructive',
+          });
+          setIsSubmitting(false);
+          setIsUploadingBrochure(false);
+          return;
+        }
+        setIsUploadingBrochure(false);
+      }
+      const parsedYoutubeId = parseYouTubeVideoId(youtubeVideoUrl) || undefined;
+
+      let finalFloorPlanUrls = floorPlanUrls;
+      const newFloorPlanFiles = Array.from(floorPlanInputRef.current?.files || []);
+      if (newFloorPlanFiles.length > 0) {
+        const validFiles = newFloorPlanFiles.filter((f) => validateFloorPlanFile(f).valid);
+        if (validFiles.length > 0) {
+          try {
+            const uploaded = await uploadFloorPlans(id, validFiles);
+            finalFloorPlanUrls = [...floorPlanUrls, ...uploaded];
+          } catch (err: unknown) {
+            toast({
+              title: 'Floor plan upload failed',
+              description: err instanceof Error ? err.message : 'Saving property without new floor plans.',
+              variant: 'destructive',
+            });
+          }
+        }
+      }
+
       const propertyData = {
         title: formData.title,
         propertyType: formData.propertyType as PropertyType,
@@ -184,8 +237,8 @@ export default function AdminEditProperty() {
           city: formData.city,
           area: formData.area,
         },
-        bedrooms: parseInt(formData.bedrooms) || 0,
-        bathrooms: parseInt(formData.bathrooms) || 0,
+        bedrooms: isCommercial ? 0 : parseInt(formData.bedrooms) || 0,
+        bathrooms: isCommercial ? 0 : parseInt(formData.bathrooms) || 0,
         area: parseInt(formData.areaSize) || 0,
         areaUnit: 'sqft' as const,
         furnishing: formData.furnishing as 'furnished' | 'semi-furnished' | 'unfurnished',
@@ -200,6 +253,10 @@ export default function AdminEditProperty() {
         isFeatured: formData.isFeatured,
         metaTitle: formData.metaTitle || formData.title,
         metaDescription: formData.metaDescription || formData.description.slice(0, 160),
+        ...(finalBrochureUrl && { brochureUrl: finalBrochureUrl }),
+        ...(parsedYoutubeId && { youtubeVideoId: parsedYoutubeId }),
+        floorPlanUrls: finalFloorPlanUrls,
+        ...(isCommercial && { facings: formData.facings || undefined }),
       };
 
       await updateProperty(id, propertyData);
@@ -309,6 +366,41 @@ export default function AdminEditProperty() {
                 <span className="text-sm">{isProcessingImages ? 'Processing...' : 'Add Images'}</span>
               </button>
             )}
+          </div>
+        </div>
+
+        {/* Brochure & YouTube Video */}
+        <div className="bg-card rounded-xl border border-border p-6">
+          <h2 className="font-semibold text-lg mb-4">Brochure & Video</h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+                <FileText className="h-4 w-4" /> Brochure (PDF or Word)
+              </label>
+              {brochureUrl && (
+                <p className="text-sm text-muted-foreground mb-2">
+                  Current: <a href={brochureUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Download brochure</a>
+                </p>
+              )}
+              <input
+                type="file"
+                ref={brochureInputRef}
+                accept=".pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+                className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Upload a new file to replace. Max 10MB. PDF or Word. PDFs are compressed automatically.</p>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+                <Youtube className="h-4 w-4" /> YouTube Video
+              </label>
+              <Input
+                placeholder="e.g. https://www.youtube.com/watch?v=VIDEO_ID or https://youtu.be/VIDEO_ID"
+                value={youtubeVideoUrl}
+                onChange={(e) => setYoutubeVideoUrl(e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">Paste the full YouTube link. Optional.</p>
+            </div>
           </div>
         </div>
 
@@ -427,35 +519,57 @@ export default function AdminEditProperty() {
         <div className="bg-card rounded-xl border border-border p-6">
           <h2 className="font-semibold text-lg mb-4">Property Details</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Bedrooms</label>
-              <Select 
-                value={formData.bedrooms} 
-                onValueChange={(v) => setFormData({ ...formData, bedrooms: v })}
-              >
-                <SelectTrigger className="bg-background">
-                  <SelectValue placeholder="BHK" />
-                </SelectTrigger>
-                <SelectContent className="bg-card border-border">
-                  {bhkOptions.map((bhk) => (
-                    <SelectItem key={bhk} value={bhk.toString()}>
-                      {bhk} BHK
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium mb-2">Bathrooms</label>
-              <Input
-                type="number"
-                placeholder="e.g., 2"
-                value={formData.bathrooms}
-                onChange={(e) => setFormData({ ...formData, bathrooms: e.target.value })}
-              />
-            </div>
-            
+            {!isCommercial && (
+              <>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Bedrooms (BHK)</label>
+                  <Select 
+                    value={formData.bedrooms} 
+                    onValueChange={(v) => setFormData({ ...formData, bedrooms: v })}
+                  >
+                    <SelectTrigger className="bg-background">
+                      <SelectValue placeholder="BHK" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-card border-border">
+                      {bhkOptions.map((bhk) => (
+                        <SelectItem key={bhk} value={bhk.toString()}>
+                          {bhk} BHK
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Bathrooms</label>
+                  <Input
+                    type="number"
+                    placeholder="e.g., 2"
+                    value={formData.bathrooms}
+                    onChange={(e) => setFormData({ ...formData, bathrooms: e.target.value })}
+                  />
+                </div>
+              </>
+            )}
+            {isCommercial && (
+              <div>
+                <label className="block text-sm font-medium mb-2">Facings</label>
+                <Select 
+                  value={formData.facings} 
+                  onValueChange={(v) => setFormData({ ...formData, facings: v })}
+                >
+                  <SelectTrigger className="bg-background">
+                    <SelectValue placeholder="Select facing" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-card border-border">
+                    {facingOptions.map((f) => (
+                      <SelectItem key={f} value={f}>
+                        {f}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
             <div>
               <label className="block text-sm font-medium mb-2">Area (sqft)</label>
               <Input
@@ -465,7 +579,6 @@ export default function AdminEditProperty() {
                 onChange={(e) => setFormData({ ...formData, areaSize: e.target.value })}
               />
             </div>
-            
             <div>
               <label className="block text-sm font-medium mb-2">Furnishing</label>
               <Select 
@@ -503,6 +616,25 @@ export default function AdminEditProperty() {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="mt-4">
+            <label className="block text-sm font-medium mb-2 flex items-center gap-2">
+              <LayoutGrid className="h-4 w-4" /> Floor Plans
+            </label>
+            {floorPlanUrls.length > 0 && (
+              <p className="text-sm text-muted-foreground mb-2">
+                Current: {floorPlanUrls.length} image(s). Upload more to add.
+              </p>
+            )}
+            <input
+              type="file"
+              ref={floorPlanInputRef}
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              multiple
+              className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-primary file:text-primary-foreground hover:file:bg-primary/90"
+            />
+            <p className="text-xs text-muted-foreground mt-1">Images are compressed automatically. Max 10 per property, 5MB each.</p>
           </div>
         </div>
 

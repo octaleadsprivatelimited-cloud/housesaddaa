@@ -296,6 +296,18 @@ export const priceRanges = {
 // BHK options
 export const bhkOptions = [1, 2, 3, 4, 5];
 
+// Facing options (for commercial properties)
+export const facingOptions = [
+  'North',
+  'South',
+  'East',
+  'West',
+  'North-East',
+  'North-West',
+  'South-East',
+  'South-West',
+];
+
 // Furnishing options
 export const furnishingOptions = [
   { value: 'furnished', label: 'Fully Furnished' },

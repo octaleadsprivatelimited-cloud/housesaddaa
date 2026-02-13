@@ -40,6 +40,9 @@ export default function Sitemap() {
                   <Link to="/contact" className="text-primary hover:underline">Contact Us</Link>
                 </li>
                 <li>
+                  <Link to="/contact-form" className="text-primary hover:underline">Enquiry Form</Link>
+                </li>
+                <li>
                   <Link to="/careers" className="text-primary hover:underline">Careers</Link>
                 </li>
                 <li>

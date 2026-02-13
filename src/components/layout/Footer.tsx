@@ -2,11 +2,13 @@ import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import { Facebook, Twitter, Instagram, Youtube, MapPin, Phone, Mail, ChevronDown, ChevronUp } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { CONTACT } from '@/constants/contact';
 
 const footerLinks = {
   company: [
     { name: 'About Us', href: '/about' },
     { name: 'Contact Us', href: '/contact' },
+    { name: 'Enquiry Form', href: '/contact-form' },
     { name: 'Gallery', href: '/gallery' },
     { name: 'Blog', href: '/blog' },
     { name: 'Careers', href: '/careers' },
@@ -104,22 +106,26 @@ export function Footer() {
               India's trusted real estate platform. Find apartments, villas, plots and commercial spaces across major cities.
             </p>
             <div className="space-y-3">
-              <a href="mailto:info@housesadda.in" className="flex items-center gap-2 text-primary-foreground/70 hover:text-accent transition-colors">
+              <a href={`mailto:${CONTACT.email}`} className="flex items-center gap-2 text-primary-foreground/70 hover:text-accent transition-colors">
                 <Mail className="h-4 w-4" />
-                info@housesadda.in
+                {CONTACT.email}
               </a>
-              <a href="tel:+916301575658" className="flex items-center gap-2 text-primary-foreground/70 hover:text-accent transition-colors">
+              <a href={`tel:${CONTACT.phoneRaw}`} className="flex items-center gap-2 text-primary-foreground/70 hover:text-accent transition-colors">
                 <Phone className="h-4 w-4" />
-                +91 63015 75658
+                {CONTACT.phone}
+              </a>
+              <a href={`tel:${CONTACT.alternatePhoneRaw}`} className="flex items-center gap-2 text-primary-foreground/70 hover:text-accent transition-colors">
+                <Phone className="h-4 w-4" />
+                {CONTACT.alternatePhone}
               </a>
               <a
-                href="https://maps.app.goo.gl/h4Pzv6uoowF3czKT6"
+                href={CONTACT.mapShareUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-start gap-2 text-primary-foreground/70 hover:text-accent transition-colors"
               >
                 <MapPin className="h-4 w-4 mt-0.5 shrink-0" />
-                <span>Houses Adda, 8-1-284-/ou/25, OU Colony, Shaikpet, Hyderabad, Telangana 500104</span>
+                <span>{CONTACT.address}</span>
               </a>
             </div>
           </div>
