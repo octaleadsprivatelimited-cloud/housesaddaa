@@ -1,19 +1,15 @@
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import useEmblaCarousel from 'embla-carousel-react';
 import {
   Building2,
   CheckCircle2,
-  Phone,
-  ArrowRight,
   FileCheck,
   Percent,
   Clock,
   Shield,
-  MessageCircle,
-  Calculator,
 } from 'lucide-react';
 import SEO from '@/components/SEO';
+import { HomeLoansEnquiryForm } from '@/components/HomeLoansEnquiryForm';
 import { getPartnersByType } from '@/services/partnerService';
 import { Partner } from '@/types/property';
 import { useServiceHighlights } from '@/hooks/useServiceHighlights';
@@ -171,8 +167,8 @@ export default function HomeLoans() {
         {/* Main Content */}
         <section className="py-16 md:py-24">
           <div className="container-custom">
-            <div className="grid lg:grid-cols-3 gap-12 lg:gap-16">
-              <div className="lg:col-span-2 space-y-16">
+            <div className="max-w-4xl">
+              <div className="space-y-16">
                 {/* Overview */}
                 <div>
                   <p className="text-[#E10600] text-sm font-semibold uppercase tracking-wider mb-3">
@@ -255,47 +251,27 @@ export default function HomeLoans() {
                   <PartnerBanksSlider />
                 </div>
               </div>
+            </div>
+          </div>
+        </section>
 
-              {/* Sidebar CTA */}
-              <div>
-                <div className="sticky top-24 space-y-6">
-                  <div className="bg-[#1A1A1A] rounded-2xl p-8 text-white">
-                    <div className="w-14 h-14 rounded-xl bg-[#E10600] flex items-center justify-center mb-6">
-                      <Calculator className="h-7 w-7 text-white" />
-                    </div>
-                    <h3 className="text-xl font-bold mb-3">Need Loan Assistance?</h3>
-                    <p className="text-white/80 text-sm mb-6">
-                      Our experts will help you find the best home loan option. Get a callback today.
-                    </p>
-                    <Link
-                      to="/contact"
-                      className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-[#E10600] hover:bg-[#B11226] text-white font-semibold transition-colors"
-                    >
-                      Get Free Consultation
-                      <ArrowRight className="h-5 w-5" />
-                    </Link>
-                  </div>
-
-                  <div className="bg-white rounded-2xl p-6 border border-[#E5E5E5]">
-                    <h4 className="font-bold text-[#1A1A1A] mb-4">Quick Contact</h4>
-                    <a
-                      href="tel:+916301575658"
-                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#F5F5F5] transition-colors mb-2"
-                    >
-                      <Phone className="h-5 w-5 text-[#E10600]" />
-                      <span className="font-medium">+91 63015 75658</span>
-                    </a>
-                    <a
-                      href="https://wa.me/916301575658"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-3 p-3 rounded-xl hover:bg-[#F5F5F5] transition-colors"
-                    >
-                      <MessageCircle className="h-5 w-5 text-[#25D366]" />
-                      <span className="font-medium">WhatsApp Us</span>
-                    </a>
-                  </div>
-                </div>
+        {/* Enquiry Form */}
+        <section className="py-16 md:py-20 bg-gradient-to-b from-[#F8F8F8] to-white">
+          <div className="container-custom">
+            <div className="max-w-2xl mx-auto">
+              <div className="text-center mb-10">
+                <span className="inline-block text-[#E10600] text-sm font-semibold uppercase tracking-wider mb-3">
+                  Get in touch
+                </span>
+                <h2 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-3">
+                  Get loan assistance
+                </h2>
+                <p className="text-[#6B6B6B] text-base max-w-lg mx-auto">
+                  Share your details and our experts will help you find the best home loan options.
+                </p>
+              </div>
+              <div className="shadow-xl rounded-3xl overflow-hidden border border-[#E5E5E5]">
+                <HomeLoansEnquiryForm />
               </div>
             </div>
           </div>

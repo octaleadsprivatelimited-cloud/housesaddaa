@@ -14,6 +14,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import SEO from '@/components/SEO';
+import { InteriorDesignEnquiryForm } from '@/components/InteriorDesignEnquiryForm';
 import { useServiceHighlights } from '@/hooks/useServiceHighlights';
 import { getInteriorDesignGallery, type InteriorDesignGalleryImage } from '@/services/interiorDesignGalleryService';
 
@@ -223,6 +224,28 @@ export default function InteriorDesign() {
                   )}
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Enquiry Form */}
+        <section className="py-16 md:py-20 bg-gradient-to-b from-[#F8F8F8] to-white">
+          <div className="container-custom">
+            <div className="max-w-2xl mx-auto">
+              <div className="text-center mb-10">
+                <span className="inline-block text-[#E10600] text-sm font-semibold uppercase tracking-wider mb-3">
+                  Get in touch
+                </span>
+                <h2 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-3">
+                  Discuss your interior project
+                </h2>
+                <p className="text-[#6B6B6B] text-base max-w-lg mx-auto">
+                  Tell us your space and style—we'll get back with ideas and a consultation.
+                </p>
+              </div>
+              <div className="shadow-xl rounded-3xl overflow-hidden border border-[#E5E5E5]">
+                <InteriorDesignEnquiryForm />
+              </div>
             </div>
           </div>
         </section>

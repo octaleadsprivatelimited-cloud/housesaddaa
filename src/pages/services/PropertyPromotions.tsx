@@ -11,6 +11,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import SEO from '@/components/SEO';
+import { PropertyPromotionsEnquiryForm } from '@/components/PropertyPromotionsEnquiryForm';
 import { useServiceHighlights } from '@/hooks/useServiceHighlights';
 
 const galleryImages = [
@@ -244,6 +245,28 @@ export default function PropertyPromotions() {
                   />
                 </div>
               ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Enquiry Form */}
+        <section className="py-16 md:py-20 bg-gradient-to-b from-[#F8F8F8] to-white">
+          <div className="container-custom">
+            <div className="max-w-2xl mx-auto">
+              <div className="text-center mb-10">
+                <span className="inline-block text-[#E10600] text-sm font-semibold uppercase tracking-wider mb-3">
+                  Get in touch
+                </span>
+                <h2 className="text-2xl md:text-3xl font-bold text-[#1A1A1A] mb-3">
+                  Promote your property
+                </h2>
+                <p className="text-[#6B6B6B] text-base max-w-lg mx-auto">
+                  Interested in listing or promoting with us? Send your details and we'll reach out.
+                </p>
+              </div>
+              <div className="shadow-xl rounded-3xl overflow-hidden border border-[#E5E5E5]">
+                <PropertyPromotionsEnquiryForm />
+              </div>
             </div>
           </div>
         </section>

@@ -117,6 +117,16 @@ export interface Enquiry {
   projectLocation?: string;
   /** Commercial: optional budget */
   estimatedBudget?: string;
+  /** Service-specific: Home Loans – preferred bank name */
+  preferredBank?: string;
+  /** Service-specific: Property Promotions – property details */
+  propertyDetails?: string;
+  /** Service-specific: Interior Design – project/space details */
+  interiorProjectDetails?: string;
+  /** Source page: 'home-loans' | 'interior-design' | 'property-promotions' | 'contact-form' | 'contact' */
+  enquirySource?: string;
+  /** When property type is "Other", user can specify (contact page) */
+  propertyTypeOther?: string;
 }
 
 export type PartnerType = 'bank' | 'company';

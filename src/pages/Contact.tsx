@@ -1,10 +1,87 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Mail, Phone, MapPin, MessageCircle, ExternalLink, ArrowRight } from 'lucide-react';
+import { Mail, Phone, MapPin, MessageCircle, ExternalLink, ArrowRight, Send, Loader2 } from 'lucide-react';
 import SEO from '@/components/SEO';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CONTACT } from '@/constants/contact';
+import { submitEnquiry } from '@/services/enquiryService';
+import { toast } from '@/components/ui/sonner';
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_REGEX = /^[\d\s+()-]{10,16}$/;
+
+const PROPERTY_TYPE_OPTIONS = [
+  { value: '', label: 'Select type of property' },
+  { value: 'flat', label: 'Flat' },
+  { value: 'villa', label: 'Villa' },
+  { value: 'independent-house', label: 'Independent House' },
+  { value: 'open-plot', label: 'Open Plot' },
+  { value: 'commercial-space', label: 'Commercial Space' },
+  { value: 'penthouse', label: 'Penthouse' },
+  { value: 'studio', label: 'Studio' },
+  { value: 'other', label: 'Other' },
+];
 
 export default function Contact() {
+  const [sending, setSending] = useState(false);
+  const [form, setForm] = useState({ name: '', email: '', phone: '', message: '', propertyType: '', propertyTypeOther: '' });
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const name = form.name.trim();
+    const email = form.email.trim();
+    const phone = form.phone.trim();
+    const message = form.message.trim();
+    if (!name) {
+      toast.error('Please enter your name.');
+      return;
+    }
+    if (!email) {
+      toast.error('Please enter your email.');
+      return;
+    }
+    if (!EMAIL_REGEX.test(email)) {
+      toast.error('Please enter a valid email address.');
+      return;
+    }
+    if (!phone) {
+      toast.error('Please enter your contact number.');
+      return;
+    }
+    if (!PHONE_REGEX.test(phone.replace(/\s/g, '')) || phone.replace(/\D/g, '').length < 10) {
+      toast.error('Please enter a valid contact number (at least 10 digits).');
+      return;
+    }
+    if (!message) {
+      toast.error('Please enter your message.');
+      return;
+    }
+    setSending(true);
+    try {
+      await submitEnquiry({
+        propertyId: '',
+        propertyTitle: '',
+        name,
+        email,
+        phone,
+        message,
+        enquirySource: 'contact',
+        ...(form.propertyType && { propertyType: form.propertyType }),
+        ...(form.propertyType === 'other' && form.propertyTypeOther.trim() && { propertyTypeOther: form.propertyTypeOther.trim() }),
+      });
+      toast.success("We've received your message. We'll get back to you within 24 hours.");
+      setForm({ name: '', email: '', phone: '', message: '', propertyType: '', propertyTypeOther: '' });
+    } catch {
+      toast.error('Something went wrong. Please try again.');
+    } finally {
+      setSending(false);
+    }
+  };
+
   return (
     <>
       <SEO
@@ -63,6 +140,97 @@ export default function Contact() {
               </div>
             </div>
 
+            {/* Contact form */}
+            <div className="bg-white rounded-xl border border-[#E5E5E5] p-6 md:p-8 shadow-sm">
+              <h2 className="text-xl font-bold text-[#1A1A1A] mb-1">Send a message</h2>
+              <p className="text-[#6B6B6B] text-sm mb-6">Fill in the form below and we'll get back to you soon.</p>
+              <form onSubmit={handleSubmit} className="grid sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="contact-name" className="text-[#1A1A1A]">Name *</Label>
+                  <Input
+                    id="contact-name"
+                    value={form.name}
+                    onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                    placeholder="Your name"
+                    className="h-11 rounded-lg border-[#E5E5E5]"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="contact-email" className="text-[#1A1A1A]">Email *</Label>
+                  <Input
+                    id="contact-email"
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+                    placeholder="your@email.com"
+                    className="h-11 rounded-lg border-[#E5E5E5]"
+                    required
+                  />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="contact-phone" className="text-[#1A1A1A]">Phone *</Label>
+                  <Input
+                    id="contact-phone"
+                    type="tel"
+                    value={form.phone}
+                    onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
+                    placeholder="10-digit mobile number"
+                    className="h-11 rounded-lg border-[#E5E5E5]"
+                    required
+                  />
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label className="text-[#1A1A1A]">What are you looking for? (Type of property)</Label>
+                  <Select
+                    value={form.propertyType}
+                    onValueChange={(v) => setForm((p) => ({ ...p, propertyType: v, ...(v !== 'other' ? { propertyTypeOther: '' } : {}) }))}
+                  >
+                    <SelectTrigger className="h-11 rounded-lg border-[#E5E5E5] bg-white">
+                      <SelectValue placeholder="Select type of property" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PROPERTY_TYPE_OPTIONS.filter((o) => o.value !== '').map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {form.propertyType === 'other' && (
+                    <Input
+                      value={form.propertyTypeOther}
+                      onChange={(e) => setForm((p) => ({ ...p, propertyTypeOther: e.target.value }))}
+                      placeholder="Please specify the type of property"
+                      className="h-11 rounded-lg border-[#E5E5E5] mt-2"
+                    />
+                  )}
+                </div>
+                <div className="space-y-2 sm:col-span-2">
+                  <Label htmlFor="contact-message" className="text-[#1A1A1A]">Message *</Label>
+                  <Textarea
+                    id="contact-message"
+                    value={form.message}
+                    onChange={(e) => setForm((p) => ({ ...p, message: e.target.value }))}
+                    placeholder="Your message..."
+                    rows={4}
+                    className="rounded-lg border-[#E5E5E5] resize-none"
+                    required
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <Button
+                    type="submit"
+                    disabled={sending}
+                    className="h-11 px-6 rounded-lg bg-[#E10600] hover:bg-[#B11226] font-semibold"
+                  >
+                    {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    {sending ? 'Sending...' : 'Send message'}
+                  </Button>
+                </div>
+              </form>
+            </div>
+
             {/* Row 2: Location map */}
             <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
               <div className="px-5 py-3 border-b border-gray-200 flex items-center justify-between">
@@ -96,11 +264,11 @@ export default function Contact() {
               </div>
             </div>
 
-            {/* Buttons */}
+            {/* Quick actions */}
             <div className="flex flex-col sm:flex-row gap-4 items-center">
               <Button asChild className="w-full sm:w-auto h-11 rounded-lg bg-[#E10600] hover:bg-[#B11226] font-semibold">
                 <Link to="/contact-form">
-                  Enquire Now / Get a Quote
+                  Share your requirement
                   <ArrowRight className="h-4 w-4 ml-2" />
                 </Link>
               </Button>
