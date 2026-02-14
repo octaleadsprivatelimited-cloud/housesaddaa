@@ -6,8 +6,8 @@ export const CONTACT = {
   phone: '+91 63015 75658',
   phoneRaw: '+916301575658',
   /** Additional contact number - display alongside primary, do not replace */
-  alternatePhone: '+91 98481 23456',
-  alternatePhoneRaw: '+919848123456',
+  alternatePhone: '+91-9701145029',
+  alternatePhoneRaw: '+919701145029',
   email: 'info@housesadda.in',
   address: 'Houses Adda, 8-1-284-/ou/25, OU Colony, Shaikpet, Hyderabad, Telangana 500104',
   whatsapp: 'https://wa.me/916301575658?text=Hi%2C%20I%27m%20interested%20in%20your%20properties.',
