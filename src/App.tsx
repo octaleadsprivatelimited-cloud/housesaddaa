@@ -31,6 +31,7 @@ import AdminAddProperty from "./pages/admin/AdminAddProperty";
 import AdminEditProperty from "./pages/admin/AdminEditProperty";
 import AdminEnquiries from "./pages/admin/AdminEnquiries";
 import AdminLocations from "./pages/admin/AdminLocations";
+import AdminAmenities from "./pages/admin/AdminAmenities";
 import AdminPartners from "./pages/admin/AdminPartners";
 import AdminGallery from "./pages/admin/AdminGallery";
 import AdminSettings from "./pages/admin/AdminSettings";
@@ -87,6 +88,7 @@ const App = () => (
               <Route path="partners" element={<AdminPartners />} />
               <Route path="gallery" element={<AdminGallery />} />
               <Route path="locations" element={<AdminLocations />} />
+              <Route path="amenities" element={<AdminAmenities />} />
               <Route path="site-content" element={<AdminSiteContent />} />
               <Route path="blog" element={<AdminBlog />} />
               <Route path="blog/add" element={<AdminBlogEdit />} />

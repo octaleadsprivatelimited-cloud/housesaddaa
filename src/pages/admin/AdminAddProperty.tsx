@@ -7,9 +7,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { amenities, furnishingOptions, propertyStatusOptions, bhkOptions, facingOptions } from '@/data/properties';
+import { furnishingOptions, propertyStatusOptions, bhkOptions, facingOptions } from '@/data/properties';
 import { usePropertyTypes } from '@/hooks/usePropertyTypes';
 import { useLocations } from '@/hooks/useLocations';
+import { useAmenities } from '@/hooks/useAmenities';
 import { addProperty, updateProperty } from '@/services/propertyService';
 import { PropertyType } from '@/types/property';
 import { imageToBase64, validateImage } from '@/services/imageService';
@@ -65,6 +66,7 @@ export default function AdminAddProperty() {
 
   const { propertyTypes } = usePropertyTypes();
   const { locations } = useLocations();
+  const { amenities } = useAmenities();
   const selectedCity = locations.find((l) => l.city === formData.city);
   const areas = selectedCity?.areas ?? [];
 
@@ -583,8 +585,9 @@ export default function AdminAddProperty() {
         {/* Description */}
         <div className="bg-card rounded-xl border border-border p-6">
           <h2 className="font-semibold text-lg mb-4">Description</h2>
+          <p className="text-sm text-muted-foreground mb-2">Line breaks and paragraphs you enter here will appear the same on the property page.</p>
           <Textarea
-            placeholder="Describe the property in detail..."
+            placeholder="Describe the property in detail. Use line breaks for paragraphs and lists."
             rows={5}
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}

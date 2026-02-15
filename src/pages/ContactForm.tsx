@@ -28,7 +28,7 @@ export default function ContactForm() {
 
         <section className="container-custom py-8 md:py-12">
           <div className="max-w-xl mx-auto">
-            <EnquiryForm formTitle="Share your requirement" showContactLink={true} />
+            <EnquiryForm formTitle="Get in touch" showContactLink={true} />
           </div>
         </section>
       </div>

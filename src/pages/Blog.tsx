@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { Calendar, User, Loader2 } from 'lucide-react';
+import { Calendar, User, Loader2, MessageCircle, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SEO from '@/components/SEO';
 import { getBlogPosts } from '@/services/blogService';
@@ -52,9 +52,28 @@ export default function Blog() {
         <div className="container-custom py-16">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-4xl font-bold mb-4">Blog</h1>
-            <p className="text-xl text-muted-foreground mb-12">
+            <p className="text-xl text-muted-foreground mb-8">
               Latest insights, tips, and news about real estate in India.
             </p>
+
+            {/* Contact form CTA */}
+            <div className="mb-12 rounded-xl border border-border bg-card p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                  <MessageCircle className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h2 className="font-semibold text-lg mb-1">Have questions or want to get in touch?</h2>
+                  <p className="text-sm text-muted-foreground">We&apos;ll get back to you within 24 hours.</p>
+                </div>
+              </div>
+              <Button asChild className="shrink-0 w-full sm:w-auto">
+                <Link to="/contact-form">
+                  Contact us
+                  <ArrowRight className="h-4 w-4 ml-2" />
+                </Link>
+              </Button>
+            </div>
 
             {loading ? (
               <div className="flex items-center gap-2 text-muted-foreground py-12">

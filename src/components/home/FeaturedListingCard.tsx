@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Maximize2, Heart, GitCompare } from 'lucide-react';
+import { Maximize2, Heart, GitCompare, Square } from 'lucide-react';
 import { Property } from '@/types/property';
 import { usePropertyTypes } from '@/hooks/usePropertyTypes';
 
@@ -60,7 +60,10 @@ export function FeaturedListingCard({ property }: FeaturedListingCardProps) {
           <div className="absolute bottom-3 left-3 z-10">
             <div className="font-bold text-white text-lg">{priceStr}</div>
             {priceSuffix && (
-              <div className="text-white/80 text-sm">{priceSuffix}</div>
+              <div className="text-white/80 text-sm flex items-center gap-1">
+                {property.pricePerSqft && <Square className="h-3.5 w-3.5 shrink-0" />}
+                {priceSuffix}
+              </div>
             )}
           </div>
 

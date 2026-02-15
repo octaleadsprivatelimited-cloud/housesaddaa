@@ -14,21 +14,18 @@ import { toast } from '@/components/ui/sonner';
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_REGEX = /^[\d\s+()-]{10,16}$/;
 
-const PROPERTY_TYPE_OPTIONS = [
-  { value: '', label: 'Select type of property' },
-  { value: 'flat', label: 'Flat' },
-  { value: 'villa', label: 'Villa' },
-  { value: 'independent-house', label: 'Independent House' },
-  { value: 'open-plot', label: 'Open Plot' },
-  { value: 'commercial-space', label: 'Commercial Space' },
-  { value: 'penthouse', label: 'Penthouse' },
-  { value: 'studio', label: 'Studio' },
-  { value: 'other', label: 'Other' },
+const LOOKING_FOR_OPTIONS = [
+  { value: '', label: 'Select an option' },
+  { value: 'buy-properties', label: 'Buy properties' },
+  { value: 'rent-properties', label: 'Rent Properties' },
+  { value: 'home-loan', label: 'Home loan' },
+  { value: 'interior-design', label: 'Interior design' },
+  { value: 'property-promotion', label: 'Property promotion' },
 ];
 
 export default function Contact() {
   const [sending, setSending] = useState(false);
-  const [form, setForm] = useState({ name: '', email: '', phone: '', message: '', propertyType: '', propertyTypeOther: '' });
+  const [form, setForm] = useState({ name: '', email: '', phone: '', message: '', lookingFor: '' });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,11 +67,10 @@ export default function Contact() {
         phone,
         message,
         enquirySource: 'contact',
-        ...(form.propertyType && { propertyType: form.propertyType }),
-        ...(form.propertyType === 'other' && form.propertyTypeOther.trim() && { propertyTypeOther: form.propertyTypeOther.trim() }),
+        ...(form.lookingFor && { propertyType: form.lookingFor }),
       });
       toast.success("We've received your message. We'll get back to you within 24 hours.");
-      setForm({ name: '', email: '', phone: '', message: '', propertyType: '', propertyTypeOther: '' });
+      setForm({ name: '', email: '', phone: '', message: '', lookingFor: '' });
     } catch {
       toast.error('Something went wrong. Please try again.');
     } finally {
@@ -181,30 +177,22 @@ export default function Contact() {
                   />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
-                  <Label className="text-[#1A1A1A]">What are you looking for? (Type of property)</Label>
+                  <Label className="text-[#1A1A1A]">What are you looking for?</Label>
                   <Select
-                    value={form.propertyType}
-                    onValueChange={(v) => setForm((p) => ({ ...p, propertyType: v, ...(v !== 'other' ? { propertyTypeOther: '' } : {}) }))}
+                    value={form.lookingFor}
+                    onValueChange={(v) => setForm((p) => ({ ...p, lookingFor: v }))}
                   >
                     <SelectTrigger className="h-11 rounded-lg border-[#E5E5E5] bg-white">
-                      <SelectValue placeholder="Select type of property" />
+                      <SelectValue placeholder="Select an option" />
                     </SelectTrigger>
                     <SelectContent>
-                      {PROPERTY_TYPE_OPTIONS.filter((o) => o.value !== '').map((opt) => (
+                      {LOOKING_FOR_OPTIONS.filter((o) => o.value !== '').map((opt) => (
                         <SelectItem key={opt.value} value={opt.value}>
                           {opt.label}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  {form.propertyType === 'other' && (
-                    <Input
-                      value={form.propertyTypeOther}
-                      onChange={(e) => setForm((p) => ({ ...p, propertyTypeOther: e.target.value }))}
-                      placeholder="Please specify the type of property"
-                      className="h-11 rounded-lg border-[#E5E5E5] mt-2"
-                    />
-                  )}
                 </div>
                 <div className="space-y-2 sm:col-span-2">
                   <Label htmlFor="contact-message" className="text-[#1A1A1A]">Message *</Label>

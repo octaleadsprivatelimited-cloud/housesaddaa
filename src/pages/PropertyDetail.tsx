@@ -14,8 +14,9 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { formatPrice, amenities as amenitiesData } from '@/data/properties';
+import { formatPrice } from '@/data/properties';
 import { usePropertyTypes } from '@/hooks/usePropertyTypes';
+import { useAmenities } from '@/hooks/useAmenities';
 import { PropertyCardCarousel } from '@/components/property/PropertyCardCarousel';
 import { cn } from '@/lib/utils';
 import { Property } from '@/types/property';
@@ -50,6 +51,7 @@ const amenityIcons: Record<string, React.ElementType> = {
 export default function PropertyDetailPage() {
   const { slug } = useParams();
   const { getPropertyTypeLabel } = usePropertyTypes();
+  const { amenities: amenitiesData } = useAmenities();
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [property, setProperty] = useState<Property | null>(null);
   const [similarProperties, setSimilarProperties] = useState<Property[]>([]);
@@ -325,7 +327,8 @@ export default function PropertyDetailPage() {
                     {formatPrice(property.price, property.listingType)}
                   </div>
                   {property.pricePerSqft && (
-                    <div className="text-sm text-muted-foreground">
+                    <div className="text-sm text-muted-foreground flex items-center gap-1.5">
+                      <Square className="h-4 w-4 shrink-0" />
                       ₹{property.pricePerSqft.toLocaleString()} per sqft
                     </div>
                   )}
@@ -400,7 +403,7 @@ export default function PropertyDetailPage() {
             {/* Description */}
             <div className="bg-card rounded-2xl border border-border p-6">
               <h2 className="font-display text-xl font-bold mb-4">Description</h2>
-              <p className="text-muted-foreground leading-relaxed">{property.description}</p>
+              <div className="text-muted-foreground leading-relaxed whitespace-pre-wrap">{property.description}</div>
               
               {property.features && property.features.length > 0 && (
                 <div className="mt-6">

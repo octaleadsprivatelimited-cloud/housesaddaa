@@ -59,7 +59,9 @@ function CategoryCard({ type, index }: CategoryCardProps) {
 
 export function PropertyCategories() {
   const { propertyTypes } = usePropertyTypes();
-  const displayTypes = propertyTypes.slice(0, 6);
+  const displayTypes = propertyTypes
+    .filter((type) => type.value !== 'commercial')
+    .slice(0, 6);
 
   return (
     <section className="py-12 md:py-16 lg:py-20" aria-labelledby="property-type-heading">

@@ -40,6 +40,12 @@ service cloud.firestore {
       allow create, update, delete: if isSignedIn();
     }
 
+    // Amenities (property amenities list): anyone can read; only admins can write.
+    match /amenities/{amenityId} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+
     // Gallery videos: anyone can read; only admins can write.
     match /galleryVideos/{videoId} {
       allow read: if true;
