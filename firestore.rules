@@ -58,6 +58,24 @@ service cloud.firestore {
       allow create, update, delete: if isSignedIn();
     }
 
+    // Main gallery images (one doc per image, stored in Firestore): anyone can read; only admins can write.
+    match /mainGalleryImages/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+
+    // Interior design gallery images (one doc per image): anyone can read; only admins can write.
+    match /interiorDesignGalleryImages/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+
+    // Property gallery images (separate section in admin): anyone can read; only admins can write.
+    match /propertyGalleryImages/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+
     // Property types (for filters/dropdowns): anyone can read; only admins can write.
     match /propertyTypes/{typeId} {
       allow read: if true;

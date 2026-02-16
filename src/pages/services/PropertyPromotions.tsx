@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Megaphone,
@@ -9,18 +10,20 @@ import {
   TrendingUp,
   Users,
   ArrowRight,
+  Loader2,
 } from 'lucide-react';
 import SEO from '@/components/SEO';
 import { PropertyPromotionsEnquiryForm } from '@/components/PropertyPromotionsEnquiryForm';
 import { useServiceHighlights } from '@/hooks/useServiceHighlights';
+import { getPropertyGalleryImages, type PropertyGalleryImage } from '@/services/propertyGalleryService';
 
-const galleryImages = [
-  { id: '1600596542815-ffad4c1539a9', alt: 'Property listing' },
-  { id: '1600585154340-be6161a56a0c', alt: 'Modern home' },
-  { id: '1600607687939-ce8a6c25118c', alt: 'Residential property' },
-  { id: '1613490493576-7fde63acd811', alt: 'Premium property' },
-  { id: '1600566753190-17f0baa2a6c3', alt: 'House exterior' },
-  { id: '1600047509807-ba87471cf18e', alt: 'Luxury villa' },
+const fallbackGalleryImages: PropertyGalleryImage[] = [
+  { imageUrl: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&auto=format', alt: 'Property listing' },
+  { imageUrl: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&auto=format', alt: 'Modern home' },
+  { imageUrl: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&auto=format', alt: 'Residential property' },
+  { imageUrl: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=600&auto=format', alt: 'Premium property' },
+  { imageUrl: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=600&auto=format', alt: 'House exterior' },
+  { imageUrl: 'https://images.unsplash.com/photo-1600047509807-ba87471cf18e?w=600&auto=format', alt: 'Luxury villa' },
 ];
 
 const digitalChannels = [
@@ -57,6 +60,18 @@ const benefits = [
 
 export default function PropertyPromotions() {
   const { highlights } = useServiceHighlights('propertyPromotions');
+  const [galleryImages, setGalleryImages] = useState<PropertyGalleryImage[]>(fallbackGalleryImages);
+  const [galleryLoading, setGalleryLoading] = useState(true);
+
+  useEffect(() => {
+    getPropertyGalleryImages()
+      .then((list) => {
+        setGalleryImages(list.length > 0 ? list : fallbackGalleryImages);
+      })
+      .catch(() => setGalleryImages(fallbackGalleryImages))
+      .finally(() => setGalleryLoading(false));
+  }, []);
+
   return (
     <>
       <SEO
@@ -232,20 +247,26 @@ export default function PropertyPromotions() {
               </Link>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-              {galleryImages.map((img) => (
-                <div
-                  key={img.id}
-                  className="aspect-[4/3] rounded-2xl overflow-hidden bg-[#E5E5E5] group"
-                >
-                  <img
-                    src={`https://images.unsplash.com/photo-${img.id}?w=600&auto=format`}
-                    alt={img.alt}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-                </div>
-              ))}
-            </div>
+            {galleryLoading ? (
+              <div className="flex justify-center py-12">
+                <Loader2 className="h-8 w-8 animate-spin text-[#E10600]" />
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                {galleryImages.map((img, i) => (
+                  <div
+                    key={i}
+                    className="aspect-[4/3] rounded-2xl overflow-hidden bg-[#E5E5E5] group"
+                  >
+                    <img
+                      src={img.imageUrl}
+                      alt={img.alt ?? 'Gallery'}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 

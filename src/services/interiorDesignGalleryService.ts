@@ -1,8 +1,12 @@
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import {
+  collection,
+  getDocs,
+  addDoc,
+  writeBatch,
+} from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
-const SITE_SETTINGS_COLLECTION = 'siteSettings';
-const INTERIOR_GALLERY_DOC_ID = 'interiorDesignGallery';
+const INTERIOR_GALLERY_COLLECTION = 'interiorDesignGalleryImages';
 
 export interface InteriorDesignGalleryImage {
   imageUrl: string;
@@ -18,20 +22,29 @@ const defaultGallery: InteriorDesignGalleryImage[] = [
   { imageUrl: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&auto=format', alt: 'Modern apartment' },
 ];
 
+/** Get all interior design gallery images from Firestore (one doc per image). */
 export async function getInteriorDesignGallery(): Promise<InteriorDesignGalleryImage[]> {
   try {
-    const ref = doc(db, SITE_SETTINGS_COLLECTION, INTERIOR_GALLERY_DOC_ID);
-    const snap = await getDoc(ref);
-    if (snap.exists() && Array.isArray(snap.data()?.items) && (snap.data()?.items as InteriorDesignGalleryImage[]).length > 0) {
-      return snap.data().items as InteriorDesignGalleryImage[];
-    }
+    const snapshot = await getDocs(collection(db, INTERIOR_GALLERY_COLLECTION));
+    if (snapshot.empty) return defaultGallery;
+    const items = snapshot.docs
+      .map((d) => ({ ...d.data(), _id: d.id } as { imageUrl: string; alt?: string; order: number; _id: string }))
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    return items.map(({ imageUrl, alt }) => ({ imageUrl, alt }));
   } catch (e) {
     console.error('getInteriorDesignGallery error', e);
   }
   return defaultGallery;
 }
 
+/** Replace all interior design gallery images in Firestore (each image as its own document). */
 export async function setInteriorDesignGallery(items: InteriorDesignGalleryImage[]): Promise<void> {
-  const ref = doc(db, SITE_SETTINGS_COLLECTION, INTERIOR_GALLERY_DOC_ID);
-  await setDoc(ref, { items });
+  const col = collection(db, INTERIOR_GALLERY_COLLECTION);
+  const snapshot = await getDocs(col);
+  const batch = writeBatch(db);
+  snapshot.docs.forEach((d) => batch.delete(d.ref));
+  await batch.commit();
+  for (let i = 0; i < items.length; i++) {
+    await addDoc(col, { imageUrl: items[i].imageUrl, alt: items[i].alt ?? null, order: i });
+  }
 }

@@ -50,37 +50,30 @@ function docToBlog(d: DocumentSnapshot): BlogPost {
   };
 }
 
-/** Public: get published posts (paginated, low load). Requires Firestore index: collection blogs, isPublished Asc, publishedAt Desc */
+/** Public: get published posts. Fetches and filters in memory so no composite index is required. */
 export async function getBlogPosts(opts: {
   pageSize?: number;
   startAfterDoc?: QueryDocumentSnapshot | null;
 }): Promise<{ posts: BlogPost[]; lastDoc: QueryDocumentSnapshot | null }> {
   const pageSize = opts.pageSize ?? PAGE_SIZE;
-  const constraints = [
-    where('isPublished', '==', true),
-    orderBy('publishedAt', 'desc'),
-    limit(pageSize + 1),
-  ];
-  if (opts.startAfterDoc) constraints.push(startAfter(opts.startAfterDoc));
-  const snapshot = await getDocs(query(collection(db, BLOGS_COLLECTION), ...constraints));
-  const docs = snapshot.docs;
-  const hasMore = docs.length > pageSize;
-  const useDocs = hasMore ? docs.slice(0, pageSize) : docs;
-  const list = useDocs.map((d) => docToBlog(d));
-  return { posts: list, lastDoc: hasMore ? useDocs[useDocs.length - 1] : null };
+  const snapshot = await getDocs(collection(db, BLOGS_COLLECTION));
+  const all = snapshot.docs.map((d) => docToBlog(d));
+  const published = all.filter((p) => p.isPublished).sort((a, b) => b.publishedAt.getTime() - a.publishedAt.getTime());
+  const lastId = opts.startAfterDoc?.id;
+  const start = lastId ? published.findIndex((p) => p.id === lastId) + 1 : 0;
+  const slice = published.slice(start, start + pageSize);
+  const hasMore = published.length > start + slice.length;
+  const lastDoc = hasMore && slice.length > 0
+    ? snapshot.docs.find((d) => d.id === slice[slice.length - 1].id) ?? null
+    : null;
+  return { posts: slice, lastDoc };
 }
 
-/** Public: get single post by slug. Requires Firestore index: collection blogs, slug Asc, isPublished Asc */
+/** Public: get single post by slug. Fetches and filters in memory so no composite index is required. */
 export async function getBlogBySlug(slug: string): Promise<BlogPost | null> {
-  const q = query(
-    collection(db, BLOGS_COLLECTION),
-    where('slug', '==', slug),
-    where('isPublished', '==', true),
-    limit(1)
-  );
-  const snapshot = await getDocs(q);
-  if (snapshot.empty) return null;
-  return docToBlog(snapshot.docs[0]);
+  const snapshot = await getDocs(collection(db, BLOGS_COLLECTION));
+  const post = snapshot.docs.map((d) => docToBlog(d)).find((p) => p.slug === slug && p.isPublished) ?? null;
+  return post;
 }
 
 /** Admin: list all posts (paginated) */
@@ -109,7 +102,13 @@ export async function getBlogById(id: string): Promise<BlogPost | null> {
 /** Admin: create */
 export async function createBlog(data: Omit<BlogPost, 'id' | 'createdAt' | 'publishedAt'> & { publishedAt?: Date }): Promise<string> {
   const ref = await addDoc(collection(db, BLOGS_COLLECTION), {
-    ...data,
+    title: data.title,
+    slug: data.slug,
+    excerpt: data.excerpt ?? '',
+    content: data.content ?? '',
+    imageUrl: data.imageUrl ?? null,
+    author: data.author ?? null,
+    isPublished: data.isPublished === true,
     publishedAt: data.publishedAt ? Timestamp.fromDate(data.publishedAt) : Timestamp.now(),
     createdAt: Timestamp.now(),
   });

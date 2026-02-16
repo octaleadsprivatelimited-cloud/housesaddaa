@@ -102,9 +102,6 @@ export function Footer() {
                 <span className="text-xs text-primary-foreground/60 leading-tight">Find Your Dream Home</span>
               </div>
             </Link>
-            <p className="text-primary-foreground/70 mb-6 max-w-sm">
-              India's trusted real estate platform. Find apartments, villas, plots and commercial spaces across major cities.
-            </p>
             <div className="space-y-3">
               <a href={`mailto:${CONTACT.email}`} className="flex items-center gap-2 text-primary-foreground/70 hover:text-accent transition-colors">
                 <Mail className="h-4 w-4" />

@@ -104,8 +104,19 @@ export default function BlogPostDetail() {
                 <p className="text-lg text-muted-foreground mb-6">{post.excerpt}</p>
               )}
               <div
-                className="prose prose-neutral dark:prose-invert max-w-none"
-                dangerouslySetInnerHTML={{ __html: post.content }}
+                className="prose prose-neutral dark:prose-invert max-w-none prose-p:leading-relaxed prose-headings:mb-3 prose-headings:mt-6 first:prose-headings:mt-0"
+                dangerouslySetInnerHTML={{
+                  __html: (() => {
+                    const c = post.content?.trim() ?? '';
+                    if (!c) return '';
+                    if (/<[a-z][\s\S]*>/i.test(c)) return c;
+                    const escape = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    return c
+                      .split(/\n\n+/)
+                      .map((p) => `<p class="mb-4">${escape(p).replace(/\n/g, '<br />')}</p>`)
+                      .join('');
+                  })(),
+                }}
               />
             </article>
           </div>

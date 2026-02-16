@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Link } from 'react-router-dom';
-import { Calendar, User, Loader2, MessageCircle, ArrowRight } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Calendar, User, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import SEO from '@/components/SEO';
 import { getBlogPosts } from '@/services/blogService';
@@ -10,6 +10,7 @@ import type { QueryDocumentSnapshot } from 'firebase/firestore';
 const PAGE_SIZE = 10;
 
 export default function Blog() {
+  const navigate = useNavigate();
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot | null>(null);
   const [loading, setLoading] = useState(true);
@@ -52,28 +53,9 @@ export default function Blog() {
         <div className="container-custom py-16">
           <div className="max-w-4xl mx-auto">
             <h1 className="text-4xl font-bold mb-4">Blog</h1>
-            <p className="text-xl text-muted-foreground mb-8">
+            <p className="text-xl text-muted-foreground mb-12">
               Latest insights, tips, and news about real estate in India.
             </p>
-
-            {/* Contact form CTA */}
-            <div className="mb-12 rounded-xl border border-border bg-card p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-              <div className="flex items-start gap-3">
-                <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <MessageCircle className="h-5 w-5 text-primary" />
-                </div>
-                <div>
-                  <h2 className="font-semibold text-lg mb-1">Have questions or want to get in touch?</h2>
-                  <p className="text-sm text-muted-foreground">We&apos;ll get back to you within 24 hours.</p>
-                </div>
-              </div>
-              <Button asChild className="shrink-0 w-full sm:w-auto">
-                <Link to="/contact-form">
-                  Contact us
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Link>
-              </Button>
-            </div>
 
             {loading ? (
               <div className="flex items-center gap-2 text-muted-foreground py-12">
@@ -93,57 +75,65 @@ export default function Blog() {
                 </div>
               </div>
             ) : (
-              <div className="space-y-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
                 {posts.map((post) => (
                   <article
                     key={post.id}
-                    className="border rounded-lg overflow-hidden hover:border-primary/30 transition-colors"
+                    role="link"
+                    tabIndex={0}
+                    onClick={() => navigate(`/blog/${post.slug}`)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        navigate(`/blog/${post.slug}`);
+                      }
+                    }}
+                    className="border rounded-lg overflow-hidden hover:border-primary/30 transition-colors flex flex-col cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2"
                   >
-                    <Link to={`/blog/${post.slug}`} className="block">
-                      {post.imageUrl && (
-                        <div className="aspect-video bg-muted">
-                          <img
-                            src={post.imageUrl}
-                            alt=""
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                      )}
-                      <div className="p-6">
-                        <h2 className="text-2xl font-semibold mb-2 hover:text-primary">
-                          {post.title}
-                        </h2>
-                        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-3">
+                    {post.imageUrl && (
+                      <div className="aspect-video bg-muted shrink-0 pointer-events-none">
+                        <img
+                          src={post.imageUrl}
+                          alt=""
+                          className="w-full h-full object-cover"
+                          draggable={false}
+                        />
+                      </div>
+                    )}
+                    <div className="p-5 md:p-6 flex flex-col flex-1 pointer-events-none">
+                      <h2 className="text-xl md:text-2xl font-semibold mb-2 hover:text-primary line-clamp-2">
+                        {post.title}
+                      </h2>
+                      <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-3">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-4 w-4 shrink-0" />
+                          {new Date(post.publishedAt).toLocaleDateString()}
+                        </span>
+                        {post.author && (
                           <span className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4" />
-                            {new Date(post.publishedAt).toLocaleDateString()}
+                            <User className="h-4 w-4 shrink-0" />
+                            {post.author}
                           </span>
-                          {post.author && (
-                            <span className="flex items-center gap-1">
-                              <User className="h-4 w-4" />
-                              {post.author}
-                            </span>
-                          )}
-                        </div>
-                        {post.excerpt && (
-                          <p className="text-muted-foreground line-clamp-2">{post.excerpt}</p>
                         )}
                       </div>
-                    </Link>
+                      {post.excerpt && (
+                        <p className="text-muted-foreground line-clamp-2 text-sm flex-1">{post.excerpt}</p>
+                      )}
+                    </div>
                   </article>
                 ))}
-                {lastDoc && (
-                  <div className="flex justify-center pt-4">
-                    <Button
-                      variant="outline"
-                      onClick={() => loadPage(lastDoc)}
-                      disabled={loadingMore}
-                    >
-                      {loadingMore ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                      Load more
-                    </Button>
-                  </div>
-                )}
+              </div>
+            )}
+            {!loading && posts.length > 0 && lastDoc && (
+              <div className="flex justify-center pt-8 mt-8">
+                <Button
+                  variant="outline"
+                  onClick={() => loadPage(lastDoc)}
+                  disabled={loadingMore}
+                >
+                  {loadingMore ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Load more
+                </Button>
               </div>
             )}
           </div>

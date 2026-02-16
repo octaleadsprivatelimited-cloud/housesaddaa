@@ -32,6 +32,11 @@ import {
   setMainGalleryImages,
   type MainGalleryImage,
 } from '@/services/mainGalleryService';
+import {
+  getPropertyGalleryImages,
+  setPropertyGalleryImages,
+  type PropertyGalleryImage,
+} from '@/services/propertyGalleryService';
 import { imageToBase64, validateImage } from '@/services/imageService';
 
 export default function AdminGallery() {
@@ -61,6 +66,15 @@ export default function AdminGallery() {
   const [addingMain, setAddingMain] = useState(false);
   const [uploadingMain, setUploadingMain] = useState(false);
   const mainFileInputRef = useRef<HTMLInputElement>(null);
+
+  const [propertyImages, setPropertyImages] = useState<PropertyGalleryImage[]>([]);
+  const [propertyLoading, setPropertyLoading] = useState(true);
+  const [propertyDeleteIndex, setPropertyDeleteIndex] = useState<number | null>(null);
+  const [newPropertyUrl, setNewPropertyUrl] = useState('');
+  const [newPropertyAlt, setNewPropertyAlt] = useState('');
+  const [addingProperty, setAddingProperty] = useState(false);
+  const [uploadingProperty, setUploadingProperty] = useState(false);
+  const propertyFileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchVideos = async () => {
     setLoading(true);
@@ -102,10 +116,23 @@ export default function AdminGallery() {
     }
   };
 
+  const fetchPropertyGallery = async () => {
+    setPropertyLoading(true);
+    try {
+      const list = await getPropertyGalleryImages();
+      setPropertyImages(list);
+    } catch {
+      toast({ title: 'Error', description: 'Failed to load Property gallery', variant: 'destructive' });
+    } finally {
+      setPropertyLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchVideos();
     fetchInteriorGallery();
     fetchMainGallery();
+    fetchPropertyGallery();
   }, []);
 
   const handleAddMainByUrl = async () => {
@@ -139,14 +166,18 @@ export default function AdminGallery() {
     }
     setUploadingMain(true);
     try {
-      const dataUrl = await imageToBase64(file);
-      const next = [...mainImages, { imageUrl: dataUrl, alt: newMainAlt.trim() || undefined }];
+      const imageUrl = await imageToBase64(file);
+      const next = [...mainImages, { imageUrl, alt: newMainAlt.trim() || undefined }];
       setMainImages(next);
       await setMainGalleryImages(next);
       toast({ title: 'Added', description: 'Image uploaded to main gallery' });
       setNewMainAlt('');
-    } catch {
-      toast({ title: 'Error', description: 'Failed to process image', variant: 'destructive' });
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to save image to database.',
+        variant: 'destructive',
+      });
     } finally {
       setUploadingMain(false);
       if (mainFileInputRef.current) mainFileInputRef.current.value = '';
@@ -196,14 +227,18 @@ export default function AdminGallery() {
     }
     setUploadingInterior(true);
     try {
-      const dataUrl = await imageToBase64(file);
-      const next = [...interiorImages, { imageUrl: dataUrl, alt: newInteriorAlt.trim() || undefined }];
+      const imageUrl = await imageToBase64(file);
+      const next = [...interiorImages, { imageUrl, alt: newInteriorAlt.trim() || undefined }];
       setInteriorImages(next);
       await setInteriorDesignGallery(next);
       toast({ title: 'Added', description: 'Image uploaded to Interior Design gallery' });
       setNewInteriorAlt('');
-    } catch {
-      toast({ title: 'Error', description: 'Failed to process image', variant: 'destructive' });
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to save image to database.',
+        variant: 'destructive',
+      });
     } finally {
       setUploadingInterior(false);
       if (interiorFileInputRef.current) interiorFileInputRef.current.value = '';
@@ -217,6 +252,67 @@ export default function AdminGallery() {
     try {
       await setInteriorDesignGallery(next);
       toast({ title: 'Removed', description: 'Image removed from gallery' });
+    } catch {
+      toast({ title: 'Error', description: 'Failed to remove', variant: 'destructive' });
+    }
+  };
+
+  const handleAddPropertyByUrl = async () => {
+    const url = newPropertyUrl.trim();
+    if (!url) {
+      toast({ title: 'Validation', description: 'Image URL is required', variant: 'destructive' });
+      return;
+    }
+    setAddingProperty(true);
+    try {
+      const next = [...propertyImages, { imageUrl: url, alt: newPropertyAlt.trim() || undefined }];
+      setPropertyImages(next);
+      await setPropertyGalleryImages(next);
+      toast({ title: 'Added', description: 'Image added to Property gallery' });
+      setNewPropertyUrl('');
+      setNewPropertyAlt('');
+    } catch {
+      toast({ title: 'Error', description: 'Failed to add image', variant: 'destructive' });
+    } finally {
+      setAddingProperty(false);
+    }
+  };
+
+  const handlePropertyUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const validation = validateImage(file);
+    if (!validation.valid) {
+      toast({ title: 'Invalid image', description: validation.error, variant: 'destructive' });
+      return;
+    }
+    setUploadingProperty(true);
+    try {
+      const imageUrl = await imageToBase64(file);
+      const next = [...propertyImages, { imageUrl, alt: newPropertyAlt.trim() || undefined }];
+      setPropertyImages(next);
+      await setPropertyGalleryImages(next);
+      toast({ title: 'Added', description: 'Image uploaded to Property gallery' });
+      setNewPropertyAlt('');
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to save image to database.',
+        variant: 'destructive',
+      });
+    } finally {
+      setUploadingProperty(false);
+      if (propertyFileInputRef.current) propertyFileInputRef.current.value = '';
+    }
+  };
+
+  const handleRemoveProperty = async (index: number) => {
+    const next = propertyImages.filter((_, i) => i !== index);
+    setPropertyImages(next);
+    setPropertyDeleteIndex(null);
+    try {
+      await setPropertyGalleryImages(next);
+      toast({ title: 'Removed', description: 'Image removed from Property gallery' });
     } catch {
       toast({ title: 'Error', description: 'Failed to remove', variant: 'destructive' });
     }
@@ -535,6 +631,91 @@ export default function AdminGallery() {
         </CardContent>
       </Card>
 
+      {/* Property Gallery - separate section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <ImageIcon className="h-5 w-5" />
+            Property Gallery
+          </CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Separate gallery for property-related images. Add by URL or upload. Independent from Main Gallery and Interior Design gallery.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="space-y-1">
+              <Label>Image URL</Label>
+              <Input
+                placeholder="https://..."
+                value={newPropertyUrl}
+                onChange={(e) => setNewPropertyUrl(e.target.value)}
+                className="w-64"
+              />
+            </div>
+            <div className="space-y-1">
+              <Label>Alt text (optional)</Label>
+              <Input
+                placeholder="e.g. Property exterior"
+                value={newPropertyAlt}
+                onChange={(e) => setNewPropertyAlt(e.target.value)}
+                className="w-48"
+              />
+            </div>
+            <Button onClick={handleAddPropertyByUrl} disabled={addingProperty}>
+              {addingProperty ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+              Add by URL
+            </Button>
+            <input
+              ref={propertyFileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/gif"
+              className="hidden"
+              onChange={handlePropertyUpload}
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => propertyFileInputRef.current?.click()}
+              disabled={uploadingProperty}
+            >
+              {uploadingProperty ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
+              Upload image
+            </Button>
+          </div>
+          {propertyLoading ? (
+            <div className="flex items-center gap-2 text-muted-foreground py-8">
+              <Loader2 className="h-5 w-5 animate-spin" />
+              Loading…
+            </div>
+          ) : propertyImages.length === 0 ? (
+            <p className="text-muted-foreground py-6">No images yet. Add by URL or upload above.</p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+              {propertyImages.map((img, i) => (
+                <div key={i} className="relative rounded-lg border overflow-hidden bg-muted">
+                  <div className="aspect-square">
+                    <img src={img.imageUrl} alt={img.alt || ''} className="w-full h-full object-cover" />
+                  </div>
+                  <div className="p-2 flex items-center justify-between gap-2">
+                    <span className="text-xs text-muted-foreground truncate flex-1">{img.alt || '—'}</span>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="text-destructive hover:text-destructive shrink-0 h-8 w-8"
+                      onClick={() => setPropertyDeleteIndex(i)}
+                      aria-label="Remove image"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -587,6 +768,26 @@ export default function AdminGallery() {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => mainDeleteIndex !== null && handleRemoveMain(mainDeleteIndex)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={propertyDeleteIndex !== null} onOpenChange={(open) => !open && setPropertyDeleteIndex(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove this image?</AlertDialogTitle>
+            <AlertDialogDescription>
+              It will be removed from the Property gallery.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => propertyDeleteIndex !== null && handleRemoveProperty(propertyDeleteIndex)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Remove

@@ -1,8 +1,7 @@
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { collection, getDocs, addDoc, writeBatch } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 
-const SITE_SETTINGS_COLLECTION = 'siteSettings';
-const MAIN_GALLERY_DOC_ID = 'mainGallery';
+const MAIN_GALLERY_COLLECTION = 'mainGalleryImages';
 
 export interface MainGalleryImage {
   imageUrl: string;
@@ -23,20 +22,29 @@ const defaultGallery: MainGalleryImage[] = [
   { imageUrl: 'https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?w=800', alt: 'Luxury home interior' },
 ];
 
+/** Get all main gallery images from Firestore (one doc per image, so no 1MB limit). */
 export async function getMainGalleryImages(): Promise<MainGalleryImage[]> {
   try {
-    const ref = doc(db, SITE_SETTINGS_COLLECTION, MAIN_GALLERY_DOC_ID);
-    const snap = await getDoc(ref);
-    if (snap.exists() && Array.isArray(snap.data()?.items) && (snap.data()?.items as MainGalleryImage[]).length > 0) {
-      return snap.data().items as MainGalleryImage[];
-    }
+    const snapshot = await getDocs(collection(db, MAIN_GALLERY_COLLECTION));
+    if (snapshot.empty) return defaultGallery;
+    const items = snapshot.docs
+      .map((d) => ({ ...d.data(), _id: d.id } as { imageUrl: string; alt?: string; order: number; _id: string }))
+      .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+    return items.map(({ imageUrl, alt }) => ({ imageUrl, alt }));
   } catch (e) {
     console.error('getMainGalleryImages error', e);
   }
   return defaultGallery;
 }
 
+/** Replace all main gallery images in Firestore (each image stored as its own document). */
 export async function setMainGalleryImages(items: MainGalleryImage[]): Promise<void> {
-  const ref = doc(db, SITE_SETTINGS_COLLECTION, MAIN_GALLERY_DOC_ID);
-  await setDoc(ref, { items });
+  const col = collection(db, MAIN_GALLERY_COLLECTION);
+  const snapshot = await getDocs(col);
+  const batch = writeBatch(db);
+  snapshot.docs.forEach((d) => batch.delete(d.ref));
+  await batch.commit();
+  for (let i = 0; i < items.length; i++) {
+    await addDoc(col, { imageUrl: items[i].imageUrl, alt: items[i].alt ?? null, order: i });
+  }
 }

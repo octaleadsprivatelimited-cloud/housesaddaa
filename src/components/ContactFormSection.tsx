@@ -58,11 +58,11 @@ export function ContactFormSection() {
   const location = useLocation();
   const pathname = location.pathname;
 
-  if (pathname === '/contact' || pathname === '/contact-form') return null;
   if (pathname === '/services/home-loans' || pathname === '/services/interior-design' || pathname === '/services/property-promotions') return null;
-  if (pathname === '/blog' || pathname.startsWith('/blog/')) return null;
 
   const getContent = () => {
+    // Blog and contact pages use the same CTA as home page
+    if (pathname === '/contact' || pathname === '/contact-form' || pathname === '/blog' || pathname.startsWith('/blog/')) return PAGE_CONTENT['/'];
     if (PAGE_CONTENT[pathname]) return PAGE_CONTENT[pathname];
     if (pathname.startsWith('/property/')) {
       return {
