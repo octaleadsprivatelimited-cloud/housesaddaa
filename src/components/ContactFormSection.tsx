@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
-import { ArrowRight, Phone } from 'lucide-react';
+import { ArrowRight, MessageCircle, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { CONTACT } from '@/constants/contact';
 
 const PAGE_CONTENT: Record<string, { title: string; description: string }> = {
   '/': {
@@ -30,10 +31,6 @@ const PAGE_CONTENT: Record<string, { title: string; description: string }> = {
   '/help': {
     title: 'Get in touch',
     description: "Couldn't find what you were looking for? Send us your requirement and we'll assist you.",
-  },
-  '/sitemap': {
-    title: 'Get in touch',
-    description: 'Have a question or requirement? We\'re here to help.',
   },
   '/services/home-loans': {
     title: 'Get in touch',
@@ -90,7 +87,7 @@ export function ContactFormSection() {
               {content.description}
             </p>
           </div>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-4 justify-center items-center">
             <Button
               asChild
               className="h-12 px-8 rounded-xl bg-[#E10600] hover:bg-[#B11226] font-semibold text-base shadow-lg shadow-[#E10600]/20 transition-all hover:shadow-xl hover:shadow-[#E10600]/25"
@@ -100,13 +97,20 @@ export function ContactFormSection() {
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
-            <Link
-              to="/contact"
+            <a
+              href={CONTACT.whatsapp}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 h-12 px-8 rounded-xl bg-[#25D366] hover:bg-[#1DA851] text-white font-semibold text-base transition-colors"
+            >
+              <MessageCircle className="h-4 w-4" /> WhatsApp
+            </a>
+            <a
+              href={`mailto:${CONTACT.email}`}
               className="inline-flex items-center gap-2 h-12 px-8 rounded-xl border-2 border-[#1A1A1A]/25 bg-white font-semibold text-base text-[#1A1A1A] hover:bg-[#1A1A1A]/5 hover:text-[#1A1A1A] hover:border-[#1A1A1A]/40 transition-colors"
             >
-              <Phone className="h-4 w-4" />
-              Quick Call
-            </Link>
+              <Mail className="h-4 w-4" /> Email
+            </a>
           </div>
         </div>
       </div>

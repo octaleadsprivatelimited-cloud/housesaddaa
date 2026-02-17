@@ -12,7 +12,7 @@ const footerLinks = {
     { name: 'Gallery', href: '/gallery' },
     { name: 'Blog', href: '/blog' },
     { name: 'Careers', href: '/careers' },
-    { name: 'Sitemap', href: '/sitemap' },
+    { name: 'Sitemap', href: '/sitemap.xml' },
   ],
   services: [
     { name: 'Home Loans', href: '/services/home-loans' },

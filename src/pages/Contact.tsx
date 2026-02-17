@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { Mail, Phone, MapPin, MessageCircle, ExternalLink, ArrowRight, Send, Loader2 } from 'lucide-react';
+import { Mail, Phone, MapPin, ExternalLink, Send, Loader2 } from 'lucide-react';
 import SEO from '@/components/SEO';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -249,38 +248,6 @@ export default function Contact() {
               </div>
               <div className="px-5 py-2 border-t border-gray-200 text-gray-500 text-sm">
                 Houses Adda, Hyderabad
-              </div>
-            </div>
-
-            {/* Quick actions */}
-            <div className="flex flex-col sm:flex-row gap-4 items-center">
-              <Button asChild className="w-full sm:w-auto h-11 rounded-lg bg-[#E10600] hover:bg-[#B11226] font-semibold">
-                <Link to="/contact-form">
-                  Share your requirement
-                  <ArrowRight className="h-4 w-4 ml-2" />
-                </Link>
-              </Button>
-              <div className="flex gap-2">
-                <a
-                  href={CONTACT.whatsapp}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 py-2.5 px-4 rounded-lg bg-[#25D366] hover:bg-[#1DA851] text-white text-sm font-medium"
-                >
-                  <MessageCircle className="h-4 w-4" /> WhatsApp
-                </a>
-                <a
-                  href={`tel:${CONTACT.phoneRaw}`}
-                  className="inline-flex items-center gap-2 py-2.5 px-4 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium"
-                >
-                  <Phone className="h-4 w-4" /> Call
-                </a>
-                <a
-                  href={`mailto:${CONTACT.email}`}
-                  className="inline-flex items-center gap-2 py-2.5 px-4 rounded-lg border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-sm font-medium"
-                >
-                  <Mail className="h-4 w-4" /> Email
-                </a>
               </div>
             </div>
           </div>

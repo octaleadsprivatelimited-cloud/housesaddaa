@@ -22,7 +22,6 @@ import BlogPostDetail from "./pages/BlogPostDetail";
 import Help from "./pages/Help";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
-import Sitemap from "./pages/Sitemap";
 import AdminLogin from "./pages/admin/AdminLogin";
 import AdminLayout from "./pages/admin/AdminLayout";
 import AdminDashboard from "./pages/admin/AdminDashboard";
@@ -74,7 +73,6 @@ const App = () => (
               <Route path="/help" element={<Help />} />
               <Route path="/terms" element={<Terms />} />
               <Route path="/privacy" element={<Privacy />} />
-              <Route path="/sitemap" element={<Sitemap />} />
             </Route>
             
             {/* Admin Routes */}

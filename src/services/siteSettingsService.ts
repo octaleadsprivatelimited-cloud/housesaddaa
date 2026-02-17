@@ -111,3 +111,24 @@ export async function setYoutubeVideos(items: YouTubeVideoItem[]): Promise<void>
   const ref = doc(db, SITE_SETTINGS_COLLECTION, YOUTUBE_DOC_ID);
   await setDoc(ref, { items });
 }
+
+// Home page "Properties" section order (array of property IDs; empty = use default order by postedAt)
+const HOME_PAGE_ORDER_DOC_ID = 'homePagePropertyOrder';
+
+export async function getHomePagePropertyOrder(): Promise<string[]> {
+  try {
+    const ref = doc(db, SITE_SETTINGS_COLLECTION, HOME_PAGE_ORDER_DOC_ID);
+    const snap = await getDoc(ref);
+    if (snap.exists() && Array.isArray(snap.data()?.propertyIds)) {
+      return snap.data().propertyIds as string[];
+    }
+  } catch (e) {
+    console.error('getHomePagePropertyOrder error', e);
+  }
+  return [];
+}
+
+export async function setHomePagePropertyOrder(propertyIds: string[]): Promise<void> {
+  const ref = doc(db, SITE_SETTINGS_COLLECTION, HOME_PAGE_ORDER_DOC_ID);
+  await setDoc(ref, { propertyIds });
+}

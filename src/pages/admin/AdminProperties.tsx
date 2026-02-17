@@ -1,31 +1,49 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Search, Filter, MoreVertical, Edit, Trash2, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Plus, Search, Filter, MoreVertical, Edit, Trash2, Eye, EyeOff, Loader2, ArrowUp, ArrowDown, GripVertical } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
   DropdownMenuItem, 
   DropdownMenuTrigger 
 } from '@/components/ui/dropdown-menu';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { formatPrice } from '@/data/properties';
 import { usePropertyTypes } from '@/hooks/usePropertyTypes';
 import { Property } from '@/types/property';
 import { getAllPropertiesAdmin, togglePropertyStatus, deleteProperty } from '@/services/propertyService';
+import { getHomePagePropertyOrder, setHomePagePropertyOrder } from '@/services/siteSettingsService';
 import { useToast } from '@/hooks/use-toast';
 
 export default function AdminProperties() {
   const [searchQuery, setSearchQuery] = useState('');
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
+  const [homePageOrderIds, setHomePageOrderIds] = useState<string[]>([]);
+  const [homePageOrderLoading, setHomePageOrderLoading] = useState(true);
+  const [homePageOrderSaving, setHomePageOrderSaving] = useState(false);
   const { toast } = useToast();
   const { getPropertyTypeLabel } = usePropertyTypes();
   
-  // Fetch properties from Firestore
   useEffect(() => {
     fetchProperties();
+  }, []);
+
+  useEffect(() => {
+    getHomePagePropertyOrder()
+      .then(setHomePageOrderIds)
+      .catch(() => setHomePageOrderIds([]))
+      .finally(() => setHomePageOrderLoading(false));
   }, []);
 
   const fetchProperties = async () => {
@@ -88,6 +106,40 @@ export default function AdminProperties() {
     p.location.city.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  const moveHomePageOrder = (index: number, direction: 'up' | 'down') => {
+    const next = [...homePageOrderIds];
+    const swap = direction === 'up' ? index - 1 : index + 1;
+    if (swap < 0 || swap >= next.length) return;
+    [next[index], next[swap]] = [next[swap], next[index]];
+    setHomePageOrderIds(next);
+  };
+
+  const removeFromHomePageOrder = (index: number) => {
+    setHomePageOrderIds(homePageOrderIds.filter((_, i) => i !== index));
+  };
+
+  const addToHomePageOrder = (propertyId: string) => {
+    if (!propertyId || propertyId === '_none' || homePageOrderIds.includes(propertyId)) return;
+    setHomePageOrderIds([...homePageOrderIds, propertyId]);
+  };
+
+  const saveHomePageOrder = async () => {
+    setHomePageOrderSaving(true);
+    try {
+      await setHomePagePropertyOrder(homePageOrderIds);
+      toast({ title: 'Saved', description: 'Home page Properties order updated.' });
+    } catch {
+      toast({ title: 'Error', description: 'Failed to save order', variant: 'destructive' });
+    } finally {
+      setHomePageOrderSaving(false);
+    }
+  };
+
+  const homePageOrderProperties = homePageOrderIds
+    .map((id) => properties.find((p) => p.id === id))
+    .filter(Boolean) as Property[];
+  const availableToAdd = properties.filter((p) => p.isActive !== false && !homePageOrderIds.includes(p.id));
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16">
@@ -128,6 +180,75 @@ export default function AdminProperties() {
           Filters
         </Button>
       </div>
+
+      {/* Home page Properties section order */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Home page Properties section order</CardTitle>
+          <CardDescription>
+            Set the order of properties shown in the &quot;Properties&quot; section on the home page. Leave empty to use default order (newest first).
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {homePageOrderLoading ? (
+            <div className="flex items-center gap-2 text-muted-foreground py-4">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Loading order…
+            </div>
+          ) : (
+            <>
+              <div className="flex flex-wrap items-end gap-3">
+                <div className="space-y-1 min-w-[200px]">
+                  <label className="text-sm font-medium">Add property to home page</label>
+                  <Select onValueChange={addToHomePageOrder} value="">
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a property" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableToAdd.map((p) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.title} — {p.location.city}
+                        </SelectItem>
+                      ))}
+                      {availableToAdd.length === 0 && (
+                        <SelectItem value="_none" disabled>No more properties to add</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button onClick={saveHomePageOrder} disabled={homePageOrderSaving || homePageOrderIds.length === 0}>
+                  {homePageOrderSaving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                  Save order
+                </Button>
+              </div>
+              {homePageOrderProperties.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-2">No properties in order. Home page will show newest first. Add properties above to set a custom order.</p>
+              ) : (
+                <ul className="space-y-2 border rounded-lg divide-y divide-border">
+                  {homePageOrderProperties.map((p, index) => (
+                    <li key={p.id} className="flex items-center gap-2 p-3 bg-secondary/30">
+                      <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span className="flex-1 truncate font-medium">{p.title}</span>
+                      <span className="text-sm text-muted-foreground shrink-0">{p.location.city}</span>
+                      <div className="flex shrink-0 gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => moveHomePageOrder(index, 'up')} disabled={index === 0} aria-label="Move up">
+                          <ArrowUp className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => moveHomePageOrder(index, 'down')} disabled={index === homePageOrderProperties.length - 1} aria-label="Move down">
+                          <ArrowDown className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive" onClick={() => removeFromHomePageOrder(index)} aria-label="Remove from home page">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Properties Table */}
       <div className="bg-card rounded-xl border border-border overflow-hidden">

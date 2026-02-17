@@ -1,1 +1,5 @@
+# Redirect removed HTML sitemap to XML sitemap (avoids 404)
+/sitemap    /sitemap.xml   302
+
+# SPA fallback
 /*    /index.html   200

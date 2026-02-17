@@ -156,6 +156,23 @@ export const getPropertyById = async (id: string): Promise<Property | null> => {
   return docToProperty(snapshot);
 };
 
+// Get properties for home page "Properties" section (respects admin-set order when set)
+export const getPropertiesForHomePage = async (limitCount: number = 12): Promise<Property[]> => {
+  const { getHomePagePropertyOrder } = await import("@/services/siteSettingsService");
+  const orderIds = await getHomePagePropertyOrder();
+  if (orderIds.length === 0) {
+    const { properties } = await getProperties(undefined, limitCount);
+    return properties;
+  }
+  const result: Property[] = [];
+  for (const id of orderIds) {
+    if (result.length >= limitCount) break;
+    const p = await getPropertyById(id);
+    if (p && p.isActive !== false) result.push(p);
+  }
+  return result;
+};
+
 // Get featured properties
 export const getFeaturedProperties = async (count: number = 6): Promise<Property[]> => {
   try {

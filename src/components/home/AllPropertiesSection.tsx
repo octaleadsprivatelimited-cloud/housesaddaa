@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Loader2, Building2 } from 'lucide-react';
 import { PropertyCard } from '@/components/property/PropertyCard';
-import { getProperties } from '@/services/propertyService';
+import { getPropertiesForHomePage } from '@/services/propertyService';
 import { Property } from '@/types/property';
 
 export function AllPropertiesSection() {
@@ -12,7 +12,7 @@ export function AllPropertiesSection() {
   useEffect(() => {
     const fetchProperties = async () => {
       try {
-        const { properties: data } = await getProperties(undefined, 12);
+        const data = await getPropertiesForHomePage(12);
         setProperties(data);
       } catch (error) {
         console.error('Error fetching properties:', error);
