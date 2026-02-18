@@ -1,4 +1,4 @@
-import { Property, PropertyType, LocationOption, Amenity } from '@/types/property';
+import { Property, PropertyType, LocationOption, Amenity, ProjectType, LandAreaUnit, ProjectStatusType, UnitBhkType } from '@/types/property';
 
 // Sample Properties Data
 export const sampleProperties: Property[] = [
@@ -319,6 +319,67 @@ export const furnishingOptions = [
 export const propertyStatusOptions = [
   { value: 'ready', label: 'Ready to Move' },
   { value: 'under-construction', label: 'Under Construction' },
+];
+
+// ----- Large project constants -----
+
+/** Project type selector (Add Property: Individual vs Project). */
+export const projectTypeOptions: { value: ProjectType; label: string }[] = [
+  { value: 'individual', label: 'Individual Property' },
+  { value: 'gated-community', label: 'Gated Community' },
+  { value: 'apartment-project', label: 'Apartment Project' },
+  { value: 'villa-project', label: 'Villa Project' },
+  { value: 'commercial-project', label: 'Commercial Project' },
+  { value: 'mixed-use-project', label: 'Mixed-Use Project' },
+];
+
+/** Land area unit for project size (supports 99+ acres). */
+export const landAreaUnitOptions: { value: LandAreaUnit; label: string }[] = [
+  { value: 'acres', label: 'Acres' },
+  { value: 'sqyards', label: 'Sq Yards' },
+  { value: 'sqft', label: 'Sq Ft' },
+];
+
+/** Project status for project listings. */
+export const projectStatusOptions: { value: ProjectStatusType; label: string }[] = [
+  { value: 'pre-launch', label: 'Pre-Launch' },
+  { value: 'under-construction', label: 'Under Construction' },
+  { value: 'ready-to-move', label: 'Ready to Move' },
+  { value: 'new-launch', label: 'New Launch' },
+];
+
+/** BHK type for unit configuration (dynamic units). */
+export const unitBhkTypeOptions: { value: UnitBhkType; label: string }[] = [
+  { value: '1', label: '1 BHK' },
+  { value: '2', label: '2 BHK' },
+  { value: '2.5', label: '2.5 BHK' },
+  { value: '3', label: '3 BHK' },
+  { value: '4', label: '4 BHK' },
+  { value: 'Villa', label: 'Villa' },
+  { value: 'Plot', label: 'Plot' },
+];
+
+/** Facing options for plot/villa. */
+export const plotFacingOptions = ['East', 'West', 'North', 'South', 'North-East', 'North-West', 'South-East', 'South-West'];
+
+/** Approval authority for legal details. */
+export const approvalAuthorityOptions = [
+  { value: 'HMDA', label: 'HMDA' },
+  { value: 'DTCP', label: 'DTCP' },
+  { value: 'GHMC', label: 'GHMC' },
+  { value: 'Others', label: 'Others' },
+];
+
+/** Amenity IDs for project amenities (multi-select with icons). Matches common amenity names. */
+export const projectAmenityOptions: { id: string; name: string; icon: string }[] = [
+  { id: 'clubhouse', name: 'Clubhouse', icon: '🏠' },
+  { id: 'swimming-pool', name: 'Swimming Pool', icon: '🏊' },
+  { id: 'gym', name: 'Gym', icon: '💪' },
+  { id: 'park', name: 'Park', icon: '🌳' },
+  { id: 'play-area', name: 'Play Area', icon: '🛝' },
+  { id: 'jogging-track', name: 'Jogging Track', icon: '🏃' },
+  { id: '24x7-security', name: '24x7 Security', icon: '🛡️' },
+  { id: 'power-backup', name: 'Power Backup', icon: '⚡' },
 ];
 
 // Format price in Indian format

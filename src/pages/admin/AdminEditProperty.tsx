@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Upload, X, Loader2, FileText, Youtube, LayoutGrid } from 'lucide-react';
+import { ArrowLeft, Upload, X, Loader2, FileText, Youtube, LayoutGrid, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,7 +12,7 @@ import { usePropertyTypes } from '@/hooks/usePropertyTypes';
 import { useLocations } from '@/hooks/useLocations';
 import { useAmenities } from '@/hooks/useAmenities';
 import { getPropertyById, updateProperty } from '@/services/propertyService';
-import { PropertyType } from '@/types/property';
+import { PropertyType, Property } from '@/types/property';
 import { imageToBase64, validateImage } from '@/services/imageService';
 import { uploadBrochure, validateBrochureFile } from '@/services/brochureService';
 import { uploadFloorPlans, validateFloorPlanFile } from '@/services/floorPlanService';
@@ -33,7 +33,12 @@ export default function AdminEditProperty() {
   const [brochureUrl, setBrochureUrl] = useState('');
   const [youtubeVideoUrl, setYoutubeVideoUrl] = useState('');
   const [floorPlanUrls, setFloorPlanUrls] = useState<string[]>([]);
-  
+  /** Preserve project-specific fields when editing a project listing (do not overwrite with undefined). */
+  const projectFieldsRef = useRef<Partial<Property>>({});
+
+  const [sizeOptions, setSizeOptions] = useState<{ bedrooms: string; bathrooms: string; areaSize: string }[]>([
+    { bedrooms: '', bathrooms: '', areaSize: '' },
+  ]);
   const [formData, setFormData] = useState({
     title: '',
     propertyType: '',
@@ -41,9 +46,6 @@ export default function AdminEditProperty() {
     price: '',
     city: '',
     area: '',
-    bedrooms: '',
-    bathrooms: '',
-    areaSize: '',
     furnishing: '',
     propertyStatus: '',
     description: '',
@@ -55,9 +57,27 @@ export default function AdminEditProperty() {
     isFeatured: false,
     metaTitle: '',
     metaDescription: '',
-    facings: '',
   });
+  const [facingsOptions, setFacingsOptions] = useState<string[]>(['']);
   const isCommercial = formData.propertyType === 'commercial';
+
+  const addSizeOption = () => setSizeOptions((prev) => [...prev, { bedrooms: '', bathrooms: '', areaSize: '' }]);
+  const removeSizeOption = (index: number) => {
+    if (sizeOptions.length <= 1) return;
+    setSizeOptions((prev) => prev.filter((_, i) => i !== index));
+  };
+  const updateSizeOption = (index: number, field: 'bedrooms' | 'bathrooms' | 'areaSize', value: string) => {
+    setSizeOptions((prev) => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
+  };
+
+  const addFacingsOption = () => setFacingsOptions((prev) => [...prev, '']);
+  const removeFacingsOption = (index: number) => {
+    if (facingsOptions.length <= 1) return;
+    setFacingsOptions((prev) => prev.filter((_, i) => i !== index));
+  };
+  const updateFacingsOption = (index: number, value: string) => {
+    setFacingsOptions((prev) => prev.map((v, i) => (i === index ? value : v)));
+  };
 
   // Fetch property data
   useEffect(() => {
@@ -84,9 +104,6 @@ export default function AdminEditProperty() {
           price: property.price.toString(),
           city: property.location.city,
           area: property.location.area,
-          bedrooms: property.bedrooms?.toString() || '',
-          bathrooms: property.bathrooms?.toString() || '',
-          areaSize: property.area?.toString() || '',
           furnishing: property.furnishing || '',
           propertyStatus: property.propertyStatus || '',
           description: property.description || '',
@@ -98,12 +115,55 @@ export default function AdminEditProperty() {
           isFeatured: property.isFeatured || false,
           metaTitle: property.metaTitle || '',
           metaDescription: property.metaDescription || '',
-          facings: property.facings || '',
         });
+        if (property.facingsList && property.facingsList.length > 0) {
+          setFacingsOptions(property.facingsList.length > 0 ? [...property.facingsList] : ['']);
+        } else if (property.facings) {
+          setFacingsOptions(property.facings.split(',').map((s) => s.trim()).filter(Boolean).length > 0
+            ? property.facings.split(',').map((s) => s.trim())
+            : ['']);
+        } else {
+          setFacingsOptions(['']);
+        }
+        if (property.sizeOptions && property.sizeOptions.length > 0) {
+          setSizeOptions(
+            property.sizeOptions.map((o) => ({
+              bedrooms: o.bedrooms.toString(),
+              bathrooms: o.bathrooms.toString(),
+              areaSize: o.areaSqft.toString(),
+            }))
+          );
+        } else {
+          setSizeOptions([
+            {
+              bedrooms: property.bedrooms?.toString() || '',
+              bathrooms: property.bathrooms?.toString() || '',
+              areaSize: property.area?.toString() || '',
+            },
+          ]);
+        }
         setImages(property.images || []);
         setBrochureUrl(property.brochureUrl || '');
         setYoutubeVideoUrl(property.youtubeVideoId ? `https://www.youtube.com/watch?v=${property.youtubeVideoId}` : '');
         setFloorPlanUrls(property.floorPlanUrls || []);
+        // Preserve project fields so update does not remove them
+        if (property.projectType || property.projectDetails || property.unitConfigurations) {
+          projectFieldsRef.current = {
+            projectType: property.projectType,
+            projectDetails: property.projectDetails,
+            unitConfigurations: property.unitConfigurations,
+            plotVillaOptions: property.plotVillaOptions,
+            projectStatus: property.projectStatus,
+            possessionDate: property.possessionDate,
+            legalApproval: property.legalApproval,
+            masterPlanImageUrl: property.masterPlanImageUrl,
+            customAmenities: property.customAmenities,
+            metaKeywords: property.metaKeywords,
+            socialSharingImageUrl: property.socialSharingImageUrl,
+          };
+        } else {
+          projectFieldsRef.current = {};
+        }
       } catch (error) {
         console.error('Error fetching property:', error);
         toast({
@@ -227,21 +287,34 @@ export default function AdminEditProperty() {
         }
       }
 
+      const firstOption = sizeOptions[0];
+      const firstBed = isCommercial ? 0 : parseInt(firstOption.bedrooms, 10) || 0;
+      const firstBath = isCommercial ? 0 : parseInt(firstOption.bathrooms, 10) || 0;
+      const firstArea = parseInt(firstOption.areaSize, 10) || 0;
+      const parsedOptions = sizeOptions
+        .map((row) => ({
+          bedrooms: parseInt(row.bedrooms, 10) || 0,
+          bathrooms: parseInt(row.bathrooms, 10) || 0,
+          areaSqft: parseInt(row.areaSize, 10) || 0,
+        }))
+        .filter((o) => o.areaSqft > 0);
+      const hasMultipleOptions = parsedOptions.length > 1;
+
       const propertyData = {
         title: formData.title,
         propertyType: formData.propertyType as PropertyType,
         listingType: formData.listingType,
         price: parseInt(formData.price),
-        pricePerSqft: formData.areaSize ? Math.round(parseInt(formData.price) / parseInt(formData.areaSize)) : undefined,
+        pricePerSqft: firstArea ? Math.round(parseInt(formData.price) / firstArea) : undefined,
         location: {
           country: 'India',
           state: selectedCity?.state || '',
           city: formData.city,
           area: formData.area,
         },
-        bedrooms: isCommercial ? 0 : parseInt(formData.bedrooms) || 0,
-        bathrooms: isCommercial ? 0 : parseInt(formData.bathrooms) || 0,
-        area: parseInt(formData.areaSize) || 0,
+        bedrooms: firstBed,
+        bathrooms: firstBath,
+        area: firstArea,
         areaUnit: 'sqft' as const,
         furnishing: formData.furnishing as 'furnished' | 'semi-furnished' | 'unfurnished',
         propertyStatus: formData.propertyStatus as 'ready' | 'under-construction',
@@ -258,7 +331,13 @@ export default function AdminEditProperty() {
         ...(finalBrochureUrl && { brochureUrl: finalBrochureUrl }),
         ...(parsedYoutubeId && { youtubeVideoId: parsedYoutubeId }),
         floorPlanUrls: finalFloorPlanUrls,
-        ...(isCommercial && { facings: formData.facings || undefined }),
+        ...((): { facings?: string; facingsList?: string[] } => {
+          const list = facingsOptions.map((s) => s.trim()).filter(Boolean);
+          if (list.length === 0) return {};
+          return { facings: list.join(', '), facingsList: list };
+        })(),
+        sizeOptions: hasMultipleOptions ? parsedOptions : [],
+        ...projectFieldsRef.current,
       };
 
       await updateProperty(id, propertyData);
@@ -520,67 +599,88 @@ export default function AdminEditProperty() {
         {/* Property Details */}
         <div className="bg-card rounded-xl border border-border p-6">
           <h2 className="font-semibold text-lg mb-4">Property Details</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {!isCommercial && (
-              <>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Bedrooms (BHK)</label>
-                  <Select 
-                    value={formData.bedrooms} 
-                    onValueChange={(v) => setFormData({ ...formData, bedrooms: v })}
+          {!isCommercial && (
+            <div className="mb-6">
+              <p className="text-sm text-muted-foreground mb-3">Add one or more options (e.g. 2 BHK / 1200 sqft, 3 BHK / 1500 sqft).</p>
+              {sizeOptions.map((row, idx) => (
+                <div key={idx} className="flex flex-wrap items-end gap-3 p-3 rounded-lg border border-border bg-muted/30 mb-2">
+                  <div className="w-full sm:w-28">
+                    <label className="block text-xs font-medium text-muted-foreground mb-1">BHK</label>
+                    <Select value={row.bedrooms} onValueChange={(v) => updateSizeOption(idx, 'bedrooms', v)}>
+                      <SelectTrigger className="bg-background"><SelectValue placeholder="BHK" /></SelectTrigger>
+                      <SelectContent className="bg-card border-border">
+                        {bhkOptions.map((bhk) => (
+                          <SelectItem key={bhk} value={bhk.toString()}>{bhk} BHK</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="w-full sm:w-24">
+                    <label className="block text-xs font-medium text-muted-foreground mb-1">Bathrooms</label>
+                    <Input
+                      type="number"
+                      placeholder="e.g., 2"
+                      value={row.bathrooms}
+                      onChange={(e) => updateSizeOption(idx, 'bathrooms', e.target.value)}
+                    />
+                  </div>
+                  <div className="w-full sm:w-28">
+                    <label className="block text-xs font-medium text-muted-foreground mb-1">Area (sqft)</label>
+                    <Input
+                      type="number"
+                      placeholder="e.g., 1500"
+                      value={row.areaSize}
+                      onChange={(e) => updateSizeOption(idx, 'areaSize', e.target.value)}
+                    />
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => removeSizeOption(idx)}
+                    disabled={sizeOptions.length <= 1}
+                    className="shrink-0"
                   >
-                    <SelectTrigger className="bg-background">
-                      <SelectValue placeholder="BHK" />
-                    </SelectTrigger>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+              <Button type="button" variant="outline" size="sm" onClick={addSizeOption} className="mt-2">
+                <Plus className="h-4 w-4 mr-2" /> Add option
+              </Button>
+            </div>
+          )}
+          <div className="mb-6">
+            <p className="text-sm text-muted-foreground mb-3">Facings (add multiple if applicable)</p>
+            {facingsOptions.map((value, idx) => (
+              <div key={idx} className="flex flex-wrap items-center gap-3 p-3 rounded-lg border border-border bg-muted/30 mb-2">
+                <div className="w-full sm:w-40">
+                  <Select value={value || undefined} onValueChange={(v) => updateFacingsOption(idx, v)}>
+                    <SelectTrigger className="bg-background"><SelectValue placeholder="Select facing" /></SelectTrigger>
                     <SelectContent className="bg-card border-border">
-                      {bhkOptions.map((bhk) => (
-                        <SelectItem key={bhk} value={bhk.toString()}>
-                          {bhk} BHK
-                        </SelectItem>
+                      {facingOptions.map((f) => (
+                        <SelectItem key={f} value={f}>{f}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Bathrooms</label>
-                  <Input
-                    type="number"
-                    placeholder="e.g., 2"
-                    value={formData.bathrooms}
-                    onChange={(e) => setFormData({ ...formData, bathrooms: e.target.value })}
-                  />
-                </div>
-              </>
-            )}
-            {isCommercial && (
-              <div>
-                <label className="block text-sm font-medium mb-2">Facings</label>
-                <Select 
-                  value={formData.facings} 
-                  onValueChange={(v) => setFormData({ ...formData, facings: v })}
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeFacingsOption(idx)}
+                  disabled={facingsOptions.length <= 1}
+                  className="shrink-0"
                 >
-                  <SelectTrigger className="bg-background">
-                    <SelectValue placeholder="Select facing" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-card border-border">
-                    {facingOptions.map((f) => (
-                      <SelectItem key={f} value={f}>
-                        {f}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
               </div>
-            )}
-            <div>
-              <label className="block text-sm font-medium mb-2">Area (sqft)</label>
-              <Input
-                type="number"
-                placeholder="e.g., 1500"
-                value={formData.areaSize}
-                onChange={(e) => setFormData({ ...formData, areaSize: e.target.value })}
-              />
-            </div>
+            ))}
+            <Button type="button" variant="outline" size="sm" onClick={addFacingsOption} className="mt-2">
+              <Plus className="h-4 w-4 mr-2" /> Add facing
+            </Button>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm font-medium mb-2">Furnishing</label>
               <Select 

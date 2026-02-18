@@ -68,10 +68,10 @@ const Index = () => {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteData) }} />
       <HeroSection />
       <PropertyCategories />
+      <FeaturedListings />
       <AllPropertiesSection />
       <YouTubeSection />
       <CategoryProperties />
-      <FeaturedListings />
       <WhyChooseUs />
       <ClientsCarousel />
     </>

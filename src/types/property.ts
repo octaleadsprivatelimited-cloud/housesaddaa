@@ -1,5 +1,62 @@
 // Property Types and Interfaces
 
+/** Project type for large real-estate projects (99+ acres). When absent or 'individual', treated as single property. */
+export type ProjectType =
+  | 'individual'
+  | 'gated-community'
+  | 'apartment-project'
+  | 'villa-project'
+  | 'commercial-project'
+  | 'mixed-use-project';
+
+/** Land area unit for project size (supports 99+ acres). */
+export type LandAreaUnit = 'acres' | 'sqyards' | 'sqft';
+
+/** Project status for listing. */
+export type ProjectStatusType = 'pre-launch' | 'under-construction' | 'ready-to-move' | 'new-launch';
+
+/** BHK type for unit configuration. */
+export type UnitBhkType = '1' | '2' | '2.5' | '3' | '4' | 'Villa' | 'Plot';
+
+/** Project size and land details (scalable for large projects). */
+export interface ProjectDetails {
+  totalLandArea: number;
+  landAreaUnit: LandAreaUnit;
+  numberOfPhases?: number;
+  numberOfBlocksOrTowers: number;
+  totalUnits: number;
+}
+
+/** Single unit configuration (BHK, size, price range, count). */
+export interface UnitConfiguration {
+  bhkType: UnitBhkType;
+  unitSizeSqft: number;
+  priceMin: number;
+  priceMax: number;
+  numberOfUnits: number;
+}
+
+/** Plot/Villa size option (for plot/villa projects). */
+export interface PlotVillaOption {
+  sizeSqYards: number;
+  facing: string;
+  cornerPlot: boolean;
+}
+
+/** Legal and approval details. */
+export interface LegalApproval {
+  reraNumber?: string;
+  approvalAuthority?: string;
+  approvalDocUrls?: string[];
+}
+
+/** Single size option (BHK, bathrooms, area) for individual properties with multiple configurations. */
+export interface SizeOption {
+  bedrooms: number;
+  bathrooms: number;
+  areaSqft: number;
+}
+
 export interface Property {
   id: string;
   title: string;
@@ -40,10 +97,39 @@ export interface Property {
   brochureUrl?: string;
   /** YouTube video ID for property video (e.g. from watch?v=ID or youtu.be/ID) */
   youtubeVideoId?: string;
-  /** Commercial: facing direction (e.g. North, East) */
+  /** Facing direction(s). Single string for backward compatibility (e.g. "North" or "North, East"). */
   facings?: string;
+  /** Multiple facing options (e.g. ["North", "East"]). When set, facings is also set to joined string for display. */
+  facingsList?: string[];
   /** Floor plan image URLs (compressed on upload) */
   floorPlanUrls?: string[];
+
+  /** Multiple BHK/bathrooms/area options for individual listings (e.g. 2 BHK / 1200 sqft, 3 BHK / 1500 sqft). When set, first option also populates bedrooms, bathrooms, area. */
+  sizeOptions?: SizeOption[];
+
+  // ----- Large project fields (optional; no breaking change for existing properties) -----
+  /** When set, property is a project listing (gated community, apartment project, etc.). */
+  projectType?: ProjectType;
+  /** Land and scale details (phases, blocks, total units). */
+  projectDetails?: ProjectDetails;
+  /** Unit configurations (BHK, size, price range, count). */
+  unitConfigurations?: UnitConfiguration[];
+  /** Plot/villa size options (sizes, facing, corner). */
+  plotVillaOptions?: PlotVillaOption[];
+  /** Project status: pre-launch, under construction, etc. */
+  projectStatus?: ProjectStatusType;
+  /** Possession date (ISO string). */
+  possessionDate?: string;
+  /** Legal & approval (RERA, authority, doc URLs). */
+  legalApproval?: LegalApproval;
+  /** Master plan image (base64 or URL). */
+  masterPlanImageUrl?: string;
+  /** Custom amenity names (in addition to amenity IDs). */
+  customAmenities?: string[];
+  /** SEO keywords (comma-separated or array). */
+  metaKeywords?: string;
+  /** Social sharing image URL. */
+  socialSharingImageUrl?: string;
 }
 
 export type PropertyType = 
