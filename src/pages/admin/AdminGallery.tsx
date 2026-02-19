@@ -37,6 +37,13 @@ import {
   setPropertyGalleryImages,
   type PropertyGalleryImage,
 } from '@/services/propertyGalleryService';
+import {
+  getGallerySectionVideos,
+  addGallerySectionVideo,
+  deleteGallerySectionVideo,
+  type GallerySectionVideo,
+  type GallerySectionKey,
+} from '@/services/gallerySectionVideoService';
 import { imageToBase64, validateImage } from '@/services/imageService';
 
 export default function AdminGallery() {
@@ -75,6 +82,18 @@ export default function AdminGallery() {
   const [addingProperty, setAddingProperty] = useState(false);
   const [uploadingProperty, setUploadingProperty] = useState(false);
   const propertyFileInputRef = useRef<HTMLInputElement>(null);
+
+  const [mainSectionVideos, setMainSectionVideos] = useState<GallerySectionVideo[]>([]);
+  const [interiorSectionVideos, setInteriorSectionVideos] = useState<GallerySectionVideo[]>([]);
+  const [propertySectionVideos, setPropertySectionVideos] = useState<GallerySectionVideo[]>([]);
+  const [mainVideoTitle, setMainVideoTitle] = useState('');
+  const [mainVideoUrl, setMainVideoUrl] = useState('');
+  const [interiorVideoTitle, setInteriorVideoTitle] = useState('');
+  const [interiorVideoUrl, setInteriorVideoUrl] = useState('');
+  const [propertyVideoTitle, setPropertyVideoTitle] = useState('');
+  const [propertyVideoUrl, setPropertyVideoUrl] = useState('');
+  const [sectionVideoSubmitting, setSectionVideoSubmitting] = useState<string | null>(null);
+  const [sectionVideoDeleteId, setSectionVideoDeleteId] = useState<string | null>(null);
 
   const fetchVideos = async () => {
     setLoading(true);
@@ -128,12 +147,76 @@ export default function AdminGallery() {
     }
   };
 
+  const fetchSectionVideos = async () => {
+    try {
+      const [main, interior, prop] = await Promise.all([
+        getGallerySectionVideos('main'),
+        getGallerySectionVideos('interior'),
+        getGallerySectionVideos('property'),
+      ]);
+      setMainSectionVideos(main);
+      setInteriorSectionVideos(interior);
+      setPropertySectionVideos(prop);
+    } catch {
+      toast({ title: 'Error', description: 'Failed to load section videos', variant: 'destructive' });
+    }
+  };
+
   useEffect(() => {
     fetchVideos();
     fetchInteriorGallery();
     fetchMainGallery();
     fetchPropertyGallery();
+    fetchSectionVideos();
   }, []);
+
+  const handleAddSectionVideo = async (section: GallerySectionKey) => {
+    const title = section === 'main' ? mainVideoTitle : section === 'interior' ? interiorVideoTitle : propertyVideoTitle;
+    const url = section === 'main' ? mainVideoUrl : section === 'interior' ? interiorVideoUrl : propertyVideoUrl;
+    if (!title.trim() || !url.trim()) {
+      toast({ title: 'Validation', description: 'Title and YouTube URL are required', variant: 'destructive' });
+      return;
+    }
+    setSectionVideoSubmitting(section);
+    try {
+      await addGallerySectionVideo(section, title, url);
+      toast({ title: 'Added', description: 'YouTube video added to this section' });
+      if (section === 'main') {
+        setMainVideoTitle('');
+        setMainVideoUrl('');
+      } else if (section === 'interior') {
+        setInteriorVideoTitle('');
+        setInteriorVideoUrl('');
+      } else {
+        setPropertyVideoTitle('');
+        setPropertyVideoUrl('');
+      }
+      await fetchSectionVideos();
+    } catch (err) {
+      toast({
+        title: 'Error',
+        description: err instanceof Error ? err.message : 'Failed to add video',
+        variant: 'destructive',
+      });
+    } finally {
+      setSectionVideoSubmitting(null);
+    }
+  };
+
+  const handleDeleteSectionVideo = async () => {
+    if (!sectionVideoDeleteId) return;
+    setSubmitting(true);
+    try {
+      await deleteGallerySectionVideo(sectionVideoDeleteId);
+      toast({ title: 'Removed', description: 'Video removed' });
+      setSectionVideoDeleteId(null);
+      await fetchSectionVideos();
+    } catch {
+      toast({ title: 'Error', description: 'Failed to remove video', variant: 'destructive' });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleAddMainByUrl = async () => {
     const url = newMainUrl.trim();
@@ -513,6 +596,32 @@ export default function AdminGallery() {
               Upload image
             </Button>
           </div>
+          <div className="border-t pt-4 mt-4">
+            <h4 className="font-medium mb-2">YouTube videos (this section)</h4>
+            <div className="flex flex-wrap items-end gap-3 mb-3">
+              <Input placeholder="Video title" value={mainVideoTitle} onChange={(e) => setMainVideoTitle(e.target.value)} className="w-48" />
+              <Input placeholder="YouTube URL" value={mainVideoUrl} onChange={(e) => setMainVideoUrl(e.target.value)} className="w-64" />
+              <Button onClick={() => handleAddSectionVideo('main')} disabled={sectionVideoSubmitting === 'main'}>
+                {sectionVideoSubmitting === 'main' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                Add video
+              </Button>
+            </div>
+            {mainSectionVideos.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {mainSectionVideos.map((v) => (
+                  <div key={v.id} className="rounded-lg border overflow-hidden">
+                    <div className="aspect-video bg-muted relative">
+                      <iframe title={v.title} src={`https://www.youtube.com/embed/${v.videoId}`} className="absolute inset-0 w-full h-full" allowFullScreen />
+                    </div>
+                    <div className="p-2 flex items-center justify-between gap-2">
+                      <span className="text-sm truncate">{v.title}</span>
+                      <Button variant="ghost" size="icon" className="text-destructive shrink-0 h-8 w-8" onClick={() => setSectionVideoDeleteId(v.id)}><Trash2 className="h-4 w-4" /></Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           {mainLoading ? (
             <div className="flex items-center gap-2 text-muted-foreground py-8">
               <Loader2 className="h-5 w-5 animate-spin" />
@@ -554,7 +663,7 @@ export default function AdminGallery() {
             Interior Design Gallery
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Images shown in the Gallery section on the <strong>Interior Design</strong> service page only. Separate from the main Gallery page.
+            Images and YouTube videos for the <strong>Interior Design</strong> service page. Add photos and videos below; they appear on the Interior Design page (/services/interior-design).
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -598,6 +707,33 @@ export default function AdminGallery() {
               Upload image
             </Button>
           </div>
+          <div className="border-t pt-4 mt-4">
+            <h4 className="font-medium mb-1">YouTube videos</h4>
+            <p className="text-xs text-muted-foreground mb-2">Shown in the gallery on the Interior Design service page. Paste a YouTube URL and click Add video.</p>
+            <div className="flex flex-wrap items-end gap-3 mb-3">
+              <Input placeholder="Video title" value={interiorVideoTitle} onChange={(e) => setInteriorVideoTitle(e.target.value)} className="w-48" />
+              <Input placeholder="https://www.youtube.com/watch?v=..." value={interiorVideoUrl} onChange={(e) => setInteriorVideoUrl(e.target.value)} className="w-64" />
+              <Button onClick={() => handleAddSectionVideo('interior')} disabled={sectionVideoSubmitting === 'interior'}>
+                {sectionVideoSubmitting === 'interior' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                Add video
+              </Button>
+            </div>
+            {interiorSectionVideos.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {interiorSectionVideos.map((v) => (
+                  <div key={v.id} className="rounded-lg border overflow-hidden">
+                    <div className="aspect-video bg-muted relative">
+                      <iframe title={v.title} src={`https://www.youtube.com/embed/${v.videoId}`} className="absolute inset-0 w-full h-full" allowFullScreen />
+                    </div>
+                    <div className="p-2 flex items-center justify-between gap-2">
+                      <span className="text-sm truncate">{v.title}</span>
+                      <Button variant="ghost" size="icon" className="text-destructive shrink-0 h-8 w-8" onClick={() => setSectionVideoDeleteId(v.id)}><Trash2 className="h-4 w-4" /></Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           {interiorLoading ? (
             <div className="flex items-center gap-2 text-muted-foreground py-8">
               <Loader2 className="h-5 w-5 animate-spin" />
@@ -639,7 +775,7 @@ export default function AdminGallery() {
             Property Gallery
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            Separate gallery for property-related images. Add by URL or upload. Independent from Main Gallery and Interior Design gallery.
+            Images and YouTube videos for the <strong>Property Promotions</strong> service page. Add photos and videos below; they appear on the Property Promotions page (/services/property-promotions).
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -682,6 +818,33 @@ export default function AdminGallery() {
               {uploadingProperty ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />}
               Upload image
             </Button>
+          </div>
+          <div className="border-t pt-4 mt-4">
+            <h4 className="font-medium mb-1">YouTube videos</h4>
+            <p className="text-xs text-muted-foreground mb-2">Shown in the gallery on the Property Promotions service page. Paste a YouTube URL and click Add video.</p>
+            <div className="flex flex-wrap items-end gap-3 mb-3">
+              <Input placeholder="Video title" value={propertyVideoTitle} onChange={(e) => setPropertyVideoTitle(e.target.value)} className="w-48" />
+              <Input placeholder="https://www.youtube.com/watch?v=..." value={propertyVideoUrl} onChange={(e) => setPropertyVideoUrl(e.target.value)} className="w-64" />
+              <Button onClick={() => handleAddSectionVideo('property')} disabled={sectionVideoSubmitting === 'property'}>
+                {sectionVideoSubmitting === 'property' ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
+                Add video
+              </Button>
+            </div>
+            {propertySectionVideos.length > 0 && (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {propertySectionVideos.map((v) => (
+                  <div key={v.id} className="rounded-lg border overflow-hidden">
+                    <div className="aspect-video bg-muted relative">
+                      <iframe title={v.title} src={`https://www.youtube.com/embed/${v.videoId}`} className="absolute inset-0 w-full h-full" allowFullScreen />
+                    </div>
+                    <div className="p-2 flex items-center justify-between gap-2">
+                      <span className="text-sm truncate">{v.title}</span>
+                      <Button variant="ghost" size="icon" className="text-destructive shrink-0 h-8 w-8" onClick={() => setSectionVideoDeleteId(v.id)}><Trash2 className="h-4 w-4" /></Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           {propertyLoading ? (
             <div className="flex items-center gap-2 text-muted-foreground py-8">
@@ -789,6 +952,26 @@ export default function AdminGallery() {
             <AlertDialogAction
               onClick={() => propertyDeleteIndex !== null && handleRemoveProperty(propertyDeleteIndex)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <AlertDialog open={!!sectionVideoDeleteId} onOpenChange={(open) => !open && setSectionVideoDeleteId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove this video?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This YouTube video will be removed from the gallery section.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleDeleteSectionVideo}
             >
               Remove
             </AlertDialogAction>

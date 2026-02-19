@@ -16,6 +16,7 @@ import SEO from '@/components/SEO';
 import { PropertyPromotionsEnquiryForm } from '@/components/PropertyPromotionsEnquiryForm';
 import { useServiceHighlights } from '@/hooks/useServiceHighlights';
 import { getPropertyGalleryImages, type PropertyGalleryImage } from '@/services/propertyGalleryService';
+import { getGallerySectionVideos, type GallerySectionVideo } from '@/services/gallerySectionVideoService';
 
 const fallbackGalleryImages: PropertyGalleryImage[] = [
   { imageUrl: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&auto=format', alt: 'Property listing' },
@@ -61,15 +62,18 @@ const benefits = [
 export default function PropertyPromotions() {
   const { highlights } = useServiceHighlights('propertyPromotions');
   const [galleryImages, setGalleryImages] = useState<PropertyGalleryImage[]>(fallbackGalleryImages);
+  const [galleryVideos, setGalleryVideos] = useState<GallerySectionVideo[]>([]);
   const [galleryLoading, setGalleryLoading] = useState(true);
 
   useEffect(() => {
-    getPropertyGalleryImages()
-      .then((list) => {
-        setGalleryImages(list.length > 0 ? list : fallbackGalleryImages);
-      })
-      .catch(() => setGalleryImages(fallbackGalleryImages))
-      .finally(() => setGalleryLoading(false));
+    let cancelled = false;
+    Promise.allSettled([getPropertyGalleryImages(), getGallerySectionVideos('property')]).then(([imgResult, vidResult]) => {
+      if (cancelled) return;
+      const list = imgResult.status === 'fulfilled' ? imgResult.value : [];
+      setGalleryImages(list.length > 0 ? list : fallbackGalleryImages);
+      setGalleryVideos(vidResult.status === 'fulfilled' ? vidResult.value : []);
+    }).finally(() => { if (!cancelled) setGalleryLoading(false); });
+    return () => { cancelled = true; };
   }, []);
 
   return (
@@ -252,20 +256,39 @@ export default function PropertyPromotions() {
                 <Loader2 className="h-8 w-8 animate-spin text-[#E10600]" />
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {galleryImages.map((img, i) => (
-                  <div
-                    key={i}
-                    className="aspect-[4/3] rounded-2xl overflow-hidden bg-[#E5E5E5] group"
-                  >
-                    <img
-                      src={img.imageUrl}
-                      alt={img.alt ?? 'Gallery'}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+              <>
+                {galleryVideos.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-[#1A1A1A] mb-4">Videos</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {galleryVideos.map((v) => (
+                        <div key={v.id} className="rounded-2xl overflow-hidden bg-white shadow-sm border border-[#E5E5E5]">
+                          <div className="aspect-video bg-[#1a1a1a] relative">
+                            <iframe title={v.title} src={`https://www.youtube.com/embed/${v.videoId}`} className="absolute inset-0 w-full h-full" allowFullScreen />
+                          </div>
+                          <div className="p-4">
+                            <h4 className="font-semibold text-[#1A1A1A]">{v.title}</h4>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                ))}
-              </div>
+                )}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {galleryImages.map((img, i) => (
+                    <div
+                      key={i}
+                      className="aspect-[4/3] rounded-2xl overflow-hidden bg-[#E5E5E5] group"
+                    >
+                      <img
+                        src={img.imageUrl}
+                        alt={img.alt ?? 'Gallery'}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
+                  ))}
+                </div>
+              </>
             )}
           </div>
         </section>

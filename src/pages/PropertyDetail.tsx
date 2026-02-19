@@ -4,7 +4,7 @@ import {
   MapPin, Bed, Bath, Square, Heart, Share2, Phone, 
   BadgeCheck, Calendar, Eye, MessageSquare, ArrowLeft,
   Car, Dumbbell, Waves, Shield, Zap, Building2, Loader2, MessageCircle,
-  Download, Youtube, Copy, Compass, LayoutGrid
+  Download, Youtube, Copy, Compass, LayoutGrid, FileText
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -336,51 +336,90 @@ export default function PropertyDetailPage() {
               </div>
 
               {/* Quick Stats */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 py-4 border-y border-border">
-                {property.propertyType === 'commercial' ? (
-                  <>
-                    {property.facings ? (
-                      <div className="text-center">
-                        <Compass className="h-6 w-6 mx-auto text-primary mb-1" />
-                        <div className="font-semibold">{property.facings}</div>
-                        <div className="text-sm text-muted-foreground">Facing</div>
-                      </div>
-                    ) : (
-                      <div className="text-center">
-                        <Building2 className="h-6 w-6 mx-auto text-primary mb-1" />
-                        <div className="font-semibold">Commercial</div>
-                        <div className="text-sm text-muted-foreground">Type</div>
-                      </div>
-                    )}
-                  </>
+              <div className="py-4 border-y border-border space-y-4">
+                {/* Multiple BHK/bath/area options */}
+                {property.sizeOptions && property.sizeOptions.length > 0 ? (
+                  <div>
+                    <div className="text-sm text-muted-foreground mb-2">Available configurations</div>
+                    <div className="flex flex-wrap gap-2">
+                      {property.sizeOptions.map((opt, idx) => (
+                        <div
+                          key={idx}
+                          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/60 border border-border text-sm"
+                        >
+                          {opt.bedrooms > 0 && (
+                            <span className="font-medium">{opt.bedrooms} BHK</span>
+                          )}
+                          {opt.bathrooms > 0 && (
+                            <>
+                              {opt.bedrooms > 0 && <span className="text-muted-foreground">•</span>}
+                              <span>{opt.bathrooms} Bath</span>
+                            </>
+                          )}
+                          {opt.areaSqft > 0 && (
+                            <>
+                              {(opt.bedrooms > 0 || opt.bathrooms > 0) && <span className="text-muted-foreground">•</span>}
+                              <span>{opt.areaSqft.toLocaleString()} sqft</span>
+                            </>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 ) : (
-                  <>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    {property.propertyType !== 'commercial' && (
+                      <>
+                        <div className="text-center">
+                          <Bed className="h-6 w-6 mx-auto text-primary mb-1" />
+                          <div className="font-semibold">{property.bedrooms}</div>
+                          <div className="text-sm text-muted-foreground">Bedrooms</div>
+                        </div>
+                        <div className="text-center">
+                          <Bath className="h-6 w-6 mx-auto text-primary mb-1" />
+                          <div className="font-semibold">{property.bathrooms}</div>
+                          <div className="text-sm text-muted-foreground">Bathrooms</div>
+                        </div>
+                      </>
+                    )}
                     <div className="text-center">
-                      <Bed className="h-6 w-6 mx-auto text-primary mb-1" />
-                      <div className="font-semibold">{property.bedrooms}</div>
-                      <div className="text-sm text-muted-foreground">Bedrooms</div>
+                      <Square className="h-6 w-6 mx-auto text-primary mb-1" />
+                      <div className="font-semibold">{property.area > 0 ? property.area.toLocaleString() : '–'}</div>
+                      <div className="text-sm text-muted-foreground">{property.areaUnit}</div>
                     </div>
                     <div className="text-center">
-                      <Bath className="h-6 w-6 mx-auto text-primary mb-1" />
-                      <div className="font-semibold">{property.bathrooms}</div>
-                      <div className="text-sm text-muted-foreground">Bathrooms</div>
+                      <Building2 className="h-6 w-6 mx-auto text-primary mb-1" />
+                      <div className="font-semibold">{getPropertyTypeLabel(property.propertyType)}</div>
+                      <div className="text-sm text-muted-foreground">Type</div>
                     </div>
-                  </>
+                  </div>
                 )}
-                <div className="text-center">
-                  <Square className="h-6 w-6 mx-auto text-primary mb-1" />
-                  <div className="font-semibold">{property.area.toLocaleString()}</div>
-                  <div className="text-sm text-muted-foreground">{property.areaUnit}</div>
-                </div>
-                <div className="text-center">
-                  <Building2 className="h-6 w-6 mx-auto text-primary mb-1" />
-                  <div className="font-semibold">{getPropertyTypeLabel(property.propertyType)}</div>
-                  <div className="text-sm text-muted-foreground">Type</div>
-                </div>
+
+                {/* Facings (single or multiple) */}
+                {(property.facingsList?.length ? property.facingsList.length > 0 : property.facings) && (
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Compass className="h-5 w-5 text-primary shrink-0" />
+                    <span className="text-sm text-muted-foreground">Facing:</span>
+                    <div className="font-medium">
+                      {property.facingsList && property.facingsList.length > 0
+                        ? property.facingsList.join(', ')
+                        : property.facings}
+                    </div>
+                  </div>
+                )}
+
+                {/* Type when sizeOptions shown (so type is still visible) */}
+                {property.sizeOptions && property.sizeOptions.length > 0 && (
+                  <div className="text-center sm:text-left">
+                    <Building2 className="h-5 w-5 inline text-primary mr-1.5" />
+                    <span className="text-sm text-muted-foreground">Type: </span>
+                    <span className="font-medium">{getPropertyTypeLabel(property.propertyType)}</span>
+                  </div>
+                )}
               </div>
 
               {/* Property Details */}
-              <div className="grid grid-cols-2 gap-4 py-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 py-4">
                 <div>
                   <span className="text-muted-foreground text-sm">Furnishing</span>
                   <div className="font-medium capitalize">{property.furnishing.replace('-', ' ')}</div>
@@ -389,6 +428,18 @@ export default function PropertyDetailPage() {
                   <span className="text-muted-foreground text-sm">Status</span>
                   <div className="font-medium capitalize">{property.propertyStatus.replace('-', ' ')}</div>
                 </div>
+                {property.yearOfConstruction != null && property.yearOfConstruction > 0 && (
+                  <div>
+                    <span className="text-muted-foreground text-sm">Year of Construction</span>
+                    <div className="font-medium">{property.yearOfConstruction}</div>
+                  </div>
+                )}
+                {property.yearOfCompletion != null && property.yearOfCompletion > 0 && (
+                  <div>
+                    <span className="text-muted-foreground text-sm">Year of Completion</span>
+                    <div className="font-medium">{property.yearOfCompletion}</div>
+                  </div>
+                )}
                 <div>
                   <span className="text-muted-foreground text-sm">Listed</span>
                   <div className="font-medium">{property.postedAt.toLocaleDateString()}</div>
@@ -443,20 +494,26 @@ export default function PropertyDetailPage() {
             )}
 
             {/* Brochure download */}
-            {property.brochureUrl && (
-              <div className="bg-card rounded-2xl border border-border p-6">
-                <h2 className="font-display text-xl font-bold mb-4">Brochure</h2>
+            <div className="bg-card rounded-2xl border border-border p-6">
+              <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Brochure
+              </h2>
+              {property.brochureUrl ? (
                 <a
                   href={property.brochureUrl}
                   target="_blank"
                   rel="noopener noreferrer"
+                  download
                   className="inline-flex items-center gap-2 rounded-xl bg-primary px-5 py-3 text-primary-foreground font-semibold hover:bg-primary/90 transition-colors"
                 >
                   <Download className="h-5 w-5" />
                   Download Brochure
                 </a>
-              </div>
-            )}
+              ) : (
+                <p className="text-muted-foreground text-sm">No brochure available for this property.</p>
+              )}
+            </div>
 
             {/* YouTube video */}
             {property.youtubeVideoId && (
@@ -475,6 +532,34 @@ export default function PropertyDetailPage() {
                     allowFullScreen
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   />
+                </div>
+              </div>
+            )}
+
+            {/* Gallery videos (per-property) */}
+            {property.galleryVideos && property.galleryVideos.length > 0 && (
+              <div className="bg-card rounded-2xl border border-border p-6">
+                <h2 className="font-display text-xl font-bold mb-4 flex items-center gap-2">
+                  <Youtube className="h-6 w-6 text-[#FF0000]" />
+                  Gallery Videos
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {property.galleryVideos.map((v, i) => (
+                    <div key={i} className="rounded-xl overflow-hidden bg-muted">
+                      <div className="aspect-video relative">
+                        <iframe
+                          title={v.title}
+                          src={`https://www.youtube.com/embed/${v.videoId}`}
+                          className="absolute inset-0 w-full h-full border-0"
+                          allowFullScreen
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        />
+                      </div>
+                      <div className="p-3">
+                        <h3 className="font-medium text-sm">{v.title}</h3>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
@@ -522,16 +607,22 @@ export default function PropertyDetailPage() {
               </div>
 
               <div className="space-y-3">
-                {property.brochureUrl && (
+                {property.brochureUrl ? (
                   <a
                     href={property.brochureUrl}
                     target="_blank"
                     rel="noopener noreferrer"
+                    download
                     className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl border-2 border-primary bg-primary/5 text-primary font-semibold hover:bg-primary/10 transition-colors"
                   >
                     <Download className="h-5 w-5" />
                     Download Brochure
                   </a>
+                ) : (
+                  <div className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl border border-border bg-muted/30 text-muted-foreground text-sm">
+                    <FileText className="h-4 w-4" />
+                    No brochure
+                  </div>
                 )}
                 <Button 
                   variant="default" 

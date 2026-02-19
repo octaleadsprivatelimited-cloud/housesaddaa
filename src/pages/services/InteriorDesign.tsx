@@ -17,6 +17,7 @@ import SEO from '@/components/SEO';
 import { InteriorDesignEnquiryForm } from '@/components/InteriorDesignEnquiryForm';
 import { useServiceHighlights } from '@/hooks/useServiceHighlights';
 import { getInteriorDesignGallery, type InteriorDesignGalleryImage } from '@/services/interiorDesignGalleryService';
+import { getGallerySectionVideos, type GallerySectionVideo } from '@/services/gallerySectionVideoService';
 
 const processSteps = [
   {
@@ -57,13 +58,17 @@ const services = [
 export default function InteriorDesign() {
   const { highlights } = useServiceHighlights('interiorDesign');
   const [galleryImages, setGalleryImages] = useState<InteriorDesignGalleryImage[]>([]);
+  const [galleryVideos, setGalleryVideos] = useState<GallerySectionVideo[]>([]);
   const [galleryLoading, setGalleryLoading] = useState(true);
 
   useEffect(() => {
-    getInteriorDesignGallery()
-      .then(setGalleryImages)
-      .catch(() => setGalleryImages([]))
-      .finally(() => setGalleryLoading(false));
+    let cancelled = false;
+    Promise.allSettled([getInteriorDesignGallery(), getGallerySectionVideos('interior')]).then(([imgResult, vidResult]) => {
+      if (cancelled) return;
+      setGalleryImages(imgResult.status === 'fulfilled' ? imgResult.value : []);
+      setGalleryVideos(vidResult.status === 'fulfilled' ? vidResult.value : []);
+    }).finally(() => { if (!cancelled) setGalleryLoading(false); });
+    return () => { cancelled = true; };
   }, []);
   return (
     <>
@@ -168,9 +173,28 @@ export default function InteriorDesign() {
               <div className="flex justify-center py-12">
                 <Loader2 className="h-10 w-10 animate-spin text-[#E10600]" />
               </div>
-            ) : galleryImages.length === 0 ? (
-              <p className="text-[#6B6B6B] py-8 text-center">Add images from Admin → Gallery → Interior Design Gallery.</p>
             ) : (
+              <>
+                {galleryVideos.length > 0 && (
+                  <div className="mb-8">
+                    <h3 className="text-lg font-semibold text-[#1A1A1A] mb-4">Videos</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {galleryVideos.map((v) => (
+                        <div key={v.id} className="rounded-2xl overflow-hidden bg-white shadow-sm border border-[#E5E5E5]">
+                          <div className="aspect-video bg-[#1a1a1a] relative">
+                            <iframe title={v.title} src={`https://www.youtube.com/embed/${v.videoId}`} className="absolute inset-0 w-full h-full" allowFullScreen />
+                          </div>
+                          <div className="p-4">
+                            <h4 className="font-semibold text-[#1A1A1A]">{v.title}</h4>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {galleryImages.length === 0 && galleryVideos.length === 0 ? (
+                  <p className="text-[#6B6B6B] py-8 text-center">Add images or videos from Admin → Gallery → Interior Design Gallery.</p>
+                ) : galleryImages.length > 0 ? (
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {galleryImages.map((img, i) => (
                   <div
@@ -185,6 +209,8 @@ export default function InteriorDesign() {
                   </div>
                 ))}
               </div>
+                ) : null}
+              </>
             )}
           </div>
         </section>

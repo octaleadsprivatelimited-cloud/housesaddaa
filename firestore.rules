@@ -52,6 +52,12 @@ service cloud.firestore {
       allow create, update, delete: if isSignedIn();
     }
 
+    // Gallery section videos (main, interior, property): anyone can read; only admins can write.
+    match /gallerySectionVideos/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isSignedIn();
+    }
+
     // Site settings (stats, etc.): anyone can read; only admins can write.
     match /siteSettings/{docId} {
       allow read: if true;

@@ -32,6 +32,9 @@ export default function AdminEditProperty() {
   const [images, setImages] = useState<string[]>([]);
   const [brochureUrl, setBrochureUrl] = useState('');
   const [youtubeVideoUrl, setYoutubeVideoUrl] = useState('');
+  const [galleryVideos, setGalleryVideos] = useState<{ title: string; videoId: string }[]>([]);
+  const [galleryVideoTitle, setGalleryVideoTitle] = useState('');
+  const [galleryVideoUrl, setGalleryVideoUrl] = useState('');
   const [floorPlanUrls, setFloorPlanUrls] = useState<string[]>([]);
   /** Preserve project-specific fields when editing a project listing (do not overwrite with undefined). */
   const projectFieldsRef = useRef<Partial<Property>>({});
@@ -48,6 +51,8 @@ export default function AdminEditProperty() {
     area: '',
     furnishing: '',
     propertyStatus: '',
+    yearOfConstruction: '',
+    yearOfCompletion: '',
     description: '',
     ownerName: '',
     ownerPhone: '',
@@ -106,6 +111,8 @@ export default function AdminEditProperty() {
           area: property.location.area,
           furnishing: property.furnishing || '',
           propertyStatus: property.propertyStatus || '',
+          yearOfConstruction: property.yearOfConstruction?.toString() ?? '',
+          yearOfCompletion: property.yearOfCompletion?.toString() ?? '',
           description: property.description || '',
           ownerName: property.ownerName || '',
           ownerPhone: property.ownerPhone || '',
@@ -145,6 +152,7 @@ export default function AdminEditProperty() {
         setImages(property.images || []);
         setBrochureUrl(property.brochureUrl || '');
         setYoutubeVideoUrl(property.youtubeVideoId ? `https://www.youtube.com/watch?v=${property.youtubeVideoId}` : '');
+        setGalleryVideos(property.galleryVideos || []);
         setFloorPlanUrls(property.floorPlanUrls || []);
         // Preserve project fields so update does not remove them
         if (property.projectType || property.projectDetails || property.unitConfigurations) {
@@ -318,6 +326,8 @@ export default function AdminEditProperty() {
         areaUnit: 'sqft' as const,
         furnishing: formData.furnishing as 'furnished' | 'semi-furnished' | 'unfurnished',
         propertyStatus: formData.propertyStatus as 'ready' | 'under-construction',
+        ...(formData.yearOfConstruction && { yearOfConstruction: parseInt(formData.yearOfConstruction, 10) }),
+        ...(formData.yearOfCompletion && { yearOfCompletion: parseInt(formData.yearOfCompletion, 10) }),
         amenities: formData.selectedAmenities,
         images: images,
         description: formData.description,
@@ -330,6 +340,7 @@ export default function AdminEditProperty() {
         metaDescription: formData.metaDescription || formData.description.slice(0, 160),
         ...(finalBrochureUrl && { brochureUrl: finalBrochureUrl }),
         ...(parsedYoutubeId && { youtubeVideoId: parsedYoutubeId }),
+        galleryVideos: galleryVideos.length > 0 ? galleryVideos : undefined,
         floorPlanUrls: finalFloorPlanUrls,
         ...((): { facings?: string; facingsList?: string[] } => {
           const list = facingsOptions.map((s) => s.trim()).filter(Boolean);
@@ -481,6 +492,54 @@ export default function AdminEditProperty() {
                 onChange={(e) => setYoutubeVideoUrl(e.target.value)}
               />
               <p className="text-xs text-muted-foreground mt-1">Paste the full YouTube link. Optional.</p>
+            </div>
+            <div className="border-t border-border pt-4 mt-4">
+              <h3 className="text-sm font-medium mb-2">Gallery videos (this property)</h3>
+              <p className="text-xs text-muted-foreground mb-3">Add multiple YouTube videos to show in this property&apos;s gallery.</p>
+              <div className="flex flex-wrap gap-2 mb-3">
+                <Input
+                  placeholder="Video title"
+                  value={galleryVideoTitle}
+                  onChange={(e) => setGalleryVideoTitle(e.target.value)}
+                  className="max-w-[200px]"
+                />
+                <Input
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  value={galleryVideoUrl}
+                  onChange={(e) => setGalleryVideoUrl(e.target.value)}
+                  className="flex-1 min-w-[200px]"
+                />
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => {
+                    const videoId = parseYouTubeVideoId(galleryVideoUrl);
+                    if (!videoId) {
+                      toast({ title: 'Invalid URL', description: 'Enter a valid YouTube URL', variant: 'destructive' });
+                      return;
+                    }
+                    setGalleryVideos((prev) => [...prev, { title: galleryVideoTitle.trim() || 'Video', videoId }]);
+                    setGalleryVideoTitle('');
+                    setGalleryVideoUrl('');
+                  }}
+                >
+                  Add video
+                </Button>
+              </div>
+              {galleryVideos.length > 0 && (
+                <ul className="space-y-2">
+                  {galleryVideos.map((v, i) => (
+                    <li key={i} className="flex items-center gap-2 py-2 border-b border-border last:border-0">
+                      <span className="text-sm truncate flex-1">{v.title}</span>
+                      <span className="text-xs text-muted-foreground">{v.videoId}</span>
+                      <Button type="button" variant="ghost" size="icon" className="h-8 w-8 shrink-0" onClick={() => setGalleryVideos((prev) => prev.filter((_, j) => j !== i))}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
         </div>
@@ -701,23 +760,42 @@ export default function AdminEditProperty() {
             </div>
           </div>
           
-          <div className="mt-4">
-            <label className="block text-sm font-medium mb-2">Property Status</label>
-            <Select 
-              value={formData.propertyStatus} 
-              onValueChange={(v) => setFormData({ ...formData, propertyStatus: v })}
-            >
-              <SelectTrigger className="bg-background w-full sm:w-1/2">
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent className="bg-card border-border">
-                {propertyStatusOptions.map((opt) => (
-                  <SelectItem key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="mt-4 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">Property Status</label>
+              <Select value={formData.propertyStatus} onValueChange={(v) => setFormData({ ...formData, propertyStatus: v })}>
+                <SelectTrigger className="bg-background w-full">
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border">
+                  {propertyStatusOptions.map((opt) => (
+                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Year of Construction</label>
+              <Input
+                type="number"
+                min={1900}
+                max={2100}
+                placeholder="e.g. 2022"
+                value={formData.yearOfConstruction}
+                onChange={(e) => setFormData({ ...formData, yearOfConstruction: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium mb-2">Year of Completion</label>
+              <Input
+                type="number"
+                min={1900}
+                max={2100}
+                placeholder="e.g. 2024"
+                value={formData.yearOfCompletion}
+                onChange={(e) => setFormData({ ...formData, yearOfCompletion: e.target.value })}
+              />
+            </div>
           </div>
 
           <div className="mt-4">

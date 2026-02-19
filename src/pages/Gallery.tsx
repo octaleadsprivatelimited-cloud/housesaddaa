@@ -3,12 +3,15 @@ import { X, Loader2 } from 'lucide-react';
 import SEO from '@/components/SEO';
 import { cn } from '@/lib/utils';
 import { getGalleryVideos } from '@/services/galleryVideoService';
+import { getGallerySectionVideos } from '@/services/gallerySectionVideoService';
 import { getMainGalleryImages } from '@/services/mainGalleryService';
 import type { MainGalleryImage } from '@/services/mainGalleryService';
 import { GalleryVideo } from '@/types/property';
+import type { GallerySectionVideo } from '@/services/gallerySectionVideoService';
 
 export default function Gallery() {
   const [videos, setVideos] = useState<GalleryVideo[]>([]);
+  const [mainSectionVideos, setMainSectionVideos] = useState<GallerySectionVideo[]>([]);
   const [videosLoading, setVideosLoading] = useState(true);
   const [galleryImages, setGalleryImages] = useState<MainGalleryImage[]>([]);
   const [imagesLoading, setImagesLoading] = useState(true);
@@ -16,9 +19,12 @@ export default function Gallery() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
 
   useEffect(() => {
-    getGalleryVideos()
-      .then(setVideos)
-      .catch(() => setVideos([]))
+    Promise.all([getGalleryVideos(), getGallerySectionVideos('main')])
+      .then(([siteVideos, mainVideos]) => {
+        setVideos(siteVideos);
+        setMainSectionVideos(mainVideos);
+      })
+      .catch(() => { setVideos([]); setMainSectionVideos([]); })
       .finally(() => setVideosLoading(false));
   }, []);
 
@@ -72,11 +78,27 @@ export default function Gallery() {
             <div className="flex justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-[#E10600]" />
             </div>
-          ) : videos.length > 0 ? (
+          ) : (videos.length > 0 || mainSectionVideos.length > 0) ? (
             <section className="mb-16">
               <h2 className="text-2xl font-bold text-[#1A1A1A] mb-6">Videos</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {videos.map((video) => (
+                  <div key={video.id} className="rounded-2xl overflow-hidden bg-white shadow-sm border border-[#EEE]">
+                    <div className="aspect-video bg-[#1a1a1a] relative">
+                      <iframe
+                        title={video.title}
+                        src={`https://www.youtube.com/embed/${video.videoId}`}
+                        className="absolute inset-0 w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-semibold text-[#1A1A1A]">{video.title}</h3>
+                    </div>
+                  </div>
+                ))}
+                {mainSectionVideos.map((video) => (
                   <div key={video.id} className="rounded-2xl overflow-hidden bg-white shadow-sm border border-[#EEE]">
                     <div className="aspect-video bg-[#1a1a1a] relative">
                       <iframe

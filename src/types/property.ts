@@ -97,12 +97,19 @@ export interface Property {
   brochureUrl?: string;
   /** YouTube video ID for property video (e.g. from watch?v=ID or youtu.be/ID) */
   youtubeVideoId?: string;
+  /** Additional YouTube videos shown in this property's gallery (title + videoId). */
+  galleryVideos?: { title: string; videoId: string }[];
   /** Facing direction(s). Single string for backward compatibility (e.g. "North" or "North, East"). */
   facings?: string;
   /** Multiple facing options (e.g. ["North", "East"]). When set, facings is also set to joined string for display. */
   facingsList?: string[];
   /** Floor plan image URLs (compressed on upload) */
   floorPlanUrls?: string[];
+
+  /** Year construction started (e.g. 2022). */
+  yearOfConstruction?: number;
+  /** Year construction/completion completed (e.g. 2024). */
+  yearOfCompletion?: number;
 
   /** Multiple BHK/bathrooms/area options for individual listings (e.g. 2 BHK / 1200 sqft, 3 BHK / 1500 sqft). When set, first option also populates bedrooms, bathrooms, area. */
   sizeOptions?: SizeOption[];
