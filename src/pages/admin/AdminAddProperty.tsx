@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Upload, X, Loader2, FileText, Youtube, LayoutGrid, Plus, Trash2, MapPin } from 'lucide-react';
+import { ArrowLeft, Upload, X, Loader2, FileText, Youtube, LayoutGrid, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -75,8 +75,6 @@ interface ProjectFormState {
   area: string;
   state: string;
   pincode: string;
-  mapLat: string;
-  mapLng: string;
   ownerName: string;
   ownerPhone: string;
   ownerEmail: string;
@@ -116,8 +114,6 @@ const initialProjectForm: ProjectFormState = {
   area: '',
   state: '',
   pincode: '',
-  mapLat: '',
-  mapLng: '',
   ownerName: '',
   ownerPhone: '',
   ownerEmail: '',
@@ -555,10 +551,6 @@ export default function AdminAddProperty() {
           : undefined,
         metaKeywords: p.metaKeywords || undefined,
         socialSharingImageUrl: p.socialSharingImage || undefined,
-        mapLocation:
-          p.mapLat && p.mapLng && !isNaN(parseFloat(p.mapLat)) && !isNaN(parseFloat(p.mapLng))
-            ? { lat: parseFloat(p.mapLat), lng: parseFloat(p.mapLng) }
-            : undefined,
       };
       const newId = await addProperty(propertyPayload);
       if (p.approvalDocFiles.length > 0) {
@@ -1286,14 +1278,6 @@ export default function AdminAddProperty() {
                 <div>
                   <label className="block text-sm font-medium mb-2">Pin Code</label>
                   <Input value={projectForm.pincode} onChange={(e) => updateProjectForm({ pincode: e.target.value })} placeholder="500032" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2 flex items-center gap-1"><MapPin className="h-4 w-4" /> Map Latitude</label>
-                  <Input value={projectForm.mapLat} onChange={(e) => updateProjectForm({ mapLat: e.target.value })} placeholder="17.3850" />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium mb-2">Map Longitude</label>
-                  <Input value={projectForm.mapLng} onChange={(e) => updateProjectForm({ mapLng: e.target.value })} placeholder="78.4867" />
                 </div>
               </div>
               <div className="border-t pt-4 mt-4">
