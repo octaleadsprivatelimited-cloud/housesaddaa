@@ -41,6 +41,19 @@ const generateSlug = (title: string, city: string): string => {
   return `${slug}-${Date.now().toString(36)}`;
 };
 
+/** Remove undefined values so Firestore accepts the payload (Firestore rejects undefined). */
+function stripUndefined<T extends Record<string, unknown>>(obj: T): T {
+  const result = {} as Record<string, unknown>;
+  for (const [k, v] of Object.entries(obj)) {
+    if (v === undefined) continue;
+    (result as Record<string, unknown>)[k] =
+      v !== null && typeof v === 'object' && !Array.isArray(v)
+        ? stripUndefined(v as Record<string, unknown>)
+        : v;
+  }
+  return result as T;
+}
+
 /** Map project type to PropertyType for storage. */
 const projectTypeToPropertyType: Record<Exclude<ProjectType, 'individual'>, PropertyType> = {
   'gated-community': 'independent-house',
@@ -279,15 +292,6 @@ export default function AdminAddProperty() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (images.length === 0) {
-      toast({
-        title: 'Images Required',
-        description: 'Please upload at least one property image',
-        variant: 'destructive',
-      });
-      return;
-    }
 
     setIsSubmitting(true);
 
@@ -313,9 +317,11 @@ export default function AdminAddProperty() {
       const price = isNumericPrice ? Math.round(priceNum) : 0;
       const priceDisplayText = isNumericPrice ? undefined : (priceTrimmed || undefined);
 
+      const title = formData.title.trim() || 'Untitled';
+      const city = formData.city || (locations[0]?.city ?? '');
       const propertyData = {
-        title: formData.title,
-        slug: generateSlug(formData.title, formData.city),
+        title,
+        slug: generateSlug(title, city),
         propertyType: formData.propertyType as PropertyType,
         listingType: formData.listingType,
         price,
@@ -323,9 +329,9 @@ export default function AdminAddProperty() {
         pricePerSqft: firstArea && price > 0 ? Math.round(price / firstArea) : undefined,
         location: {
           country: 'India',
-          state: selectedCity?.state || '',
-          city: formData.city,
-          area: formData.area,
+          state: selectedCity?.state || locations[0]?.state || '',
+          city,
+          area: formData.area || '',
         },
         bedrooms: firstBed,
         bathrooms: firstBath,
@@ -337,17 +343,17 @@ export default function AdminAddProperty() {
         ...(formData.yearOfConstruction && { yearOfConstruction: parseInt(formData.yearOfConstruction, 10) }),
         ...(formData.yearOfCompletion && { yearOfCompletion: parseInt(formData.yearOfCompletion, 10) }),
         amenities: formData.selectedAmenities,
-        images: images,
+        images: images.length > 0 ? images : [],
         description: formData.description,
-        ownerName: formData.ownerName,
-        ownerPhone: formData.ownerPhone,
+        ownerName: formData.ownerName?.trim() || '—',
+        ownerPhone: formData.ownerPhone?.trim() || '—',
         ownerEmail: formData.ownerEmail || undefined,
         ownerType: formData.ownerType,
         isActive: true,
         isFeatured: formData.isFeatured,
         isVerified: false,
-        metaTitle: formData.metaTitle || formData.title,
-        metaDescription: formData.metaDescription || formData.description.slice(0, 160),
+        metaTitle: formData.metaTitle || title,
+        metaDescription: formData.metaDescription || (formData.description?.slice(0, 160) || ''),
         ...(parsedYoutubeId && { youtubeVideoId: parsedYoutubeId }),
         ...(galleryVideos.length > 0 && { galleryVideos }),
         ...((): { facings?: string; facingsList?: string[] } => {
@@ -356,8 +362,8 @@ export default function AdminAddProperty() {
           return { facings: list.join(', '), facingsList: list };
         })(),
       };
-
-      const newId = await addProperty(propertyData);
+      const cleanPropertyData = stripUndefined(propertyData as Record<string, unknown>) as typeof propertyData;
+      const newId = await addProperty(cleanPropertyData);
 
       const floorPlanFiles = Array.from(floorPlanInputRef.current?.files || []);
       if (floorPlanFiles.length > 0) {
@@ -487,36 +493,22 @@ export default function AdminAddProperty() {
 
   const handleProjectSubmit = async (asDraft: boolean) => {
     const p = projectForm;
-    if (!p.title.trim()) {
-      toast({ title: 'Required', description: 'Project title is required', variant: 'destructive' });
-      return;
-    }
-    if (!p.city.trim()) {
-      toast({ title: 'Required', description: 'City is required', variant: 'destructive' });
-      return;
-    }
-    if (p.images.length === 0) {
-      toast({ title: 'Required', description: 'Upload at least one project image', variant: 'destructive' });
-      return;
-    }
     const totalLand = parseFloat(p.totalLandArea);
-    if (isNaN(totalLand) || totalLand <= 0) {
-      toast({ title: 'Invalid', description: 'Total land area must be a positive number', variant: 'destructive' });
-      return;
-    }
     const blocks = parseInt(p.numberOfBlocksOrTowers, 10);
     const totalUnits = parseInt(p.totalUnits, 10);
-    if (isNaN(blocks) || blocks < 0 || isNaN(totalUnits) || totalUnits < 0) {
-      toast({ title: 'Invalid', description: 'Number of blocks and total units must be valid numbers', variant: 'destructive' });
-      return;
-    }
     const minPrice = p.unitConfigurations.reduce((min, u) => (u.priceMin > 0 && (min === 0 || u.priceMin < min) ? u.priceMin : min), 0);
     const propertyType = projectTypeToPropertyType[projectType as Exclude<ProjectType, 'individual'>];
     setIsSubmitting(true);
     try {
-      const slug = generateSlug(p.title, p.city);
+      const projectTitle = p.title?.trim() || 'Untitled';
+      const cityRaw = (p.city?.trim() && p.city !== '__none__') ? p.city.trim() : '';
+      const projectCity = cityRaw || (locations[0]?.city ?? '');
+      const slug = generateSlug(projectTitle, projectCity);
+      const validTotalLand = !isNaN(totalLand) && totalLand > 0 ? totalLand : 1;
+      const validBlocks = !isNaN(blocks) && blocks >= 0 ? blocks : 0;
+      const validTotalUnits = !isNaN(totalUnits) && totalUnits >= 0 ? totalUnits : 0;
       const propertyPayload = {
-        title: p.title,
+        title: projectTitle,
         slug,
         propertyType,
         listingType: p.listingType,
@@ -524,9 +516,9 @@ export default function AdminAddProperty() {
         ...(p.priceDisplay?.trim() && { priceDisplayText: p.priceDisplay.trim() }),
         location: {
           country: 'India',
-          state: p.state || (locations.find((l) => l.city === p.city)?.state ?? ''),
-          city: p.city,
-          area: p.area,
+          state: p.state || (locations.find((l) => l.city === projectCity)?.state ?? ''),
+          city: projectCity,
+          area: p.area || '',
           pincode: p.pincode || undefined,
           fullAddress: p.fullAddress || undefined,
         },
@@ -536,25 +528,25 @@ export default function AdminAddProperty() {
         areaUnit: 'sqft' as const,
         furnishing: 'unfurnished' as const,
         propertyStatus: 'under-construction' as const,
-        amenities: [...p.selectedProjectAmenities, ...p.customAmenities.split(',').map((a) => a.trim()).filter(Boolean)],
-        images: p.images,
-        description: p.description,
-        ownerName: p.ownerName,
-        ownerPhone: p.ownerPhone,
+        amenities: [...p.selectedProjectAmenities, ...(p.customAmenities || '').split(',').map((a) => a.trim()).filter(Boolean)],
+        images: p.images?.length ? p.images : [],
+        description: p.description || '',
+        ownerName: p.ownerName?.trim() || '—',
+        ownerPhone: p.ownerPhone?.trim() || '—',
         ownerEmail: p.ownerEmail || undefined,
         ownerType: p.ownerType,
         isActive: !asDraft,
         isFeatured: p.isFeatured,
         isVerified: false,
-        metaTitle: p.metaTitle || p.title,
-        metaDescription: p.metaDescription || p.description.slice(0, 160),
+        metaTitle: p.metaTitle || projectTitle,
+        metaDescription: p.metaDescription || (p.description?.slice(0, 160) || ''),
         projectType: projectType as Exclude<ProjectType, 'individual'>,
         projectDetails: {
-          totalLandArea: totalLand,
+          totalLandArea: validTotalLand,
           landAreaUnit: p.landAreaUnit,
           numberOfPhases: p.numberOfPhases ? parseInt(p.numberOfPhases, 10) : undefined,
-          numberOfBlocksOrTowers: blocks,
-          totalUnits,
+          numberOfBlocksOrTowers: validBlocks,
+          totalUnits: validTotalUnits,
         },
         unitConfigurations: p.unitConfigurations,
         plotVillaOptions: p.plotVillaOptions.length > 0 ? p.plotVillaOptions : undefined,
@@ -565,13 +557,15 @@ export default function AdminAddProperty() {
             ? { reraNumber: p.reraNumber || undefined, approvalAuthority: p.approvalAuthority || undefined }
             : undefined,
         masterPlanImageUrl: p.masterPlanImage || undefined,
-        customAmenities: p.customAmenities.split(',').map((a) => a.trim()).filter(Boolean).length > 0
-          ? p.customAmenities.split(',').map((a) => a.trim()).filter(Boolean)
+        customAmenities: (p.customAmenities || '').split(',').map((a) => a.trim()).filter(Boolean).length > 0
+          ? (p.customAmenities || '').split(',').map((a) => a.trim()).filter(Boolean)
           : undefined,
         metaKeywords: p.metaKeywords || undefined,
         socialSharingImageUrl: p.socialSharingImage || undefined,
       };
-      const newId = await addProperty(propertyPayload);
+      // Firestore rejects undefined; strip so upload succeeds with minimal data
+      const cleanPayload = stripUndefined(propertyPayload as Record<string, unknown>) as typeof propertyPayload;
+      const newId = await addProperty(cleanPayload);
       if (p.approvalDocFiles.length > 0) {
         try {
           const urls = await uploadApprovalDocs(newId, p.approvalDocFiles);
@@ -803,7 +797,6 @@ export default function AdminAddProperty() {
                 placeholder="e.g., 3 BHK Luxury Apartment in Jubilee Hills"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                required
               />
             </div>
             
@@ -871,7 +864,6 @@ export default function AdminAddProperty() {
                 placeholder={formData.listingType === 'rent' ? 'e.g. 25000 or Price on request' : 'e.g. 5000000 or 50 Lakhs or Price on request'}
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                required
                 className="mt-2"
               />
               <p className="text-xs text-muted-foreground mt-1">Enter a number or text (e.g. Price on request).</p>
@@ -1110,7 +1102,6 @@ export default function AdminAddProperty() {
             rows={5}
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            required
           />
         </div>
 
@@ -1124,7 +1115,6 @@ export default function AdminAddProperty() {
                 placeholder="Full name"
                 value={formData.ownerName}
                 onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
-                required
               />
             </div>
             
@@ -1135,7 +1125,6 @@ export default function AdminAddProperty() {
                 placeholder="+91 98765 43210"
                 value={formData.ownerPhone}
                 onChange={(e) => setFormData({ ...formData, ownerPhone: e.target.value })}
-                required
               />
             </div>
 
@@ -1259,14 +1248,14 @@ export default function AdminAddProperty() {
           {projectStep === 1 && (
             <div className="bg-card rounded-xl border border-border p-6 space-y-4">
               <h2 className="font-semibold text-lg">Basic Information</h2>
+              <p className="text-sm text-muted-foreground">All fields are optional. You can publish with minimal or no details.</p>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium mb-2">Project Title *</label>
+                  <label className="block text-sm font-medium mb-2">Project Title (optional)</label>
                   <Input
                     value={projectForm.title}
                     onChange={(e) => updateProjectForm({ title: e.target.value })}
                     placeholder="e.g. Green Valley Gated Community"
-                    required
                   />
                 </div>
                 <div>
@@ -1277,7 +1266,7 @@ export default function AdminAddProperty() {
                   </Select>
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="block text-sm font-medium mb-2">Description *</label>
+                  <label className="block text-sm font-medium mb-2">Description (optional)</label>
                   <Textarea value={projectForm.description} onChange={(e) => updateProjectForm({ description: e.target.value })} rows={4} placeholder="Describe the project..." />
                 </div>
                 <div className="sm:col-span-2">
@@ -1285,10 +1274,11 @@ export default function AdminAddProperty() {
                   <Input value={projectForm.fullAddress} onChange={(e) => updateProjectForm({ fullAddress: e.target.value })} placeholder="Street, landmark, etc." />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">City *</label>
-                  <Select value={projectForm.city} onValueChange={(v) => updateProjectForm({ city: v, area: '' })}>
+                  <label className="block text-sm font-medium mb-2">City (optional)</label>
+                  <Select value={projectForm.city || '__none__'} onValueChange={(v) => updateProjectForm({ city: v === '__none__' ? '' : v, area: '' })}>
                     <SelectTrigger><SelectValue placeholder="Select city" /></SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="__none__">— Select city (optional) —</SelectItem>
                       {locations.map((loc) => (
                         <SelectItem key={loc.city} value={loc.city}>{loc.city}, {loc.state}</SelectItem>
                       ))}
@@ -1368,7 +1358,7 @@ export default function AdminAddProperty() {
               <h2 className="font-semibold text-lg">Project Size & Land Details</h2>
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Total Land Area *</label>
+                  <label className="block text-sm font-medium mb-2">Total Land Area (optional)</label>
                   <Input
                     type="number"
                     min={0}
@@ -1394,11 +1384,11 @@ export default function AdminAddProperty() {
                   <Input type="number" min={0} value={projectForm.numberOfPhases} onChange={(e) => updateProjectForm({ numberOfPhases: e.target.value })} placeholder="e.g. 2" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Number of Blocks / Towers *</label>
+                  <label className="block text-sm font-medium mb-2">Number of Blocks / Towers (optional)</label>
                   <Input type="number" min={0} value={projectForm.numberOfBlocksOrTowers} onChange={(e) => updateProjectForm({ numberOfBlocksOrTowers: e.target.value })} placeholder="e.g. 4" />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-2">Total Units *</label>
+                  <label className="block text-sm font-medium mb-2">Total Units (optional)</label>
                   <Input type="number" min={0} value={projectForm.totalUnits} onChange={(e) => updateProjectForm({ totalUnits: e.target.value })} placeholder="e.g. 120" />
                 </div>
                 <div>
@@ -1502,11 +1492,12 @@ export default function AdminAddProperty() {
 
               <div className="border-t pt-4 mt-4">
                 <h3 className="font-medium mb-2">Plot / Villa size options (optional)</h3>
+                <p className="text-xs text-muted-foreground mb-2">Leave empty if not needed. No validation required.</p>
                 {projectForm.plotVillaOptions.map((o, idx) => (
                   <div key={idx} className="flex flex-wrap items-center gap-2 p-3 rounded-lg border border-border mb-2">
                     <Input type="number" placeholder="Size (Sq Yards)" value={o.sizeSqYards || ''} onChange={(e) => updatePlotVillaOption(idx, { sizeSqYards: parseInt(e.target.value, 10) || 0 })} className="w-28" />
-                    <Select value={o.facing} onValueChange={(v) => updatePlotVillaOption(idx, { facing: v })}>
-                      <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+                    <Select value={o.facing || 'North'} onValueChange={(v) => updatePlotVillaOption(idx, { facing: v })}>
+                      <SelectTrigger className="w-32"><SelectValue placeholder="Facing" /></SelectTrigger>
                       <SelectContent>
                         {plotFacingOptions.map((f) => (
                           <SelectItem key={f} value={f}>{f}</SelectItem>
@@ -1534,7 +1525,7 @@ export default function AdminAddProperty() {
             <div className="bg-card rounded-xl border border-border p-6 space-y-4">
               <h2 className="font-semibold text-lg">Media</h2>
               <div>
-                <label className="block text-sm font-medium mb-2">Project Images * (first = cover)</label>
+                <label className="block text-sm font-medium mb-2">Project Images (optional, first = cover)</label>
                 <input type="file" ref={projectImageInputRef} accept="image/*" multiple onChange={handleProjectImageSelect} className="hidden" />
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                   {projectForm.images.map((img, i) => (

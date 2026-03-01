@@ -248,17 +248,8 @@ export default function AdminEditProperty() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    if (!id) return;
 
-    if (images.length === 0) {
-      toast({
-        title: 'Images Required',
-        description: 'Please upload at least one property image',
-        variant: 'destructive',
-      });
-      return;
-    }
+    if (!id) return;
 
     setIsSubmitting(true);
 
@@ -350,7 +341,7 @@ export default function AdminEditProperty() {
         ownerType: formData.ownerType,
         isFeatured: formData.isFeatured,
         metaTitle: formData.metaTitle || formData.title,
-        metaDescription: formData.metaDescription || formData.description.slice(0, 160),
+        metaDescription: formData.metaDescription || (formData.description?.slice(0, 160) || ''),
         ...(finalBrochureUrl && { brochureUrl: finalBrochureUrl }),
         ...(parsedYoutubeId && { youtubeVideoId: parsedYoutubeId }),
         galleryVideos: galleryVideos.length > 0 ? galleryVideos : undefined,
@@ -567,7 +558,6 @@ export default function AdminEditProperty() {
                 placeholder="e.g., 3 BHK Luxury Apartment in Jubilee Hills"
                 value={formData.title}
                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                required
               />
             </div>
             
@@ -635,7 +625,6 @@ export default function AdminEditProperty() {
                 placeholder={formData.listingType === 'rent' ? 'e.g. 25000 or Price on request' : 'e.g. 5000000 or 50 Lakhs or Price on request'}
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                required
                 className="mt-2"
               />
               <p className="text-xs text-muted-foreground mt-1">Enter a number or text (e.g. Price on request).</p>
@@ -879,7 +868,6 @@ export default function AdminEditProperty() {
             rows={5}
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-            required
           />
         </div>
 
@@ -893,7 +881,6 @@ export default function AdminEditProperty() {
                 placeholder="Full name"
                 value={formData.ownerName}
                 onChange={(e) => setFormData({ ...formData, ownerName: e.target.value })}
-                required
               />
             </div>
             
@@ -904,7 +891,6 @@ export default function AdminEditProperty() {
                 placeholder="+91 98765 43210"
                 value={formData.ownerPhone}
                 onChange={(e) => setFormData({ ...formData, ownerPhone: e.target.value })}
-                required
               />
             </div>
 
