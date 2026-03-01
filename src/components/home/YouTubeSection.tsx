@@ -1,13 +1,9 @@
 import { useEffect, useState } from 'react';
-import { Youtube, ExternalLink, Play } from 'lucide-react';
+import { Youtube, ExternalLink, Play, X } from 'lucide-react';
 import { getYoutubeVideos, type YouTubeVideoItem } from '@/services/siteSettingsService';
 
 const YOUTUBE_CHANNEL_URL = 'https://www.youtube.com/@Housesadda';
 const SECTION_BG = '#1a1a1a';
-
-function videoUrl(videoId: string) {
-  return `https://www.youtube.com/watch?v=${videoId}`;
-}
 
 function thumbnailUrl(videoId: string, quality: 'mqdefault' | 'sddefault' = 'mqdefault') {
   return `https://img.youtube.com/vi/${videoId}/${quality}.jpg`;
@@ -16,6 +12,8 @@ function thumbnailUrl(videoId: string, quality: 'mqdefault' | 'sddefault' = 'mqd
 export function YouTubeSection() {
   const [videos, setVideos] = useState<YouTubeVideoItem[]>([]);
   const [loading, setLoading] = useState(true);
+  /** When set, show modal with this video playing inline (no redirect). */
+  const [playingVideo, setPlayingVideo] = useState<YouTubeVideoItem | null>(null);
 
   useEffect(() => {
     getYoutubeVideos()
@@ -78,13 +76,12 @@ export function YouTubeSection() {
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-            {/* Left: Featured video (large) */}
+            {/* Left: Featured video (large) – first video added in admin shows here; click plays on site */}
             <div className="lg:col-span-2">
-              <a
-                href={featured ? videoUrl(featured.videoId) : YOUTUBE_CHANNEL_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group block rounded-xl overflow-hidden bg-[#252525] border border-white/10"
+              <button
+                type="button"
+                onClick={() => featured && setPlayingVideo(featured)}
+                className="group block w-full text-left rounded-xl overflow-hidden bg-[#252525] border border-white/10 hover:border-[#E10600]/50 transition-all"
               >
                 <div className="aspect-video relative">
                   <img
@@ -106,13 +103,13 @@ export function YouTubeSection() {
                     {featured?.title || 'Featured Video'}
                   </h3>
                   <p className="text-white/80 text-sm">
-                    {featured?.title ? 'Watch on our YouTube channel' : 'Subscribe for property insights and tours'}
+                    Click to play on this page
                   </p>
                 </div>
-              </a>
+              </button>
             </div>
 
-            {/* Right: Vertical list of other videos */}
+            {/* Right: Small list of other videos – click plays on site */}
             <div className="flex flex-col gap-3 overflow-auto max-h-[420px]">
               {listVideos.length === 0 ? (
                 <div className="rounded-xl bg-white/5 border border-white/10 p-4 text-center text-white/70 text-sm">
@@ -120,12 +117,11 @@ export function YouTubeSection() {
                 </div>
               ) : (
                 listVideos.map((item) => (
-                  <a
+                  <button
                     key={item.videoId}
-                    href={videoUrl(item.videoId)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group flex gap-3 p-3 rounded-xl bg-[#252525] border border-white/10 hover:border-[#E10600]/50 hover:bg-white/5 transition-all"
+                    type="button"
+                    onClick={() => setPlayingVideo(item)}
+                    className="group flex gap-3 p-3 rounded-xl bg-[#252525] border border-white/10 hover:border-[#E10600]/50 hover:bg-white/5 transition-all text-left w-full"
                   >
                     <div className="relative w-28 h-16 shrink-0 rounded-lg overflow-hidden bg-[#1a1a1a]">
                       <img
@@ -141,13 +137,50 @@ export function YouTubeSection() {
                     </div>
                     <div className="min-w-0 flex-1">
                       <p className="font-semibold text-white text-sm line-clamp-2 group-hover:text-[#E10600] transition-colors">
-                        {item.title || 'Watch on YouTube'}
+                        {item.title || 'Video'}
                       </p>
                       <p className="text-white/60 text-xs mt-0.5">Houses Adda</p>
-                      <p className="text-white/50 text-xs">Watch on YouTube</p>
+                      <p className="text-white/50 text-xs">Play on site</p>
                     </div>
-                  </a>
+                  </button>
                 ))
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* In-page video player modal – no redirect to YouTube */}
+        {playingVideo && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Video player"
+            onClick={() => setPlayingVideo(null)}
+          >
+            <div
+              className="relative w-full max-w-4xl rounded-xl overflow-hidden bg-[#1a1a1a] shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <button
+                type="button"
+                onClick={() => setPlayingVideo(null)}
+                className="absolute top-3 right-3 z-10 w-10 h-10 rounded-full bg-black/70 text-white flex items-center justify-center hover:bg-black/90 transition-colors"
+                aria-label="Close"
+              >
+                <X className="h-5 w-5" />
+              </button>
+              <div className="aspect-video">
+                <iframe
+                  title={playingVideo.title || 'YouTube video'}
+                  src={`https://www.youtube.com/embed/${playingVideo.videoId}?autoplay=1`}
+                  className="absolute inset-0 w-full h-full"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              </div>
+              {playingVideo.title && (
+                <div className="p-4 text-white font-semibold">{playingVideo.title}</div>
               )}
             </div>
           </div>

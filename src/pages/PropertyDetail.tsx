@@ -103,7 +103,7 @@ export default function PropertyDetailPage() {
 
   const shareUrl = property ? `${window.location.origin}/property/${property.slug}` : '';
   const shareText = property
-    ? `${property.title} in ${property.location.area}, ${property.location.city}. ${property.listingType === 'sale' ? 'Sale' : 'Rent'} - ${formatPrice(property.price, property.listingType)}`
+    ? `${property.title} in ${property.location.area}, ${property.location.city}. ${property.listingType === 'sale' ? 'Sale' : 'Rent'} - ${property.priceDisplayText ?? formatPrice(property.price, property.listingType)}`
     : '';
 
   const shareLinks = property
@@ -146,7 +146,7 @@ export default function PropertyDetailPage() {
   // SEO data
   const seoTitle = property.metaTitle || `${property.title} - ${property.location.city} | Houses Adda`;
   const seoDescription = property.metaDescription || 
-    `${property.title} in ${property.location.area}, ${property.location.city}. ${property.listingType === 'sale' ? 'Buy' : 'Rent'} this ${getPropertyTypeLabel(property.propertyType)} for ${formatPrice(property.price, property.listingType)}. ${property.description.substring(0, 100)}...`;
+    `${property.title} in ${property.location.area}, ${property.location.city}. ${property.listingType === 'sale' ? 'Buy' : 'Rent'} this ${getPropertyTypeLabel(property.propertyType)} for ${property.priceDisplayText ?? formatPrice(property.price, property.listingType)}. ${property.description.substring(0, 100)}...`;
   const seoImage = property.images[0] || '/logo.png';
   const seoUrl = `/property/${property.slug}`;
 
@@ -324,9 +324,9 @@ export default function PropertyDetailPage() {
                 </div>
                 <div className="text-right">
                   <div className="price-display text-3xl">
-                    {formatPrice(property.price, property.listingType)}
+                    {property.priceDisplayText ?? formatPrice(property.price, property.listingType)}
                   </div>
-                  {property.pricePerSqft && (
+                  {property.pricePerSqft && !property.priceDisplayText && (
                     <div className="text-sm text-muted-foreground flex items-center gap-1.5">
                       <Square className="h-4 w-4 shrink-0" />
                       ₹{property.pricePerSqft.toLocaleString()} per sqft
@@ -636,7 +636,7 @@ export default function PropertyDetailPage() {
                   </a>
                 </Button>
                 <a 
-                  href={`https://wa.me/${property.ownerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi, I'm interested in this property:\n\n${property.title}\n${property.location.area}, ${property.location.city}\nPrice: ${formatPrice(property.price, property.listingType)}\n\nPlease share more details.`)}`}
+                  href={`https://wa.me/${property.ownerPhone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi, I'm interested in this property:\n\n${property.title}\n${property.location.area}, ${property.location.city}\nPrice: ${property.priceDisplayText ?? formatPrice(property.price, property.listingType)}\n\nPlease share more details.`)}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex items-center justify-center gap-2 w-full py-3 px-4 rounded-xl bg-[#25D366] hover:bg-[#1DA851] text-white font-semibold transition-colors"

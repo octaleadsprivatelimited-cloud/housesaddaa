@@ -192,7 +192,7 @@ export default function AdminDashboard() {
                   </div>
                   <div className="text-right">
                     <div className="font-semibold text-primary">
-                      {formatPrice(property.price, property.listingType)}
+                      {property.priceDisplayText ?? formatPrice(property.price, property.listingType)}
                     </div>
                     <div className="text-xs text-muted-foreground">
                       {property.views || 0} views

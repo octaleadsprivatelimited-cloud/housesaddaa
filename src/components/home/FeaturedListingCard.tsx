@@ -22,7 +22,7 @@ interface FeaturedListingCardProps {
 
 export function FeaturedListingCard({ property }: FeaturedListingCardProps) {
   const { getPropertyTypeLabel } = usePropertyTypes();
-  const priceStr = formatPrice(property.price, property.listingType);
+  const priceStr = property.priceDisplayText ?? formatPrice(property.price, property.listingType);
   const priceSuffix = formatPriceSuffix(property);
 
   return (

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { ArrowLeft, Upload, X, Loader2, FileText, Youtube, LayoutGrid, Plus, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,6 +30,7 @@ import { uploadBrochure } from '@/services/brochureService';
 import { uploadFloorPlans, validateFloorPlanFile } from '@/services/floorPlanService';
 import { uploadApprovalDocs, validateApprovalDoc } from '@/services/approvalDocService';
 import { parseYouTubeVideoId } from '@/services/galleryVideoService';
+import { getPricingOptions } from '@/services/siteSettingsService';
 
 // Generate slug from title
 const generateSlug = (title: string, city: string): string => {
@@ -103,6 +104,8 @@ interface ProjectFormState {
   socialSharingImage: string;
   isFeatured: boolean;
   publishAsDraft: boolean;
+  /** Price or price label for display (e.g. "From 50 Lakhs", "Price on request"). */
+  priceDisplay: string;
 }
 
 const initialProjectForm: ProjectFormState = {
@@ -142,6 +145,7 @@ const initialProjectForm: ProjectFormState = {
   socialSharingImage: '',
   isFeatured: false,
   publishAsDraft: false,
+  priceDisplay: '',
 };
 
 export default function AdminAddProperty() {
@@ -218,6 +222,13 @@ export default function AdminAddProperty() {
   const { amenities } = useAmenities();
   const selectedCity = locations.find((l) => l.city === formData.city);
   const areas = selectedCity?.areas ?? [];
+
+  const [pricingOptions, setPricingOptions] = useState<string[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    getPricingOptions().then((opts) => { if (!cancelled) setPricingOptions(opts); });
+    return () => { cancelled = true; };
+  }, []);
 
   const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -296,13 +307,20 @@ export default function AdminAddProperty() {
         .filter((o) => o.areaSqft > 0);
       const hasMultipleOptions = parsedOptions.length > 1;
 
+      const priceTrimmed = formData.price.trim();
+      const priceNum = parseFloat(priceTrimmed.replace(/,/g, ''));
+      const isNumericPrice = /^\d[\d,.]*$/.test(priceTrimmed) && !isNaN(priceNum) && isFinite(priceNum);
+      const price = isNumericPrice ? Math.round(priceNum) : 0;
+      const priceDisplayText = isNumericPrice ? undefined : (priceTrimmed || undefined);
+
       const propertyData = {
         title: formData.title,
         slug: generateSlug(formData.title, formData.city),
         propertyType: formData.propertyType as PropertyType,
         listingType: formData.listingType,
-        price: parseInt(formData.price),
-        pricePerSqft: firstArea ? Math.round(parseInt(formData.price) / firstArea) : undefined,
+        price,
+        ...(priceDisplayText && { priceDisplayText }),
+        pricePerSqft: firstArea && price > 0 ? Math.round(price / firstArea) : undefined,
         location: {
           country: 'India',
           state: selectedCity?.state || '',
@@ -503,6 +521,7 @@ export default function AdminAddProperty() {
         propertyType,
         listingType: p.listingType,
         price: minPrice,
+        ...(p.priceDisplay?.trim() && { priceDisplayText: p.priceDisplay.trim() }),
         location: {
           country: 'India',
           state: p.state || (locations.find((l) => l.city === p.city)?.state ?? ''),
@@ -829,13 +848,33 @@ export default function AdminAddProperty() {
               <label className="block text-sm font-medium mb-2">
                 Price {formData.listingType === 'rent' ? '(per month)' : ''}
               </label>
+              {pricingOptions.length > 0 ? (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">Quick select (or type below):</p>
+                  <div className="flex flex-wrap gap-2">
+                    {pricingOptions.map((opt) => (
+                      <Button
+                        key={opt}
+                        type="button"
+                        variant={formData.price === opt ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setFormData((f) => ({ ...f, price: opt }))}
+                      >
+                        {opt}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
               <Input
-                type="number"
-                placeholder={formData.listingType === 'rent' ? 'e.g., 25000' : 'e.g., 5000000'}
+                type="text"
+                placeholder={formData.listingType === 'rent' ? 'e.g. 25000 or Price on request' : 'e.g. 5000000 or 50 Lakhs or Price on request'}
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                 required
+                className="mt-2"
               />
+              <p className="text-xs text-muted-foreground mt-1">Enter a number or text (e.g. Price on request).</p>
             </div>
           </div>
         </div>
@@ -1278,6 +1317,31 @@ export default function AdminAddProperty() {
                 <div>
                   <label className="block text-sm font-medium mb-2">Pin Code</label>
                   <Input value={projectForm.pincode} onChange={(e) => updateProjectForm({ pincode: e.target.value })} placeholder="500032" />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="block text-sm font-medium mb-2">Price / Starting price (optional)</label>
+                  {pricingOptions.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      {pricingOptions.map((opt) => (
+                        <Button
+                          key={opt}
+                          type="button"
+                          variant={projectForm.priceDisplay === opt ? 'default' : 'outline'}
+                          size="sm"
+                          onClick={() => updateProjectForm({ priceDisplay: opt })}
+                        >
+                          {opt}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
+                  <Input
+                    type="text"
+                    placeholder="e.g. From 50 Lakhs, Price on request, or leave blank"
+                    value={projectForm.priceDisplay}
+                    onChange={(e) => updateProjectForm({ priceDisplay: e.target.value })}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1">Shown on the listing. You can also set unit-wise min/max price in Step 3.</p>
                 </div>
               </div>
               <div className="border-t pt-4 mt-4">

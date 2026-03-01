@@ -17,6 +17,7 @@ import { imageToBase64, validateImage } from '@/services/imageService';
 import { uploadBrochure, validateBrochureFile } from '@/services/brochureService';
 import { uploadFloorPlans, validateFloorPlanFile } from '@/services/floorPlanService';
 import { parseYouTubeVideoId } from '@/services/galleryVideoService';
+import { getPricingOptions } from '@/services/siteSettingsService';
 
 export default function AdminEditProperty() {
   const { id } = useParams<{ id: string }>();
@@ -84,6 +85,11 @@ export default function AdminEditProperty() {
     setFacingsOptions((prev) => prev.map((v, i) => (i === index ? value : v)));
   };
 
+  const [pricingOptions, setPricingOptions] = useState<string[]>([]);
+  useEffect(() => {
+    getPricingOptions().then(setPricingOptions);
+  }, []);
+
   // Fetch property data
   useEffect(() => {
     const fetchProperty = async () => {
@@ -106,7 +112,7 @@ export default function AdminEditProperty() {
           title: property.title,
           propertyType: property.propertyType || '',
           listingType: property.listingType,
-          price: property.price.toString(),
+          price: property.priceDisplayText ?? property.price.toString(),
           city: property.location.city,
           area: property.location.area,
           furnishing: property.furnishing || '',
@@ -308,12 +314,19 @@ export default function AdminEditProperty() {
         .filter((o) => o.areaSqft > 0);
       const hasMultipleOptions = parsedOptions.length > 1;
 
+      const priceTrimmed = formData.price.trim();
+      const priceNum = parseFloat(priceTrimmed.replace(/,/g, ''));
+      const isNumericPrice = /^\d[\d,.]*$/.test(priceTrimmed) && !isNaN(priceNum) && isFinite(priceNum);
+      const price = isNumericPrice ? Math.round(priceNum) : 0;
+      const priceDisplayText = isNumericPrice ? undefined : (priceTrimmed || undefined);
+
       const propertyData = {
         title: formData.title,
         propertyType: formData.propertyType as PropertyType,
         listingType: formData.listingType,
-        price: parseInt(formData.price),
-        pricePerSqft: firstArea ? Math.round(parseInt(formData.price) / firstArea) : undefined,
+        price,
+        ...(priceDisplayText && { priceDisplayText }),
+        pricePerSqft: firstArea && price > 0 ? Math.round(price / firstArea) : undefined,
         location: {
           country: 'India',
           state: selectedCity?.state || '',
@@ -599,13 +612,33 @@ export default function AdminEditProperty() {
               <label className="block text-sm font-medium mb-2">
                 Price {formData.listingType === 'rent' ? '(per month)' : ''}
               </label>
+              {pricingOptions.length > 0 ? (
+                <div className="space-y-2">
+                  <p className="text-xs text-muted-foreground">Quick select (or type below):</p>
+                  <div className="flex flex-wrap gap-2">
+                    {pricingOptions.map((opt) => (
+                      <Button
+                        key={opt}
+                        type="button"
+                        variant={formData.price === opt ? 'default' : 'outline'}
+                        size="sm"
+                        onClick={() => setFormData((f) => ({ ...f, price: opt }))}
+                      >
+                        {opt}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+              ) : null}
               <Input
-                type="number"
-                placeholder={formData.listingType === 'rent' ? 'e.g., 25000' : 'e.g., 5000000'}
+                type="text"
+                placeholder={formData.listingType === 'rent' ? 'e.g. 25000 or Price on request' : 'e.g. 5000000 or 50 Lakhs or Price on request'}
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                 required
+                className="mt-2"
               />
+              <p className="text-xs text-muted-foreground mt-1">Enter a number or text (e.g. Price on request).</p>
             </div>
           </div>
         </div>

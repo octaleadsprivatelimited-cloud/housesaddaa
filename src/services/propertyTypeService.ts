@@ -3,6 +3,7 @@ import {
   doc,
   getDocs,
   addDoc,
+  updateDoc,
   deleteDoc,
   Timestamp,
 } from 'firebase/firestore';
@@ -17,6 +18,8 @@ export interface PropertyTypeOption {
   label: string;
   icon: string;
   order: number;
+  /** Optional pricing options (e.g. "Under 50 Lakhs", "Price on request") shown when adding/editing a property of this type. */
+  pricingOptions?: string[];
 }
 
 export async function getPropertyTypesFromFirestore(): Promise<PropertyTypeOption[]> {
@@ -25,12 +28,14 @@ export async function getPropertyTypesFromFirestore(): Promise<PropertyTypeOptio
     if (snap.empty) return [];
     const list = snap.docs.map((d) => {
       const data = d.data();
+      const opts = data.pricingOptions;
       return {
         id: d.id,
         value: data.value ?? '',
         label: data.label ?? '',
         icon: data.icon ?? '🏠',
         order: data.order ?? 999,
+        pricingOptions: Array.isArray(opts) ? opts.filter((x): x is string => typeof x === 'string') : undefined,
       };
     });
     list.sort((a, b) => a.order - b.order);
@@ -54,17 +59,28 @@ export async function addPropertyType(option: {
   value: string;
   label: string;
   icon: string;
+  pricingOptions?: string[];
 }): Promise<string> {
   const list = await getPropertyTypesFromFirestore();
   const order = list.length > 0 ? Math.max(...list.map((x) => x.order)) + 1 : 0;
-  const ref = await addDoc(collection(db, PROPERTY_TYPES_COLLECTION), {
+  const payload: Record<string, unknown> = {
     value: option.value.trim().toLowerCase().replace(/\s+/g, '-'),
     label: option.label.trim(),
     icon: option.icon.trim() || '🏠',
     order,
     createdAt: Timestamp.now(),
-  });
+  };
+  if (option.pricingOptions?.length) payload.pricingOptions = option.pricingOptions;
+  const ref = await addDoc(collection(db, PROPERTY_TYPES_COLLECTION), payload);
   return ref.id;
+}
+
+export async function updatePropertyType(
+  id: string,
+  updates: { pricingOptions?: string[] }
+): Promise<void> {
+  const ref = doc(db, PROPERTY_TYPES_COLLECTION, id);
+  await updateDoc(ref, updates as Record<string, unknown>);
 }
 
 export async function deletePropertyType(id: string): Promise<void> {

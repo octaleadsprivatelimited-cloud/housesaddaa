@@ -1,9 +1,17 @@
 import { useState, useEffect } from 'react';
-import { BarChart3, Building2, Plus, Trash2, Loader2, Sparkles, Youtube } from 'lucide-react';
+import { BarChart3, Building2, Plus, Trash2, Loader2, Sparkles, Youtube, ChevronUp, ChevronDown, IndianRupee } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,6 +38,7 @@ import {
   getPropertyTypesFromFirestore,
   getDefaultPropertyTypes,
   addPropertyType,
+  updatePropertyType,
   deletePropertyType,
   seedDefaultPropertyTypes,
   type PropertyTypeOption,
@@ -48,6 +57,9 @@ export default function AdminSiteContent() {
   const [newTypeIcon, setNewTypeIcon] = useState('🏠');
   const [addingType, setAddingType] = useState(false);
   const [seeding, setSeeding] = useState(false);
+  const [editingPricingTypeId, setEditingPricingTypeId] = useState<string | null>(null);
+  const [editingPricingText, setEditingPricingText] = useState('');
+  const [savingPricingOptions, setSavingPricingOptions] = useState(false);
   const [highlightsKey, setHighlightsKey] = useState<ServiceHighlightKey>('homeLoans');
   const [highlights, setHighlightsState] = useState<StatItem[]>([]);
   const [loadingHighlights, setLoadingHighlights] = useState(true);
@@ -209,6 +221,20 @@ export default function AdminSiteContent() {
     }
   };
 
+  const handleMoveYoutubeVideo = async (index: number, direction: 'up' | 'down') => {
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    if (newIndex < 0 || newIndex >= youtubeVideos.length) return;
+    const next = [...youtubeVideos];
+    [next[index], next[newIndex]] = [next[newIndex], next[index]];
+    setYoutubeVideosState(next);
+    try {
+      await setYoutubeVideos(next);
+      toast({ title: 'Order updated', description: direction === 'up' ? 'Moved up' : 'Moved down' });
+    } catch {
+      toast({ title: 'Error', description: 'Failed to update order', variant: 'destructive' });
+    }
+  };
+
   const handleSaveYoutubeVideos = async () => {
     setSavingYoutube(true);
     try {
@@ -256,6 +282,31 @@ export default function AdminSiteContent() {
       loadPropertyTypes();
     } catch {
       toast({ title: 'Error', description: 'Failed to remove property type', variant: 'destructive' });
+    }
+  };
+
+  const openPricingOptions = (t: PropertyTypeOption) => {
+    if (!t.id) return;
+    setEditingPricingTypeId(t.id);
+    setEditingPricingText((t.pricingOptions ?? []).join('\n'));
+  };
+
+  const savePricingOptions = async () => {
+    if (!editingPricingTypeId) return;
+    setSavingPricingOptions(true);
+    try {
+      const options = editingPricingText
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      await updatePropertyType(editingPricingTypeId, { pricingOptions: options });
+      toast({ title: 'Saved', description: 'Pricing options updated' });
+      setEditingPricingTypeId(null);
+      loadPropertyTypes();
+    } catch {
+      toast({ title: 'Error', description: 'Failed to save pricing options', variant: 'destructive' });
+    } finally {
+      setSavingPricingOptions(false);
     }
   };
 
@@ -394,7 +445,7 @@ export default function AdminSiteContent() {
             YouTube channel (home page)
           </CardTitle>
           <CardDescription>
-            Videos from <a href="https://www.youtube.com/@Housesadda" target="_blank" rel="noopener noreferrer" className="text-primary underline">youtube.com/@Housesadda</a>. Add video ID or paste full URL. Clicking a video on the site opens it on YouTube; visitors can go to your channel from the section.
+            Videos from <a href="https://www.youtube.com/@Housesadda" target="_blank" rel="noopener noreferrer" className="text-primary underline">youtube.com/@Housesadda</a>. Add video ID or paste full URL. <strong>First video</strong> is the featured one on the home page. Use the arrows to change order.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -435,20 +486,44 @@ export default function AdminSiteContent() {
             <>
               <div className="rounded-lg border divide-y">
                 {youtubeVideos.map((v, i) => (
-                  <div key={`${v.videoId}-${i}`} className="flex items-center gap-4 px-4 py-3">
+                  <div key={`${v.videoId}-${i}`} className="flex items-center gap-2 px-4 py-3">
+                    <div className="flex flex-col gap-0.5">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0"
+                        disabled={i === 0}
+                        onClick={() => handleMoveYoutubeVideo(i, 'up')}
+                        aria-label="Move up"
+                      >
+                        <ChevronUp className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0"
+                        disabled={i === youtubeVideos.length - 1}
+                        onClick={() => handleMoveYoutubeVideo(i, 'down')}
+                        aria-label="Move down"
+                      >
+                        <ChevronDown className="h-4 w-4" />
+                      </Button>
+                    </div>
                     <img
                       src={`https://img.youtube.com/vi/${v.videoId}/mqdefault.jpg`}
                       alt=""
-                      className="w-24 h-14 object-cover rounded"
+                      className="w-24 h-14 object-cover rounded shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="font-medium truncate">{v.title || `Video ${v.videoId}`}</p>
+                      <p className="font-medium truncate">{i === 0 ? `${v.title || 'Video'} (featured)` : (v.title || `Video ${v.videoId}`)}</p>
                       <p className="text-xs text-muted-foreground">{v.videoId}</p>
                     </div>
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="text-destructive hover:text-destructive"
+                      className="text-destructive hover:text-destructive shrink-0"
                       onClick={() => handleRemoveYoutubeVideo(i)}
                     >
                       <Trash2 className="h-4 w-4" />
@@ -473,7 +548,7 @@ export default function AdminSiteContent() {
             Property types
           </CardTitle>
           <CardDescription>
-            Add or remove property types used in filters, hero, and add property form. Value is used in URLs (e.g. apartment, villa).
+            Add or remove property types. Set <strong>pricing options</strong> per type (e.g. Under 50 Lakhs, Price on request) to show when adding/editing a property of that type.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -524,25 +599,40 @@ export default function AdminSiteContent() {
                 {propertyTypes.map((t) => (
                   <div
                     key={t.id ?? t.value}
-                    className="flex items-center justify-between px-4 py-3"
+                    className="flex items-center justify-between gap-4 px-4 py-3 flex-wrap"
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-xl">{t.icon}</span>
                       <span className="font-medium">{t.label}</span>
                       <span className="text-sm text-muted-foreground">{t.value}</span>
+                      {(t.pricingOptions?.length ?? 0) > 0 && (
+                        <span className="text-xs text-muted-foreground">({t.pricingOptions!.length} pricing options)</span>
+                      )}
                     </div>
-                    {t.id ? (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-destructive hover:text-destructive"
-                        onClick={() => setDeleteTypeId(t.id!)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    ) : (
-                      <span className="text-xs text-muted-foreground">Default (add in Firestore to delete)</span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {t.id && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openPricingOptions(t)}
+                        >
+                          <IndianRupee className="h-4 w-4 mr-1" />
+                          Pricing options
+                        </Button>
+                      )}
+                      {t.id ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive"
+                          onClick={() => setDeleteTypeId(t.id!)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">Default (add in Firestore to delete)</span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -550,6 +640,31 @@ export default function AdminSiteContent() {
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={editingPricingTypeId !== null} onOpenChange={(open) => !open && setEditingPricingTypeId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Pricing options</DialogTitle>
+            <p className="text-sm text-muted-foreground">
+              One option per line. These appear as quick-select when adding/editing a property of this type (e.g. Under 50 Lakhs, Price on request).
+            </p>
+          </DialogHeader>
+          <Textarea
+            value={editingPricingText}
+            onChange={(e) => setEditingPricingText(e.target.value)}
+            placeholder={'Under 50 Lakhs\n50 Lakhs - 1 Cr\n1 Cr+\nPrice on request'}
+            rows={6}
+            className="font-mono text-sm"
+          />
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditingPricingTypeId(null)}>Cancel</Button>
+            <Button onClick={savePricingOptions} disabled={savingPricingOptions}>
+              {savingPricingOptions ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={!!deleteTypeId} onOpenChange={(open) => !open && setDeleteTypeId(null)}>
         <AlertDialogContent>

@@ -298,7 +298,7 @@ export default function AdminProperties() {
                   </td>
                   <td className="p-4">
                     <div className="font-semibold text-primary">
-                      {formatPrice(property.price, property.listingType)}
+                      {property.priceDisplayText ?? formatPrice(property.price, property.listingType)}
                     </div>
                     <div className="text-xs text-muted-foreground capitalize">
                       For {property.listingType}

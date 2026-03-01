@@ -18,15 +18,6 @@ import { useServiceHighlights } from '@/hooks/useServiceHighlights';
 import { getPropertyGalleryImages, type PropertyGalleryImage } from '@/services/propertyGalleryService';
 import { getGallerySectionVideos, type GallerySectionVideo } from '@/services/gallerySectionVideoService';
 
-const fallbackGalleryImages: PropertyGalleryImage[] = [
-  { imageUrl: 'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=600&auto=format', alt: 'Property listing' },
-  { imageUrl: 'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=600&auto=format', alt: 'Modern home' },
-  { imageUrl: 'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=600&auto=format', alt: 'Residential property' },
-  { imageUrl: 'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=600&auto=format', alt: 'Premium property' },
-  { imageUrl: 'https://images.unsplash.com/photo-1600566753190-17f0baa2a6c3?w=600&auto=format', alt: 'House exterior' },
-  { imageUrl: 'https://images.unsplash.com/photo-1600047509807-ba87471cf18e?w=600&auto=format', alt: 'Luxury villa' },
-];
-
 const digitalChannels = [
   {
     icon: Globe,
@@ -61,7 +52,7 @@ const benefits = [
 
 export default function PropertyPromotions() {
   const { highlights } = useServiceHighlights('propertyPromotions');
-  const [galleryImages, setGalleryImages] = useState<PropertyGalleryImage[]>(fallbackGalleryImages);
+  const [galleryImages, setGalleryImages] = useState<PropertyGalleryImage[]>([]);
   const [galleryVideos, setGalleryVideos] = useState<GallerySectionVideo[]>([]);
   const [galleryLoading, setGalleryLoading] = useState(true);
 
@@ -69,8 +60,7 @@ export default function PropertyPromotions() {
     let cancelled = false;
     Promise.allSettled([getPropertyGalleryImages(), getGallerySectionVideos('property')]).then(([imgResult, vidResult]) => {
       if (cancelled) return;
-      const list = imgResult.status === 'fulfilled' ? imgResult.value : [];
-      setGalleryImages(list.length > 0 ? list : fallbackGalleryImages);
+      setGalleryImages(imgResult.status === 'fulfilled' ? imgResult.value : []);
       setGalleryVideos(vidResult.status === 'fulfilled' ? vidResult.value : []);
     }).finally(() => { if (!cancelled) setGalleryLoading(false); });
     return () => { cancelled = true; };
@@ -274,20 +264,24 @@ export default function PropertyPromotions() {
                     </div>
                   </div>
                 )}
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {galleryImages.map((img, i) => (
-                    <div
-                      key={i}
-                      className="aspect-[4/3] rounded-2xl overflow-hidden bg-[#E5E5E5] group"
-                    >
-                      <img
-                        src={img.imageUrl}
-                        alt={img.alt ?? 'Gallery'}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-                  ))}
-                </div>
+                {galleryImages.length === 0 && galleryVideos.length === 0 ? (
+                  <p className="text-[#6B6B6B] py-8 text-center">No images or videos yet. Add them from <strong>Admin → Gallery → Property Gallery</strong>.</p>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {galleryImages.map((img, i) => (
+                      <div
+                        key={i}
+                        className="aspect-[4/3] rounded-2xl overflow-hidden bg-[#E5E5E5] group"
+                      >
+                        <img
+                          src={img.imageUrl}
+                          alt={img.alt ?? 'Gallery'}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </>
             )}
           </div>

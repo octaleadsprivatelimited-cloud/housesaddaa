@@ -39,7 +39,9 @@ export function PropertyCard({ property, variant = 'default' }: PropertyCardProp
   const { getPropertyTypeLabel } = usePropertyTypes();
   const isFeatured = variant === 'featured';
   const isCompact = variant === 'compact';
-  const priceDisplay = formatPriceDisplay(property.price, property.listingType);
+  const priceDisplay = property.priceDisplayText
+    ? { amount: property.priceDisplayText }
+    : formatPriceDisplay(property.price, property.listingType);
   const priceModifier = getPriceModifier(property);
   const whatsappUrl = `https://wa.me/916301575658?text=${encodeURIComponent(`Hi, I'm interested in: ${property.title}`)}`;
 

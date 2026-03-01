@@ -64,6 +64,8 @@ export interface Property {
   propertyType: PropertyType;
   listingType: 'sale' | 'rent';
   price: number;
+  /** When set, shown instead of formatted price (e.g. "Price on request", "50 Lakhs"). */
+  priceDisplayText?: string;
   pricePerSqft?: number;
   location: PropertyLocation;
   bedrooms: number;

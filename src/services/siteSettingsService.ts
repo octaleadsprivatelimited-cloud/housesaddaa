@@ -132,3 +132,24 @@ export async function setHomePagePropertyOrder(propertyIds: string[]): Promise<v
   const ref = doc(db, SITE_SETTINGS_COLLECTION, HOME_PAGE_ORDER_DOC_ID);
   await setDoc(ref, { propertyIds });
 }
+
+// Pricing options shown as quick-select when adding/editing a property (managed on Add Property page)
+const PRICING_OPTIONS_DOC_ID = 'pricingOptions';
+
+export async function getPricingOptions(): Promise<string[]> {
+  try {
+    const ref = doc(db, SITE_SETTINGS_COLLECTION, PRICING_OPTIONS_DOC_ID);
+    const snap = await getDoc(ref);
+    if (snap.exists() && Array.isArray(snap.data()?.items)) {
+      return (snap.data().items as string[]).filter((x) => typeof x === 'string');
+    }
+  } catch (e) {
+    console.error('getPricingOptions error', e);
+  }
+  return [];
+}
+
+export async function setPricingOptions(items: string[]): Promise<void> {
+  const ref = doc(db, SITE_SETTINGS_COLLECTION, PRICING_OPTIONS_DOC_ID);
+  await setDoc(ref, { items });
+}

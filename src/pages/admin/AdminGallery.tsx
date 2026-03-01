@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Video, Plus, Trash2, Loader2, ImageIcon, Upload } from 'lucide-react';
+import { Video, Plus, Trash2, Loader2, ImageIcon, Upload, Pencil, Check, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -77,6 +77,10 @@ export default function AdminGallery() {
   const [propertyImages, setPropertyImages] = useState<PropertyGalleryImage[]>([]);
   const [propertyLoading, setPropertyLoading] = useState(true);
   const [propertyDeleteIndex, setPropertyDeleteIndex] = useState<number | null>(null);
+  const [propertyEditIndex, setPropertyEditIndex] = useState<number | null>(null);
+  const [propertyEditUrl, setPropertyEditUrl] = useState('');
+  const [propertyEditAlt, setPropertyEditAlt] = useState('');
+  const [propertySavingEdit, setPropertySavingEdit] = useState(false);
   const [newPropertyUrl, setNewPropertyUrl] = useState('');
   const [newPropertyAlt, setNewPropertyAlt] = useState('');
   const [addingProperty, setAddingProperty] = useState(false);
@@ -393,11 +397,47 @@ export default function AdminGallery() {
     const next = propertyImages.filter((_, i) => i !== index);
     setPropertyImages(next);
     setPropertyDeleteIndex(null);
+    setPropertyEditIndex(null);
     try {
       await setPropertyGalleryImages(next);
       toast({ title: 'Removed', description: 'Image removed from Property gallery' });
     } catch {
       toast({ title: 'Error', description: 'Failed to remove', variant: 'destructive' });
+    }
+  };
+
+  const startEditProperty = (index: number) => {
+    setPropertyEditIndex(index);
+    setPropertyEditUrl(propertyImages[index].imageUrl);
+    setPropertyEditAlt(propertyImages[index].alt ?? '');
+  };
+
+  const cancelEditProperty = () => {
+    setPropertyEditIndex(null);
+    setPropertyEditUrl('');
+    setPropertyEditAlt('');
+  };
+
+  const handleSavePropertyEdit = async () => {
+    if (propertyEditIndex === null) return;
+    const url = propertyEditUrl.trim();
+    if (!url) {
+      toast({ title: 'URL required', description: 'Enter an image URL', variant: 'destructive' });
+      return;
+    }
+    setPropertySavingEdit(true);
+    try {
+      const next = propertyImages.map((img, i) =>
+        i === propertyEditIndex ? { imageUrl: url, alt: propertyEditAlt.trim() || undefined } : img
+      );
+      setPropertyImages(next);
+      await setPropertyGalleryImages(next);
+      toast({ title: 'Updated', description: 'Image updated' });
+      cancelEditProperty();
+    } catch {
+      toast({ title: 'Error', description: 'Failed to update image', variant: 'destructive' });
+    } finally {
+      setPropertySavingEdit(false);
     }
   };
 
@@ -852,26 +892,68 @@ export default function AdminGallery() {
               Loading…
             </div>
           ) : propertyImages.length === 0 ? (
-            <p className="text-muted-foreground py-6">No images yet. Add by URL or upload above.</p>
+            <p className="text-muted-foreground py-6">No images yet. Add by URL or upload above. These images appear on the Property Promotions page.</p>
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
               {propertyImages.map((img, i) => (
                 <div key={i} className="relative rounded-lg border overflow-hidden bg-muted">
-                  <div className="aspect-square">
-                    <img src={img.imageUrl} alt={img.alt || ''} className="w-full h-full object-cover" />
-                  </div>
-                  <div className="p-2 flex items-center justify-between gap-2">
-                    <span className="text-xs text-muted-foreground truncate flex-1">{img.alt || '—'}</span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="text-destructive hover:text-destructive shrink-0 h-8 w-8"
-                      onClick={() => setPropertyDeleteIndex(i)}
-                      aria-label="Remove image"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  {propertyEditIndex === i ? (
+                    <div className="p-3 space-y-2">
+                      <Label className="text-xs">Image URL</Label>
+                      <Input
+                        value={propertyEditUrl}
+                        onChange={(e) => setPropertyEditUrl(e.target.value)}
+                        placeholder="https://..."
+                        className="text-sm"
+                      />
+                      <Label className="text-xs">Alt text (optional)</Label>
+                      <Input
+                        value={propertyEditAlt}
+                        onChange={(e) => setPropertyEditAlt(e.target.value)}
+                        placeholder="e.g. Property exterior"
+                        className="text-sm"
+                      />
+                      <div className="flex gap-2 pt-1">
+                        <Button size="sm" onClick={handleSavePropertyEdit} disabled={propertySavingEdit}>
+                          {propertySavingEdit ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
+                          Save
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={cancelEditProperty} disabled={propertySavingEdit}>
+                          <X className="h-4 w-4" />
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="aspect-square">
+                        <img src={img.imageUrl} alt={img.alt || ''} className="w-full h-full object-cover" />
+                      </div>
+                      <div className="p-2 flex items-center justify-between gap-2">
+                        <span className="text-xs text-muted-foreground truncate flex-1">{img.alt || '—'}</span>
+                        <div className="flex shrink-0 gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => startEditProperty(i)}
+                            aria-label="Edit image"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="text-destructive hover:text-destructive h-8 w-8"
+                            onClick={() => setPropertyDeleteIndex(i)}
+                            aria-label="Remove image"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
