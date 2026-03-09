@@ -20,6 +20,29 @@ import { Property, PropertyFilter } from "@/types/property";
 
 const PROPERTIES_COLLECTION = "properties";
 
+/** Remove undefined values so Firestore accepts the payload (Firestore rejects undefined). */
+function stripUndefined<T extends Record<string, unknown>>(obj: T): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (v === undefined) continue;
+    (result as Record<string, unknown>)[k] =
+      v !== null && typeof v === "object" && !Array.isArray(v)
+        ? stripUndefined(v as Record<string, unknown>)
+        : v;
+  }
+  return result;
+}
+
+/** Normalize Firestore Timestamp, Date, number (ms), or ISO string to Date. */
+function toDate(value: unknown): Date {
+  if (!value) return new Date();
+  if (typeof (value as { toDate?: () => Date }).toDate === "function") return (value as { toDate: () => Date }).toDate();
+  if (value instanceof Date) return value;
+  if (typeof value === "number") return new Date(value);
+  if (typeof value === "string") return new Date(value);
+  return new Date();
+}
+
 // Convert Firestore document to Property
 const docToProperty = (doc: DocumentSnapshot): Property => {
   const data = doc.data();
@@ -28,8 +51,8 @@ const docToProperty = (doc: DocumentSnapshot): Property => {
   return {
     ...data,
     id: doc.id,
-    postedAt: data.postedAt?.toDate() || new Date(),
-    updatedAt: data.updatedAt?.toDate() || new Date(),
+    postedAt: toDate(data.postedAt),
+    updatedAt: toDate(data.updatedAt),
   } as Property;
 };
 
@@ -252,23 +275,25 @@ export const migratePropertiesToActive = async (): Promise<number> => {
 // Admin: Add new property
 export const addProperty = async (property: Omit<Property, 'id' | 'postedAt' | 'updatedAt' | 'views' | 'enquiries'>): Promise<string> => {
   const now = Timestamp.now();
-  const docRef = await addDoc(collection(db, PROPERTIES_COLLECTION), {
+  const payload = stripUndefined({
     ...property,
     postedAt: now,
     updatedAt: now,
     views: 0,
     enquiries: 0
-  });
+  } as Record<string, unknown>);
+  const docRef = await addDoc(collection(db, PROPERTIES_COLLECTION), payload);
   return docRef.id;
 };
 
 // Admin: Update property
 export const updateProperty = async (id: string, updates: Partial<Property>): Promise<void> => {
   const docRef = doc(db, PROPERTIES_COLLECTION, id);
-  await updateDoc(docRef, {
+  const payload = stripUndefined({
     ...updates,
     updatedAt: Timestamp.now()
-  });
+  } as Record<string, unknown>);
+  await updateDoc(docRef, payload);
 };
 
 // Admin: Delete property

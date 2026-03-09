@@ -183,9 +183,9 @@ export default function AdminAddProperty() {
   const [galleryVideoTitle, setGalleryVideoTitle] = useState('');
   const [galleryVideoUrl, setGalleryVideoUrl] = useState('');
   
-  /** Per-row BHK / bathrooms / area (individual property). At least one row. */
-  const [sizeOptions, setSizeOptions] = useState<{ bedrooms: string; bathrooms: string; areaSize: string }[]>([
-    { bedrooms: '', bathrooms: '', areaSize: '' },
+  /** Per-row BHK / bathrooms / area / price / per sqft (individual property). At least one row. */
+  const [sizeOptions, setSizeOptions] = useState<{ bedrooms: string; bathrooms: string; areaSize: string; price: string; pricePerSqft: string }[]>([
+    { bedrooms: '', bathrooms: '', areaSize: '', price: '', pricePerSqft: '' },
   ]);
   const [formData, setFormData] = useState({
     title: '',
@@ -212,12 +212,12 @@ export default function AdminAddProperty() {
   const [facingsOptions, setFacingsOptions] = useState<string[]>(['']);
   const isCommercial = formData.propertyType === 'commercial';
 
-  const addSizeOption = () => setSizeOptions((prev) => [...prev, { bedrooms: '', bathrooms: '', areaSize: '' }]);
+  const addSizeOption = () => setSizeOptions((prev) => [...prev, { bedrooms: '', bathrooms: '', areaSize: '', price: '', pricePerSqft: '' }]);
   const removeSizeOption = (index: number) => {
     if (sizeOptions.length <= 1) return;
     setSizeOptions((prev) => prev.filter((_, i) => i !== index));
   };
-  const updateSizeOption = (index: number, field: 'bedrooms' | 'bathrooms' | 'areaSize', value: string) => {
+  const updateSizeOption = (index: number, field: 'bedrooms' | 'bathrooms' | 'areaSize' | 'price' | 'pricePerSqft', value: string) => {
     setSizeOptions((prev) => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
   };
 
@@ -292,6 +292,7 @@ export default function AdminAddProperty() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
 
     setIsSubmitting(true);
 
@@ -303,11 +304,19 @@ export default function AdminAddProperty() {
       const firstBath = isCommercial ? 0 : parseInt(firstOption.bathrooms, 10) || 0;
       const firstArea = parseInt(firstOption.areaSize, 10) || 0;
       const parsedOptions = sizeOptions
-        .map((row) => ({
-          bedrooms: parseInt(row.bedrooms, 10) || 0,
-          bathrooms: parseInt(row.bathrooms, 10) || 0,
-          areaSqft: parseInt(row.areaSize, 10) || 0,
-        }))
+        .map((row) => {
+          const areaSqft = parseInt(row.areaSize, 10) || 0;
+          const priceNum = parseFloat((row.price || '').replace(/,/g, '')) || 0;
+          const pricePerSqftNum = parseFloat((row.pricePerSqft || '').replace(/,/g, '')) || 0;
+          const pricePerSqft = pricePerSqftNum > 0 ? pricePerSqftNum : (areaSqft > 0 && priceNum > 0 ? Math.round(priceNum / areaSqft) : undefined);
+          return {
+            bedrooms: parseInt(row.bedrooms, 10) || 0,
+            bathrooms: parseInt(row.bathrooms, 10) || 0,
+            areaSqft,
+            ...(priceNum > 0 && { price: Math.round(priceNum) }),
+            ...(pricePerSqft && pricePerSqft > 0 && { pricePerSqft }),
+          };
+        })
         .filter((o) => o.areaSqft > 0);
       const hasMultipleOptions = parsedOptions.length > 1;
 
@@ -651,7 +660,15 @@ export default function AdminAddProperty() {
 
       {/* Individual Property Form (existing) */}
       {!isProject && (
-      <form onSubmit={handleSubmit} className="space-y-8">
+      <form
+        noValidate
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          void handleSubmit(e);
+        }}
+        className="space-y-8"
+      >
         {/* Property Images */}
         <div className="bg-card rounded-xl border border-border p-6">
           <h2 className="font-semibold text-lg mb-4">Property Images</h2>
@@ -951,6 +968,24 @@ export default function AdminAddProperty() {
                       placeholder="e.g., 1500"
                       value={row.areaSize}
                       onChange={(e) => updateSizeOption(idx, 'areaSize', e.target.value)}
+                    />
+                  </div>
+                  <div className="w-full sm:w-32">
+                    <label className="block text-xs font-medium text-muted-foreground mb-1">Price (₹)</label>
+                    <Input
+                      type="text"
+                      placeholder="e.g. 50,00,000"
+                      value={row.price}
+                      onChange={(e) => updateSizeOption(idx, 'price', e.target.value)}
+                    />
+                  </div>
+                  <div className="w-full sm:w-28">
+                    <label className="block text-xs font-medium text-muted-foreground mb-1">Per sqft (₹)</label>
+                    <Input
+                      type="text"
+                      placeholder="Auto or enter"
+                      value={row.pricePerSqft}
+                      onChange={(e) => updateSizeOption(idx, 'pricePerSqft', e.target.value)}
                     />
                   </div>
                   <Button

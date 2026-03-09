@@ -50,11 +50,15 @@ export interface LegalApproval {
   approvalDocUrls?: string[];
 }
 
-/** Single size option (BHK, bathrooms, area) for individual properties with multiple configurations. */
+/** Single size option (BHK, bathrooms, area, optional price) for individual properties with multiple configurations. */
 export interface SizeOption {
   bedrooms: number;
   bathrooms: number;
   areaSqft: number;
+  /** Price for this configuration (e.g. in rupees). Optional. */
+  price?: number;
+  /** Price per sqft for this configuration. Optional; can be computed from price/areaSqft or entered. */
+  pricePerSqft?: number;
 }
 
 export interface Property {

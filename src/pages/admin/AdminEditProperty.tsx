@@ -40,8 +40,8 @@ export default function AdminEditProperty() {
   /** Preserve project-specific fields when editing a project listing (do not overwrite with undefined). */
   const projectFieldsRef = useRef<Partial<Property>>({});
 
-  const [sizeOptions, setSizeOptions] = useState<{ bedrooms: string; bathrooms: string; areaSize: string }[]>([
-    { bedrooms: '', bathrooms: '', areaSize: '' },
+  const [sizeOptions, setSizeOptions] = useState<{ bedrooms: string; bathrooms: string; areaSize: string; price: string; pricePerSqft: string }[]>([
+    { bedrooms: '', bathrooms: '', areaSize: '', price: '', pricePerSqft: '' },
   ]);
   const [formData, setFormData] = useState({
     title: '',
@@ -67,12 +67,12 @@ export default function AdminEditProperty() {
   const [facingsOptions, setFacingsOptions] = useState<string[]>(['']);
   const isCommercial = formData.propertyType === 'commercial';
 
-  const addSizeOption = () => setSizeOptions((prev) => [...prev, { bedrooms: '', bathrooms: '', areaSize: '' }]);
+  const addSizeOption = () => setSizeOptions((prev) => [...prev, { bedrooms: '', bathrooms: '', areaSize: '', price: '', pricePerSqft: '' }]);
   const removeSizeOption = (index: number) => {
     if (sizeOptions.length <= 1) return;
     setSizeOptions((prev) => prev.filter((_, i) => i !== index));
   };
-  const updateSizeOption = (index: number, field: 'bedrooms' | 'bathrooms' | 'areaSize', value: string) => {
+  const updateSizeOption = (index: number, field: 'bedrooms' | 'bathrooms' | 'areaSize' | 'price' | 'pricePerSqft', value: string) => {
     setSizeOptions((prev) => prev.map((row, i) => (i === index ? { ...row, [field]: value } : row)));
   };
 
@@ -144,6 +144,8 @@ export default function AdminEditProperty() {
               bedrooms: o.bedrooms.toString(),
               bathrooms: o.bathrooms.toString(),
               areaSize: o.areaSqft.toString(),
+              price: o.price != null ? o.price.toString() : '',
+              pricePerSqft: o.pricePerSqft != null ? o.pricePerSqft.toString() : '',
             }))
           );
         } else {
@@ -152,6 +154,8 @@ export default function AdminEditProperty() {
               bedrooms: property.bedrooms?.toString() || '',
               bathrooms: property.bathrooms?.toString() || '',
               areaSize: property.area?.toString() || '',
+              price: '',
+              pricePerSqft: '',
             },
           ]);
         }
@@ -297,11 +301,19 @@ export default function AdminEditProperty() {
       const firstBath = isCommercial ? 0 : parseInt(firstOption.bathrooms, 10) || 0;
       const firstArea = parseInt(firstOption.areaSize, 10) || 0;
       const parsedOptions = sizeOptions
-        .map((row) => ({
-          bedrooms: parseInt(row.bedrooms, 10) || 0,
-          bathrooms: parseInt(row.bathrooms, 10) || 0,
-          areaSqft: parseInt(row.areaSize, 10) || 0,
-        }))
+        .map((row) => {
+          const areaSqft = parseInt(row.areaSize, 10) || 0;
+          const priceNum = parseFloat((row.price || '').replace(/,/g, '')) || 0;
+          const pricePerSqftNum = parseFloat((row.pricePerSqft || '').replace(/,/g, '')) || 0;
+          const pricePerSqft = pricePerSqftNum > 0 ? pricePerSqftNum : (areaSqft > 0 && priceNum > 0 ? Math.round(priceNum / areaSqft) : undefined);
+          return {
+            bedrooms: parseInt(row.bedrooms, 10) || 0,
+            bathrooms: parseInt(row.bathrooms, 10) || 0,
+            areaSqft,
+            ...(priceNum > 0 && { price: Math.round(priceNum) }),
+            ...(pricePerSqft && pricePerSqft > 0 && { pricePerSqft }),
+          };
+        })
         .filter((o) => o.areaSqft > 0);
       const hasMultipleOptions = parsedOptions.length > 1;
 
@@ -311,8 +323,8 @@ export default function AdminEditProperty() {
       const price = isNumericPrice ? Math.round(priceNum) : 0;
       const priceDisplayText = isNumericPrice ? undefined : (priceTrimmed || undefined);
 
-      const propertyData = {
-        title: formData.title,
+      const propertyData: Partial<Property> = {
+        title: formData.title.trim() || 'Untitled',
         propertyType: formData.propertyType as PropertyType,
         listingType: formData.listingType,
         price,
@@ -333,18 +345,18 @@ export default function AdminEditProperty() {
         ...(formData.yearOfConstruction && { yearOfConstruction: parseInt(formData.yearOfConstruction, 10) }),
         ...(formData.yearOfCompletion && { yearOfCompletion: parseInt(formData.yearOfCompletion, 10) }),
         amenities: formData.selectedAmenities,
-        images: images,
-        description: formData.description,
-        ownerName: formData.ownerName,
-        ownerPhone: formData.ownerPhone,
-        ownerEmail: formData.ownerEmail || undefined,
+        images,
+        description: formData.description ?? '',
+        ownerName: formData.ownerName?.trim() || '—',
+        ownerPhone: formData.ownerPhone?.trim() || '—',
+        ...(formData.ownerEmail?.trim() && { ownerEmail: formData.ownerEmail.trim() }),
         ownerType: formData.ownerType,
         isFeatured: formData.isFeatured,
         metaTitle: formData.metaTitle || formData.title,
         metaDescription: formData.metaDescription || (formData.description?.slice(0, 160) || ''),
         ...(finalBrochureUrl && { brochureUrl: finalBrochureUrl }),
         ...(parsedYoutubeId && { youtubeVideoId: parsedYoutubeId }),
-        galleryVideos: galleryVideos.length > 0 ? galleryVideos : undefined,
+        ...(galleryVideos.length > 0 && { galleryVideos }),
         floorPlanUrls: finalFloorPlanUrls,
         ...((): { facings?: string; facingsList?: string[] } => {
           const list = facingsOptions.map((s) => s.trim()).filter(Boolean);
@@ -363,11 +375,12 @@ export default function AdminEditProperty() {
       });
       
       navigate('/admin/properties');
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error updating property:', error);
+      const message = error instanceof Error ? error.message : 'Failed to update property. Please try again.';
       toast({
         title: 'Error',
-        description: error.message || 'Failed to update property. Please try again.',
+        description: message,
         variant: 'destructive',
       });
     } finally {
@@ -712,6 +725,24 @@ export default function AdminEditProperty() {
                       placeholder="e.g., 1500"
                       value={row.areaSize}
                       onChange={(e) => updateSizeOption(idx, 'areaSize', e.target.value)}
+                    />
+                  </div>
+                  <div className="w-full sm:w-32">
+                    <label className="block text-xs font-medium text-muted-foreground mb-1">Price (₹)</label>
+                    <Input
+                      type="text"
+                      placeholder="e.g. 50,00,000"
+                      value={row.price}
+                      onChange={(e) => updateSizeOption(idx, 'price', e.target.value)}
+                    />
+                  </div>
+                  <div className="w-full sm:w-28">
+                    <label className="block text-xs font-medium text-muted-foreground mb-1">Per sqft (₹)</label>
+                    <Input
+                      type="text"
+                      placeholder="Auto or enter"
+                      value={row.pricePerSqft}
+                      onChange={(e) => updateSizeOption(idx, 'pricePerSqft', e.target.value)}
                     />
                   </div>
                   <Button

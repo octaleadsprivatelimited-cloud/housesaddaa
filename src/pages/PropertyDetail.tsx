@@ -345,7 +345,7 @@ export default function PropertyDetailPage() {
                       {property.sizeOptions.map((opt, idx) => (
                         <div
                           key={idx}
-                          className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-muted/60 border border-border text-sm"
+                          className="inline-flex flex-wrap items-center gap-2 px-3 py-2 rounded-lg bg-muted/60 border border-border text-sm"
                         >
                           {opt.bedrooms > 0 && (
                             <span className="font-medium">{opt.bedrooms} BHK</span>
@@ -360,6 +360,18 @@ export default function PropertyDetailPage() {
                             <>
                               {(opt.bedrooms > 0 || opt.bathrooms > 0) && <span className="text-muted-foreground">•</span>}
                               <span>{opt.areaSqft.toLocaleString()} sqft</span>
+                            </>
+                          )}
+                          {opt.price != null && opt.price > 0 && (
+                            <>
+                              {(opt.bedrooms > 0 || opt.bathrooms > 0 || opt.areaSqft > 0) && <span className="text-muted-foreground">•</span>}
+                              <span className="font-medium">{formatPrice(opt.price, property.listingType)}</span>
+                            </>
+                          )}
+                          {opt.pricePerSqft != null && opt.pricePerSqft > 0 && (
+                            <>
+                              {(opt.bedrooms > 0 || opt.bathrooms > 0 || opt.areaSqft > 0 || (opt.price != null && opt.price > 0)) && <span className="text-muted-foreground">•</span>}
+                              <span>₹{opt.pricePerSqft.toLocaleString()}/sqft</span>
                             </>
                           )}
                         </div>
