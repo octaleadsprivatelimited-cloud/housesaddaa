@@ -39,9 +39,30 @@ export function PropertyCard({ property, variant = 'default' }: PropertyCardProp
   const { getPropertyTypeLabel } = usePropertyTypes();
   const isFeatured = variant === 'featured';
   const isCompact = variant === 'compact';
-  const priceDisplay = property.priceDisplayText
-    ? { amount: property.priceDisplayText }
-    : formatPriceDisplay(property.price, property.listingType);
+  const getPriceDisplay = () => {
+    if (property.priceDisplayText) {
+      return { amount: property.priceDisplayText };
+    }
+    if (property.price && property.price > 0) {
+      const display = formatPriceDisplay(property.price, property.listingType);
+      if (property.pricePerSqft && property.listingType !== 'rent') {
+        return {
+          amount: display.amount,
+          suffix: `${display.suffix ?? ''} • ₹${property.pricePerSqft.toLocaleString()}/sqft`
+        };
+      }
+      return display;
+    }
+    if (property.pricePerSqft && property.pricePerSqft > 0) {
+      return {
+        amount: `₹${property.pricePerSqft.toLocaleString()}/sqft`,
+        suffix: ''
+      };
+    }
+    return { amount: 'Price on Request' };
+  };
+
+  const priceDisplay = getPriceDisplay();
   const priceModifier = getPriceModifier(property);
   const whatsappUrl = `https://wa.me/916301575658?text=${encodeURIComponent(`Hi, I'm interested in: ${property.title}`)}`;
 

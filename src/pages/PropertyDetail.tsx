@@ -324,10 +324,16 @@ export default function PropertyDetailPage() {
                 </div>
                 <div className="text-right">
                   <div className="price-display text-3xl">
-                    {property.priceDisplayText ?? formatPrice(property.price, property.listingType)}
+                    {property.priceDisplayText 
+                      ? property.priceDisplayText 
+                      : (property.price && property.price > 0 
+                        ? formatPrice(property.price, property.listingType) 
+                        : (property.pricePerSqft && property.pricePerSqft > 0 
+                          ? `₹${property.pricePerSqft.toLocaleString()} per sqft` 
+                          : 'Price on Request'))}
                   </div>
-                  {property.pricePerSqft && !property.priceDisplayText && (
-                    <div className="text-sm text-muted-foreground flex items-center gap-1.5">
+                  {property.pricePerSqft && property.price && property.price > 0 && !property.priceDisplayText && (
+                    <div className="text-sm text-muted-foreground flex items-center gap-1.5 justify-end">
                       <Square className="h-4 w-4 shrink-0" />
                       ₹{property.pricePerSqft.toLocaleString()} per sqft
                     </div>

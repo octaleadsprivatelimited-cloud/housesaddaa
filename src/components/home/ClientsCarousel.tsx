@@ -1,6 +1,5 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { getPartnersByType } from '@/services/partnerService';
 import { Partner } from '@/types/property';
 
@@ -17,18 +16,6 @@ export function ClientsCarousel() {
       '(min-width: 1024px)': { slidesToScroll: 3 },
     },
   });
-  const [canScrollPrev, setCanScrollPrev] = useState(false);
-  const [canScrollNext, setCanScrollNext] = useState(false);
-
-  const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
-  const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
-
-  const onSelect = useCallback(() => {
-    if (!emblaApi) return;
-    setCanScrollPrev(emblaApi.canScrollPrev());
-    setCanScrollNext(emblaApi.canScrollNext());
-  }, [emblaApi]);
-
   useEffect(() => {
     getPartnersByType('company')
       .then(setPartners)
@@ -38,16 +25,11 @@ export function ClientsCarousel() {
 
   useEffect(() => {
     if (!emblaApi) return;
-    onSelect();
-    emblaApi.on('select', onSelect);
-    emblaApi.on('reInit', onSelect);
-    const interval = setInterval(() => emblaApi.scrollNext(), 4000);
+    const interval = setInterval(() => emblaApi.scrollNext(), 3000);
     return () => {
-      emblaApi.off('select', onSelect);
-      emblaApi.off('reInit', onSelect);
       clearInterval(interval);
     };
-  }, [emblaApi, onSelect]);
+  }, [emblaApi]);
 
   return (
     <section className="py-16 md:py-20 bg-[#F9F9F9]" aria-labelledby="trusted-brands-heading">
@@ -77,16 +59,7 @@ export function ClientsCarousel() {
             </div>
           </div>
         ) : (
-          <div className="relative flex items-center gap-2 md:gap-4">
-            <button
-              type="button"
-              onClick={scrollPrev}
-              disabled={!canScrollPrev}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white border border-[#E5E5E5] shadow-md flex items-center justify-center text-[#1A1A1A] hover:bg-[#E10600] hover:text-white hover:border-[#E10600] disabled:opacity-40 disabled:pointer-events-none transition-colors -translate-x-2 md:-translate-x-4"
-              aria-label="Previous partners"
-            >
-              <ChevronLeft className="w-5 h-5" />
-            </button>
+          <div className="relative flex items-center">
             <div className="flex-1 overflow-hidden px-1" ref={emblaRef}>
               <div className="flex -ml-3 gap-0">
                 {partners.map((partner) => (
@@ -99,15 +72,6 @@ export function ClientsCarousel() {
                 ))}
               </div>
             </div>
-            <button
-              type="button"
-              onClick={scrollNext}
-              disabled={!canScrollNext}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 md:w-12 md:h-12 rounded-full bg-white border border-[#E5E5E5] shadow-md flex items-center justify-center text-[#1A1A1A] hover:bg-[#E10600] hover:text-white hover:border-[#E10600] disabled:opacity-40 disabled:pointer-events-none transition-colors translate-x-2 md:translate-x-4"
-              aria-label="Next partners"
-            >
-              <ChevronRight className="w-5 h-5" />
-            </button>
           </div>
         )}
 

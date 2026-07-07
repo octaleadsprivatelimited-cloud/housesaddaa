@@ -75,7 +75,7 @@ export function CategoryProperties() {
   return (
     <div>
       {propertyTypes
-        .filter((type) => type.value !== 'independent-house' && type.value !== 'apartment' && type.value !== 'commercial')
+        .filter((type) => type.value !== 'independent-house' && type.value !== 'apartment' && type.value !== 'commercial' && type.value !== 'villa' && type.value !== 'plot')
         .map((type, index) => (
           <CategorySection
             key={type.value}

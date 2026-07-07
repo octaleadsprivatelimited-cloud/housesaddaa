@@ -305,7 +305,7 @@ export default function AdminEditProperty() {
           const areaSqft = parseInt(row.areaSize, 10) || 0;
           const priceNum = parseFloat((row.price || '').replace(/,/g, '')) || 0;
           const pricePerSqftNum = parseFloat((row.pricePerSqft || '').replace(/,/g, '')) || 0;
-          const pricePerSqft = pricePerSqftNum > 0 ? pricePerSqftNum : (areaSqft > 0 && priceNum > 0 ? Math.round(priceNum / areaSqft) : undefined);
+          const pricePerSqft = pricePerSqftNum > 0 ? pricePerSqftNum : undefined;
           return {
             bedrooms: parseInt(row.bedrooms, 10) || 0,
             bathrooms: parseInt(row.bathrooms, 10) || 0,
@@ -329,7 +329,7 @@ export default function AdminEditProperty() {
         listingType: formData.listingType,
         price,
         ...(priceDisplayText && { priceDisplayText }),
-        pricePerSqft: firstArea && price > 0 ? Math.round(price / firstArea) : undefined,
+        pricePerSqft: parsedOptions[0]?.pricePerSqft || undefined,
         location: {
           country: 'India',
           state: selectedCity?.state || '',
@@ -740,7 +740,7 @@ export default function AdminEditProperty() {
                     <label className="block text-xs font-medium text-muted-foreground mb-1">Per sqft (₹)</label>
                     <Input
                       type="text"
-                      placeholder="Auto or enter"
+                      placeholder="e.g. 5000"
                       value={row.pricePerSqft}
                       onChange={(e) => updateSizeOption(idx, 'pricePerSqft', e.target.value)}
                     />

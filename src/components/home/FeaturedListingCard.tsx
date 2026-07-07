@@ -22,8 +22,35 @@ interface FeaturedListingCardProps {
 
 export function FeaturedListingCard({ property }: FeaturedListingCardProps) {
   const { getPropertyTypeLabel } = usePropertyTypes();
-  const priceStr = property.priceDisplayText ?? formatPrice(property.price, property.listingType);
-  const priceSuffix = formatPriceSuffix(property);
+
+  const getPriceAndSuffix = () => {
+    if (property.priceDisplayText) {
+      return {
+        priceStr: property.priceDisplayText,
+        priceSuffix: property.listingType === 'rent' ? 'per month' : ''
+      };
+    }
+    if (property.price && property.price > 0) {
+      return {
+        priceStr: formatPrice(property.price, property.listingType),
+        priceSuffix: property.listingType === 'rent'
+          ? 'per month'
+          : (property.pricePerSqft ? `₹${property.pricePerSqft.toLocaleString()}/sqft` : '')
+      };
+    }
+    if (property.pricePerSqft && property.pricePerSqft > 0) {
+      return {
+        priceStr: `₹${property.pricePerSqft.toLocaleString()}/sqft`,
+        priceSuffix: property.listingType === 'rent' ? 'per month' : ''
+      };
+    }
+    return {
+      priceStr: 'Price on Request',
+      priceSuffix: property.listingType === 'rent' ? 'per month' : ''
+    };
+  };
+
+  const { priceStr, priceSuffix } = getPriceAndSuffix();
 
   return (
     <Link to={`/property/${property.slug}`} className="block group">

@@ -110,8 +110,13 @@ export const getProperties = async (
       
       // Price range filter
       if (filters?.priceRange) {
-        if (filters.priceRange.min != null && p.price < filters.priceRange.min) return false;
-        if (filters.priceRange.max != null && p.price > filters.priceRange.max) return false;
+        const effectivePrice = p.price && p.price > 0 ? p.price : (p.pricePerSqft && p.area ? p.pricePerSqft * p.area : 0);
+        if (effectivePrice > 0) {
+          if (filters.priceRange.min != null && effectivePrice < filters.priceRange.min) return false;
+          if (filters.priceRange.max != null && effectivePrice > filters.priceRange.max) return false;
+        } else {
+          if (filters.priceRange.min != null || filters.priceRange.max != null) return false;
+        }
       }
 
       // Bedrooms filter
@@ -133,12 +138,16 @@ export const getProperties = async (
     
     // Apply sorting
     switch (filters?.sortBy) {
-      case 'price-low':
-        properties.sort((a, b) => a.price - b.price);
+      case 'price-low': {
+        const getPrice = (x: Property) => x.price && x.price > 0 ? x.price : (x.pricePerSqft && x.area ? x.pricePerSqft * x.area : 0);
+        properties.sort((a, b) => getPrice(a) - getPrice(b));
         break;
-      case 'price-high':
-        properties.sort((a, b) => b.price - a.price);
+      }
+      case 'price-high': {
+        const getPrice = (x: Property) => x.price && x.price > 0 ? x.price : (x.pricePerSqft && x.area ? x.pricePerSqft * x.area : 0);
+        properties.sort((a, b) => getPrice(b) - getPrice(a));
         break;
+      }
       case 'popular':
         properties.sort((a, b) => (b.views || 0) - (a.views || 0));
         break;
